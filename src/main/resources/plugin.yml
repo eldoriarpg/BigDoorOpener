@@ -1,0 +1,15 @@
+name: BigDoorsOpener
+description: Open and close doors automaticly
+author: [Hadde]
+version: 1.0-ALPHA
+main: de.eldoria.bigdoorsopener.BigDoorsOpener
+api-version: 1.13
+depend: [BigDoors]
+
+commands:
+  bigdoorsopener:
+    description: open doors
+    usage: "setTime <door> <openAt> <closeAt> | setRange <door> <range> | unregisterDoor <door> | doorInfo <door>| reload"
+    aliases:
+      - bdo
+    permission: "bdo.use"
