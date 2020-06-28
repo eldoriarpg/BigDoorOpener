@@ -1,8 +1,8 @@
 # Big Door Opener
 
-This is a add on for the amazong plugin [Big Doors](https://www.spigotmc.org/resources/big-doors.58669/).
+This is an add-on for the amazing plugin [Big Doors](https://www.spigotmc.org/resources/big-doors.58669/).
 
-It allows you to create doors which open and close based on various conditions.
+It allows you to create doors, which open and close based on various conditions.
 
 
 #Features
@@ -14,21 +14,21 @@ It allows you to create doors which open and close based on various conditions.
 # Setup
 Simply drop the jar in your plugin folder.
 
-Make suer that you have [Big Doors](https://www.spigotmc.org/resources/big-doors.58669/) installed as well.
+Make sure you have [Big Doors](https://www.spigotmc.org/resources/big-doors.58669/) installed as well.
 
 # Commands
 
 Every door created will have a range of 10 blocks to open.
 
 All commands have full tab completion support. So you can probably skip this part and start using it.
-I highly recommend to not set a autoclose value or manage this door with redstone.
+I highly recommend to not set an autoclose value or manage this door with redstone.
 
 #### Create a timed door
 `/bdo setTimed <doorId> <open> <close>`  
 This creates a new automatic door which opens and closes at the specific time.
 It will open when a player approaches it. [See permissions to change this.](#Door-with-permission)
 
-*You can enter a time (E.g. 6:30) or a tick amount (E.g. 500) as time.*
+*You can enter a time (E.g. 6:30), or a tick amount (E.g. 500) as time.*
 
 ![timed door](http://chojo.u.catgirlsare.sexy/OJikflxg.gif)
 
@@ -53,10 +53,10 @@ This inverts the state of the door.
 `/bdo requiresPermission <doorId> <true|false|permission>`  
 This sets a permission for the door.  
 True will use the permission `bdo.use.<doorId>`.  
-Otherwise you can enter your own permission.  
+You can also enter your own permission.  
 To remove the permission set this to `false`.  
 
-If a permission is set the door will only open for players with this permission when it's closed.
+If a permission is set, the door will only open for players with this permission, when it's closed.
 
 #### Unregister a door
 `/bdo unregister <doorId>`  
