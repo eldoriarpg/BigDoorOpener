@@ -5,7 +5,7 @@ This is an add-on for the amazing plugin [Big Doors](https://www.spigotmc.org/re
 It allows you to create doors, which open and close based on various conditions.
 
 
-#Features
+# Features
 * Timed door. Define at which times doors should be open and closed.
 * Closed door. A door which is always closed except when a player approaches it.
 * Player approach. A closed door can open when a player approaches it.
