@@ -1,12 +1,13 @@
 package de.eldoria.bigdoorsopener.commands;
 
-import com.sun.tools.javac.util.Pair;
 import de.eldoria.bigdoorsopener.BigDoorsOpener;
+import de.eldoria.bigdoorsopener.Permissions;
 import de.eldoria.bigdoorsopener.config.Config;
 import de.eldoria.bigdoorsopener.config.TimedDoor;
 import de.eldoria.bigdoorsopener.scheduler.TimedDoorScheduler;
 import de.eldoria.bigdoorsopener.util.ArrayUtil;
 import de.eldoria.bigdoorsopener.util.MessageSender;
+import de.eldoria.bigdoorsopener.util.Pair;
 import de.eldoria.bigdoorsopener.util.Parser;
 import nl.pim16aap2.bigDoors.Commander;
 import nl.pim16aap2.bigDoors.Door;
@@ -49,27 +50,44 @@ public class BigDoorsOpenerCommand implements TabExecutor {
                             + "§6setClosed <doorId>\n"
                             + "  §rSet a door as permanent closed. It will only open on player approach.\n"
                             + "§6setTimed <doorId> <open> <close>\n"
-                            + "  §rSet a door as timed. It will be open between open and close time. However it will open on player approach if closed. Use a permission to avoid this."
-                            + "§6setRange <doorId> <range>"
-                            + "  §rSet the approach range of a door. The range is spherical around the mass center of the door. Default is 10."
-                            + "§6info <doorId>"
-                            + "  §rGet information about this door."
-                            + "§6unregister <doorId>"
-                            + "  §rUnregister a door."
-                            + "§6invertOpen <doorId> <true|false>"
-                            + "  §rInvert the state of the door. Useful if you created it in a open state."
-                            + "§6requiresPermission <doorId> <true|false|permission>"
-                            + "  §rA gate will require a permission to open on player approach."
-                            + "§6list"
-                            + "  §rGet a list of all registered doors."
-                            + "§6reload"
-                            + "  §rThis will reload the plugin/config and force the doors in the correct state."
-                            + "§6about"
+                            + "  §rSet a door as timed. It will be open between open and close time. However it will open on player approach if closed. Use a permission to avoid this.\n"
+                            + "§6setRange <doorId> <range>\n"
+                            + "  §rSet the approach range of a door. The range is spherical around the mass center of the door. Default is 10.\n"
+                            + "§6invertOpen <doorId> <true|false>\n"
+                            + "  §rInvert the state of the door. Useful if you created it in a open state.\n"
+                            + "§6requiresPermission <doorId> <true|false|permission>\n"
+                            + "  §rA gate will require a permission to open on player approach.\n"
+                            + "§6unregister <doorId>\n"
+                            + "  §rUnregister a door.\n"
+                            + "§6info <doorId>\n"
+                            + "  §rGet information about this door.\n"
+                            + "§6list\n"
+                            + "  §rGet a list of all registered doors.\n"
+                            + "§6reload\n"
+                            + "  §rThis will reload the plugin/config and force the doors in the correct state.\n"
+                            + "§6about\n"
                             + "  §rInformation about this plugin");
             return true;
+
         }
+
+        if ("about".equalsIgnoreCase(args[0])) {
+            PluginDescriptionFile descr = plugin.getDescription();
+            String info = "§bBig Doors opener§r by §b" + String.join(", ", descr.getAuthors()) + "§r\n"
+                    + "§bVersion§r : " + descr.getVersion() + "\n"
+                    + "§bSpigot:§r " + descr.getWebsite() + "\n"
+                    + "§bSupport:§r https://discord.gg/zRW9Vpu";
+            return true;
+        }
+
+
         if ("setClosed".equalsIgnoreCase(args[0])) {
-            if (args.length == 2) return false;
+            if (!player.hasPermission(Permissions.USE)) {
+                MessageSender.sendError(player, Permissions.MESSAGE);
+                return true;
+            }
+
+            if (args.length != 2) return false;
             Door door = getDoor(args[1], player);
             if (door == null) {
                 return true;
@@ -83,6 +101,11 @@ public class BigDoorsOpenerCommand implements TabExecutor {
         }
 
         if ("setTimed".equalsIgnoreCase(args[0])) {
+            if (!player.hasPermission(Permissions.USE)) {
+                MessageSender.sendError(player, Permissions.MESSAGE);
+                return true;
+            }
+
             Door door = getDoor(args[1], player);
             if (door == null) {
                 return true;
@@ -115,6 +138,10 @@ public class BigDoorsOpenerCommand implements TabExecutor {
         }
 
         if ("setRange".equalsIgnoreCase(args[0])) {
+            if (!player.hasPermission(Permissions.USE)) {
+                MessageSender.sendError(player, Permissions.MESSAGE);
+                return true;
+            }
             if (args.length != 3) return false;
             Door door = getDoor(args[1], player);
             if (door == null) {
@@ -144,14 +171,18 @@ public class BigDoorsOpenerCommand implements TabExecutor {
         }
 
         if ("info".equalsIgnoreCase(args[0])) {
+            if (!player.hasPermission(Permissions.USE)) {
+                MessageSender.sendError(player, Permissions.MESSAGE);
+                return true;
+            }
             if (args.length != 2) return false;
             Pair<TimedDoor, Door> door = getTimedDoor(args[1], player);
             if (door == null) {
                 return true;
             }
 
-            TimedDoor d = door.fst;
-            StringBuilder builder = new StringBuilder("§6" + door.snd.getName() + "§r Info:\n")
+            TimedDoor d = door.first;
+            StringBuilder builder = new StringBuilder("§6" + door.second.getName() + "§r Info:\n")
                     .append("§rRange: §6").append(d.getOpenRange()).append("\n");
             if (d.isPermanentlyClosed()) {
                 builder.append("§6Permanently closed.\n");
@@ -171,6 +202,10 @@ public class BigDoorsOpenerCommand implements TabExecutor {
         }
 
         if ("unregister".equalsIgnoreCase(args[0])) {
+            if (!player.hasPermission(Permissions.USE)) {
+                MessageSender.sendError(player, Permissions.MESSAGE);
+                return true;
+            }
             if (args.length != 2) return false;
             Pair<TimedDoor, Door> door = getTimedDoor(args[1], player);
 
@@ -178,57 +213,70 @@ public class BigDoorsOpenerCommand implements TabExecutor {
                 return true;
             }
 
-            config.getDoors().remove(door.snd.getDoorUID());
+            config.getDoors().remove(door.second.getDoorUID());
             config.safeConfig();
 
-            MessageSender.sendMessage(player, "Unregistered door §6" + door.snd.getName() + "§r.");
+            MessageSender.sendMessage(player, "Unregistered door §6" + door.second.getName() + "§r.");
             return true;
         }
 
         if ("invertOpen".equalsIgnoreCase(args[0])) {
+            if (!player.hasPermission(Permissions.USE)) {
+                MessageSender.sendError(player, Permissions.MESSAGE);
+                return true;
+            }
             if (args.length != 3) return false;
             Pair<TimedDoor, Door> door = getTimedDoor(args[1], null);
             if (door == null) {
                 return true;
             }
 
-            if ("true".equalsIgnoreCase(args[1])) {
-                door.fst.setInvertOpen(true);
+            if ("true".equalsIgnoreCase(args[2])) {
+                door.first.setInvertOpen(true);
                 MessageSender.sendMessage(player, "Open state is now inverted.");
-                return true;
-            }
-            if ("false".equalsIgnoreCase(args[1])) {
-                door.fst.setInvertOpen(false);
+            } else if ("false".equalsIgnoreCase(args[2])) {
+                door.first.setInvertOpen(false);
                 MessageSender.sendMessage(player, "Open state is not inverted.");
+            } else {
+                MessageSender.sendError(player, "Invalid input. §2True§r or §4False§r.");
                 return true;
             }
-            MessageSender.sendError(player, "Invalid input. §2True§r or §4False§r.");
+            config.safeConfig();
             return true;
         }
 
         if ("requiresPermission".equalsIgnoreCase(args[0])) {
-            if (args.length != 2) return false;
+            if (!player.hasPermission(Permissions.USE)) {
+                MessageSender.sendError(player, Permissions.MESSAGE);
+                return true;
+            }
+            if (args.length != 3) return false;
             Pair<TimedDoor, Door> door = getTimedDoor(args[1], null);
             if (door == null) {
                 return true;
             }
 
-            if ("true".equalsIgnoreCase(args[1])) {
-                door.fst.setPermission("bdo.use." + door.snd.getDoorUID());
-                MessageSender.sendMessage(player, "The permission §6" + door.fst.getPermission() + "§r is now required to use this door.");
+            if ("true".equalsIgnoreCase(args[2])) {
+                door.first.setPermission(Permissions.USE + "." + door.second.getDoorUID());
+                MessageSender.sendMessage(player, "The permission §6" + door.first.getPermission() + "§r is now required to use this door.");
                 return true;
             }
-            if ("false".equalsIgnoreCase(args[1])) {
-                door.fst.setInvertOpen(false);
+            if ("false".equalsIgnoreCase(args[2])) {
+                door.first.setPermission("");
                 MessageSender.sendMessage(player, "No permission is required for this door.");
                 return true;
             }
-            door.fst.setPermission(args[1]);
-            MessageSender.sendMessage(player, "The permission §6" + door.fst.getPermission() + "§r is now required to use this door.");
+            door.first.setPermission(args[2]);
+            MessageSender.sendMessage(player, "The permission §6" + door.first.getPermission() + "§r is now required to use this door.");
+            config.safeConfig();
             return true;
         }
 
         if ("list".equalsIgnoreCase(args[0])) {
+            if (!player.hasPermission(Permissions.USE)) {
+                MessageSender.sendError(player, Permissions.MESSAGE);
+                return true;
+            }
             Map<Long, TimedDoor> doors = config.getDoors();
             StringBuilder builder = new StringBuilder("Registered doors:\n");
 
@@ -239,11 +287,14 @@ public class BigDoorsOpenerCommand implements TabExecutor {
                         .append("(").append(door.getWorld().getName()).append(")\n");
             }
             MessageSender.sendMessage(player, builder.toString());
-
             return true;
         }
 
         if ("reload".equalsIgnoreCase(args[0])) {
+            if (!player.hasPermission(Permissions.RELOAD)) {
+                MessageSender.sendError(player, Permissions.MESSAGE);
+                return true;
+            }
             config.reloadConfig();
             scheduler.reload();
             plugin.onEnable();
@@ -251,15 +302,6 @@ public class BigDoorsOpenerCommand implements TabExecutor {
             return true;
         }
 
-        if ("about".equalsIgnoreCase(args[0])) {
-            PluginDescriptionFile descr = plugin.getDescription();
-            String info = "§bBig Doors opener§r by §b" + String.join(", ", descr.getAuthors()) + "§r\n"
-                    + "§bVersion§r : " + descr.getVersion() + "\n"
-                    + "§bSpigot:§r " + descr.getWebsite() + "\n"
-                    + "§bSupport:§r https://discord.gg/zRW9Vpu";
-
-            return true;
-        }
         return false;
     }
 
