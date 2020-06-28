@@ -5,8 +5,10 @@ import de.eldoria.bigdoorsopener.config.Config;
 import de.eldoria.bigdoorsopener.config.TimedDoor;
 import de.eldoria.bigdoorsopener.scheduler.DoorApproachScheduler;
 import de.eldoria.bigdoorsopener.scheduler.TimedDoorScheduler;
+import de.eldoria.bigdoorsopener.util.UpdateChecker;
 import nl.pim16aap2.bigDoors.BigDoors;
 import nl.pim16aap2.bigDoors.Commander;
+import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.plugin.Plugin;
@@ -20,7 +22,7 @@ import java.util.logging.Logger;
 public class BigDoorsOpener extends JavaPlugin {
 
     private static @NotNull Logger logger;
-    private BukkitScheduler scheduler = Bukkit.getScheduler();
+    private final BukkitScheduler scheduler = Bukkit.getScheduler();
     private Config config;
     private boolean initialized;
 
@@ -36,13 +38,18 @@ public class BigDoorsOpener extends JavaPlugin {
     public void onEnable() {
         if (!initialized) {
             logger = this.getLogger();
+            UpdateChecker.performAndNotifyUpdateCheck(this, 80805);
             ConfigurationSerialization.registerClass(TimedDoor.class, "timedDoor");
             PluginManager pm = Bukkit.getPluginManager();
             Plugin bigDoorsPlugin = pm.getPlugin("BigDoors");
             doors = (BigDoors) bigDoorsPlugin;
             commander = doors.getCommander();
             config = new Config(this);
+            if(config.isEnableMetrics()){
+                enableMetrics();
+            }
         }
+
         TimedDoorScheduler timedDoorScheduler = new TimedDoorScheduler(doors, config);
 
         if (!initialized) {
@@ -59,8 +66,18 @@ public class BigDoorsOpener extends JavaPlugin {
         initialized = true;
     }
 
+
     @NotNull
     public static Logger logger() {
         return logger;
+    }
+
+    private void enableMetrics() {
+        Metrics metrics = new Metrics(this, 8015);
+
+        logger().info("Metrics enabled. Thank you very much!");
+
+        metrics.addCustomChart(new Metrics.SimplePie("big_doors_version",
+                () -> doors.getDescription().getVersion()));
     }
 }

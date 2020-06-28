@@ -17,6 +17,7 @@ public class Config {
     private final Map<Long, TimedDoor> doors = new HashMap<>();
     private int approachRefreshRate;
     private int timedRefreshRate;
+    private boolean enableMetrics;
 
     public Config(Plugin plugin) {
         this.plugin = plugin;
@@ -38,7 +39,6 @@ public class Config {
         if (configDoors != null) {
             doors.clear();
             for (TimedDoor door : configDoors) {
-                BigDoorsOpener.logger().info("Registered door " + door.getDoorUID());
                 doors.put(door.getDoorUID(), door);
             }
         } else {
@@ -47,9 +47,11 @@ public class Config {
 
         setIfAbsent(config, "approachRefreshRate", 20);
         setIfAbsent(config, "timedRefreshRate", 20);
+        setIfAbsent(config, "enableMetrics", true);
 
         approachRefreshRate = config.getInt("approachRefreshRate", 20);
         timedRefreshRate = config.getInt("timedRefreshRate", 20);
+        enableMetrics = config.getBoolean("enableMetrics", true);
 
         BigDoorsOpener.logger().info("Config reloaded!");
     }
