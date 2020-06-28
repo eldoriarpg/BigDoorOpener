@@ -39,7 +39,6 @@ public class Config {
         if (configDoors != null) {
             doors.clear();
             for (TimedDoor door : configDoors) {
-                BigDoorsOpener.logger().info("Registered door " + door.getDoorUID());
                 doors.put(door.getDoorUID(), door);
             }
         } else {

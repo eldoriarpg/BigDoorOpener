@@ -5,6 +5,7 @@ import de.eldoria.bigdoorsopener.config.Config;
 import de.eldoria.bigdoorsopener.config.TimedDoor;
 import de.eldoria.bigdoorsopener.scheduler.DoorApproachScheduler;
 import de.eldoria.bigdoorsopener.scheduler.TimedDoorScheduler;
+import de.eldoria.bigdoorsopener.util.UpdateChecker;
 import nl.pim16aap2.bigDoors.BigDoors;
 import nl.pim16aap2.bigDoors.Commander;
 import org.bstats.bukkit.Metrics;
@@ -37,6 +38,7 @@ public class BigDoorsOpener extends JavaPlugin {
     public void onEnable() {
         if (!initialized) {
             logger = this.getLogger();
+            UpdateChecker.performAndNotifyUpdateCheck(this, 80805);
             ConfigurationSerialization.registerClass(TimedDoor.class, "timedDoor");
             PluginManager pm = Bukkit.getPluginManager();
             Plugin bigDoorsPlugin = pm.getPlugin("BigDoors");

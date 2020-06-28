@@ -76,7 +76,7 @@ public class BigDoorsOpenerCommand implements TabExecutor {
             String info = "§bBig Doors opener§r by §b" + String.join(", ", descr.getAuthors()) + "§r\n"
                     + "§bVersion§r : " + descr.getVersion() + "\n"
                     + "§bSpigot:§r " + descr.getWebsite() + "\n"
-                    + "§bSupport:§r https://discord.gg/zRW9Vpu";
+                    + "§bSupport:§r https://discord.gg/SrFg7S";
             return true;
         }
 
