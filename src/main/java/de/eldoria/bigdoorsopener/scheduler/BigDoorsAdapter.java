@@ -46,7 +46,7 @@ public abstract class BigDoorsAdapter {
         }
 
         // Make sure that this door still exists on the doors plugin.
-        return commander.getDoor(String.valueOf(door.getDoorUID()), null) != null;
+        return commander.getDoor(null, door.getDoorUID()) != null;
     }
 
     protected boolean isOpen(TimedDoor door) {

@@ -1,19 +1,22 @@
 package de.eldoria.bigdoorsopener.util;
 
+import java.util.OptionalDouble;
+import java.util.OptionalInt;
+
 public class Parser {
-    public static Integer parseInt(String s) {
+    public static OptionalInt parseInt(String s) {
         try {
-            return Integer.parseInt(s);
+            return OptionalInt.of(Integer.parseInt(s));
         } catch (NumberFormatException e) {
-            return null;
+            return OptionalInt.empty();
         }
     }
 
-    public static Double parseDouble(String s) {
+    public static OptionalDouble parseDouble(String s) {
         try {
-            return Double.parseDouble(s);
+            return OptionalDouble.of(Double.parseDouble(s));
         } catch (NumberFormatException e) {
-            return null;
+            return OptionalDouble.empty();
         }
     }
 
@@ -23,19 +26,19 @@ public class Parser {
      * @param s string to parse
      * @return time as ticks or null if value could not be parsed.
      */
-    public static Integer parseTimeToTicks(String s) {
+    public static OptionalInt parseTimeToTicks(String s) {
         String[] split = s.split(":");
-        if (split.length != 2) return null;
-        Integer hour = parseInt(split[0]);
-        Integer min = parseInt(split[1]);
+        if (split.length != 2) return OptionalInt.empty();
+        OptionalInt hour = parseInt(split[0]);
+        OptionalInt min = parseInt(split[1]);
 
-        if (hour == null || min == null) return null;
+        if (!hour.isPresent() || !min.isPresent()) return OptionalInt.empty();
 
-        int hourTicks = (hour - 6) * 1000 % 24000;
+        int hourTicks = (hour.getAsInt() - 6) * 1000 % 24000;
         if (hourTicks < 0) hourTicks = 24000 + hourTicks;
-        int minTicks = (int) Math.floor(1000 / 60d * min);
+        int minTicks = (int) Math.floor(1000 / 60d * min.getAsInt());
 
-        return hourTicks + minTicks;
+        return OptionalInt.of(hourTicks + minTicks);
     }
 
     public static String parseTicksToTime(long ticks) {

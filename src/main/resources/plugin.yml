@@ -1,7 +1,7 @@
 name: BigDoorsOpener
 description: Open and close doors automatically on certain conditions
 author: Hadde
-version: 1.1-BETA
+version: 1.1a-BETA
 main: de.eldoria.bigdoorsopener.BigDoorsOpener
 website: www.spigotmc.org/resources/80805/
 api-version: 1.15
