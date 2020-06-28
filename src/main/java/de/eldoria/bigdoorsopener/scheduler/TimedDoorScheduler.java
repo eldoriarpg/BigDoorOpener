@@ -1,7 +1,6 @@
 package de.eldoria.bigdoorsopener.scheduler;
 
 
-import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import de.eldoria.bigdoorsopener.BigDoorsOpener;
 import de.eldoria.bigdoorsopener.config.Config;
@@ -10,7 +9,6 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import nl.pim16aap2.bigDoors.BigDoors;
-import nl.pim16aap2.bigDoors.Commander;
 import org.bukkit.Bukkit;
 import org.bukkit.Server;
 import org.bukkit.World;
@@ -19,32 +17,30 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Queue;
+import java.util.function.BiFunction;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-public class TimedDoorScheduler implements Runnable {
+public class TimedDoorScheduler extends BigDoorsAdapter implements Runnable {
     private final Queue<ScheduledDoor> closeQueue = new PriorityQueue<>(Comparator.comparingLong(ScheduledDoor::getTick));
     private final Queue<ScheduledDoor> openQueue = new PriorityQueue<>(Comparator.comparingLong(ScheduledDoor::getTick));
 
     private final Server server = Bukkit.getServer();
 
-    private final Commander commander;
-    private final BigDoors bigDoors;
     private final Config config;
 
     private final Logger logger = BigDoorsOpener.logger();
 
-    public TimedDoorScheduler(Commander commander, BigDoors bigDoors, Config config) {
-        this.commander = commander;
-        this.bigDoors = bigDoors;
+    public TimedDoorScheduler(BigDoors bigDoors, Config config) {
+        super(bigDoors);
         this.config = config;
         reload();
     }
 
     @Override
     public void run() {
-        process(openQueue, closeQueue, true, s -> s.getDoor().getTicksClose());
-        process(closeQueue, openQueue, false, s -> s.getDoor().getTicksOpen());
+        process(openQueue, closeQueue, true, (s, l) -> s.getDoor().nextClose(l));
+        process(closeQueue, openQueue, false, (s, l) -> s.getDoor().nextOpen(l));
     }
 
     private ScheduledDoor savepeekQueue(Queue<ScheduledDoor> queue) {
@@ -52,31 +48,20 @@ public class TimedDoorScheduler implements Runnable {
 
         if (peek == null) return null;
 
-        // check if world of door still exists.
-        World world = server.getWorld(peek.getDoor().getWorld());
-        if (world == null) {
-            BigDoorsOpener.logger().info("World of door " + peek.getDoor().getDoorUID() + " is null. Removed.");
-            config.getDoors().remove(peek.getDoor().getDoorUID());
-            config.safeConfig();
-            queue.remove();
-            return null;
+        if (doorExists(peek.door) && peek.getDoor().getTicksClose() != peek.getDoor().getTicksOpen()) {
+            return peek;
         }
 
-        // Make sure that this door still exists on the doors plugin.
-        if (commander.getDoor(String.valueOf(peek.getDoor().getDoorUID()), null) == null) {
-            config.getDoors().remove(peek.getDoor().getDoorUID());
-            config.safeConfig();
-            return null;
-        }
-
-        return peek;
+        config.getDoors().remove(peek.getDoor().getDoorUID());
+        config.safeConfig();
+        return null;
     }
 
     /**
      * Check if a door need to be closed.
      */
     private void process(Queue<ScheduledDoor> current, Queue<ScheduledDoor> next, boolean open,
-                         Function<ScheduledDoor, Integer> nextTickEvent) {
+                         BiFunction<ScheduledDoor, Long, Long> nextTickEvent) {
         if (current.isEmpty()) return;
 
         while (!current.isEmpty()) {
@@ -97,25 +82,11 @@ public class TimedDoorScheduler implements Runnable {
             setDoorState(open, scheduledDoor);
 
             // now schedule the open again.
-            scheduledDoor.setTick(nextTime(fullTime, nextTickEvent.apply(scheduledDoor)));
+            scheduledDoor.setTick(nextTickEvent.apply(scheduledDoor, fullTime));
 
             // and add it to the open queue.
             next.add(scheduledDoor);
         }
-    }
-
-    private void setDoorState(boolean open, ScheduledDoor door) {
-        if (!bigDoors.isOpen(door.getDoor().getDoorUID()) && open) return;
-        bigDoors.toggleDoor(door.getDoor().getDoorUID());
-    }
-
-    private long nextTime(long fullTime, long nextTime) {
-        return getDiff(fullTime, nextTime) + fullTime;
-    }
-
-    private long getDiff(long fullTime, long nextTime) {
-        long currentTime = fullTime % 24000;
-        return currentTime > nextTime ? 24000 - currentTime + nextTime : nextTime - currentTime;
     }
 
     public void registerDoor(TimedDoor door) {
@@ -123,19 +94,24 @@ public class TimedDoorScheduler implements Runnable {
             return;
         }
 
-        World world = server.getWorld(door.getWorld());
-        if (world == null) {
+        if (!doorExists(door)) {
             return;
         }
+
+        if (door.getTicksClose() == door.getTicksClose()) {
+            return;
+        }
+
+        World world = server.getWorld(door.getWorld());
 
         long fullTime = world.getFullTime();
 
         if (door.shouldBeOpen(fullTime)) {
-            ScheduledDoor scheduledDoor = new ScheduledDoor(nextTime(fullTime, door.getTicksClose()), door);
+            ScheduledDoor scheduledDoor = new ScheduledDoor(door.nextClose(fullTime), door);
             setDoorState(true, scheduledDoor);
             closeQueue.add(scheduledDoor);
         } else {
-            ScheduledDoor scheduledDoor = new ScheduledDoor(door.getTicksOpen(), door);
+            ScheduledDoor scheduledDoor = new ScheduledDoor(door.nextOpen(fullTime), door);
             setDoorState(false, scheduledDoor);
             openQueue.add(scheduledDoor);
         }
@@ -162,7 +138,6 @@ public class TimedDoorScheduler implements Runnable {
         public ScheduledDoor(long tick, @NonNull TimedDoor door) {
             this.tick = tick;
             this.door = door;
-            door.getOpenRange();
         }
 
         @Override

@@ -43,7 +43,7 @@ public class BigDoorsOpener extends JavaPlugin {
             commander = doors.getCommander();
             config = new Config(this);
         }
-        TimedDoorScheduler timedDoorScheduler = new TimedDoorScheduler(commander, doors, config);
+        TimedDoorScheduler timedDoorScheduler = new TimedDoorScheduler(doors, config);
 
         if (!initialized) {
             getCommand("bigdoorsopener").setExecutor(new BigDoorsOpenerCommand(this, commander, config, timedDoorScheduler));
@@ -53,7 +53,7 @@ public class BigDoorsOpener extends JavaPlugin {
             scheduler.cancelTasks(this);
         }
 
-        scheduler.scheduleSyncRepeatingTask(this, new DoorApproachScheduler(config, doors, commander), 100, config.getApproachRefreshRate());
+        scheduler.scheduleSyncRepeatingTask(this, new DoorApproachScheduler(config, doors), 100, config.getApproachRefreshRate());
         scheduler.scheduleSyncRepeatingTask(this, timedDoorScheduler, 100, config.getTimedRefreshRate());
 
         initialized = true;

@@ -4,7 +4,6 @@ import de.eldoria.bigdoorsopener.BigDoorsOpener;
 import de.eldoria.bigdoorsopener.config.Config;
 import de.eldoria.bigdoorsopener.config.TimedDoor;
 import nl.pim16aap2.bigDoors.BigDoors;
-import nl.pim16aap2.bigDoors.Commander;
 import org.bukkit.Bukkit;
 import org.bukkit.Server;
 import org.bukkit.World;
@@ -18,17 +17,14 @@ import java.util.Set;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-public class DoorApproachScheduler implements Runnable {
+public class DoorApproachScheduler extends BigDoorsAdapter implements Runnable {
     private final Server server = Bukkit.getServer();
     private final Config config;
-    private final BigDoors doors;
-    private final Commander commander;
     private Logger logger = BigDoorsOpener.logger();
 
-    public DoorApproachScheduler(Config config, BigDoors doors, Commander commander) {
+    public DoorApproachScheduler(Config config, BigDoors doors) {
+        super(doors);
         this.config = config;
-        this.doors = doors;
-        this.commander = commander;
     }
 
     @Override
@@ -50,9 +46,10 @@ public class DoorApproachScheduler implements Runnable {
                 }
 
                 // Check if door is in range of player.
-                if (quickNearCheck(playerPos, door.getPosition(), door.getOpenRange())) {
-                    openDoors.add(door);
-                }
+                if (!quickNearCheck(playerPos, door.getPosition(), door.getOpenRange())) continue;
+                if (playerPos.distanceSquared(door.getPosition()) > Math.pow(door.getOpenRange(), 2)) continue;
+                if (!door.canOpen(player)) return;
+                openDoors.add(door);
             }
         }
 
@@ -62,28 +59,24 @@ public class DoorApproachScheduler implements Runnable {
 
         // open closed doors
         for (TimedDoor door : openDoors) {
-            if (commander.getDoor(String.valueOf(door.getDoorUID()), null) == null) {
+            if (!doorExists(door)) {
                 config.getDoors().remove(door.getDoorUID());
                 config.safeConfig();
                 continue;
             }
-            if (!doors.isOpen(door.getDoorUID())) continue;
-            doors.toggleDoor(door.getDoorUID());
+            setDoorState(true, door);
         }
 
         // close open doors if they should be closed based on time.
         for (TimedDoor door : closeDoors) {
-            if (commander.getDoor(String.valueOf(door.getDoorUID()), null) == null) {
+            if (!doorExists(door)) {
                 config.getDoors().remove(door.getDoorUID());
                 config.safeConfig();
                 continue;
             }
             //if (doors.isOpen(door.getDoorUID())) continue;
             World world = server.getWorld(door.getWorld());
-            if (world == null) continue;
-            if (!door.shouldBeOpen(world.getFullTime()) && !doors.isOpen(door.getDoorUID())) {
-                doors.toggleDoor(door.getDoorUID());
-            }
+            setDoorState(door.shouldBeOpen(world.getFullTime()), door);
         }
     }
 
