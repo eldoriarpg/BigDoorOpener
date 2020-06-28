@@ -10,7 +10,6 @@ depend: [BigDoors]
 commands:
   bigdoorsopener:
     description: open doors
-    usage: "setTime <door> <openAt> <closeAt> | setRange <door> <range> | unregisterDoor <door> | doorInfo <door>| reload"
+    usage: "setTimed <...> | setClosed <...> | setRange <...> | invertOpen <...> | requiresPermission <...> | unregister <...> | info <...> | list | reload | about"
     aliases:
       - bdo
-    permission: "bdo.use"
