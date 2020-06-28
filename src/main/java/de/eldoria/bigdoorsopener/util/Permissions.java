@@ -1,4 +1,4 @@
-package de.eldoria.bigdoorsopener;
+package de.eldoria.bigdoorsopener.util;
 
 public class Permissions {
     public static final String MESSAGE = "You do not have the permission to do this.";
