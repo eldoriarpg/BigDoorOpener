@@ -30,13 +30,13 @@ It will open when a player approaches it. [See permissions to change this.](#Doo
 
 *You can enter a time (E.g. 6:30), or a tick amount (E.g. 500) as time.*
 
-![timed door](http://chojo.u.catgirlsare.sexy/OJikflxg.gif)
+![timed door](http://chojo.u.catgirlsare.sexy/vtvJ5gPK.gif)
 
 #### Create a closed door
 `/bdo setClosed <doorId>`  
 This creates a closed door which only opens on player approach.
 
-![closed door](http://chojo.u.catgirlsare.sexy/vtvJ5gPK.gif)
+![closed door](http://chojo.u.catgirlsare.sexy/5g-LT7CK.gif)
 
 #### Set the approach range
 `/bdo setRange <doorId> <range>`  
