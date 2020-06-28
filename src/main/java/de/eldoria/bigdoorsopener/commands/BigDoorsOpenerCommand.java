@@ -1,7 +1,7 @@
 package de.eldoria.bigdoorsopener.commands;
 
 import de.eldoria.bigdoorsopener.BigDoorsOpener;
-import de.eldoria.bigdoorsopener.Permissions;
+import de.eldoria.bigdoorsopener.util.Permissions;
 import de.eldoria.bigdoorsopener.config.Config;
 import de.eldoria.bigdoorsopener.config.TimedDoor;
 import de.eldoria.bigdoorsopener.scheduler.TimedDoorScheduler;
