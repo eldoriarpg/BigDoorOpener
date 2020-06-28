@@ -6,6 +6,7 @@ import de.eldoria.bigdoorsopener.util.serialization.TypeResolvingMap;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
+import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 
 import java.util.Map;
@@ -25,6 +26,11 @@ public class TimedDoor implements ConfigurationSerializable {
      * Mass center of the door.
      */
     private final Vector position;
+
+    /**
+     * Permission which is needed for the gate
+     */
+    private String permission = "";
     /**
      * The ticks from when to door should be closed
      */
@@ -41,7 +47,7 @@ public class TimedDoor implements ConfigurationSerializable {
     /**
      * Represents the current required state of the door.
      */
-    private boolean closed;
+    private boolean invertOpen = false;
 
     public TimedDoor(long doorUID, String world, Vector position) {
         this.doorUID = doorUID;
@@ -62,11 +68,14 @@ public class TimedDoor implements ConfigurationSerializable {
     public Map<String, Object> serialize() {
         return SerializationUtil.newBuilder()
                 .add("doorUID", String.valueOf(doorUID))
-                .add("world", world.toString())
+                .add("world", world)
                 .add("position", position)
+                .add("permission", permission)
                 .add("ticksClose", ticksClose)
                 .add("ticksOpen", ticksOpen)
-                .add("range", openRange).build();
+                .add("range", openRange)
+                .add("invertOpen", invertOpen)
+                .build();
     }
 
     public static TimedDoor deserialize(Map<String, Object> map) {
@@ -81,17 +90,17 @@ public class TimedDoor implements ConfigurationSerializable {
     }
 
     public boolean shouldBeOpen(long fulltime) {
+        // This is a permanent closed door.
+        if (isPermanentlyClosed()) {
+            return false;
+        }
+
         long openInTicks = getDiff(fulltime, getTicksOpen());
         long closedInTicks = getDiff(fulltime, getTicksClose());
         if (openInTicks > closedInTicks) {
             return true;
         }
         return false;
-    }
-
-    private long getDiff(long fullTime, long nextTime) {
-        long currentTime = fullTime % 24000;
-        return currentTime > nextTime ? 24000 - currentTime + nextTime : nextTime - currentTime;
     }
 
     @Override
@@ -105,5 +114,41 @@ public class TimedDoor implements ConfigurationSerializable {
     @Override
     public int hashCode() {
         return Objects.hashCode(doorUID);
+    }
+
+    public boolean openInverted(boolean open) {
+        if (invertOpen) return !open;
+        return open;
+    }
+
+    public long nextClose(long fullTime) {
+        return nextTime(fullTime, ticksClose);
+    }
+
+    public long nextOpen(long fullTime) {
+        return nextTime(fullTime, ticksOpen);
+    }
+
+    private long nextTime(long fullTime, long nextTime) {
+        return getDiff(fullTime, nextTime) + fullTime;
+    }
+
+    private long getDiff(long fullTime, long nextTime) {
+        long currentTime = fullTime % 24000;
+        return currentTime > nextTime ? 24000 - currentTime + nextTime : nextTime - currentTime;
+    }
+
+    public boolean canOpen(Player player) {
+        if (permission.isEmpty()) return true;
+        return player.hasPermission(permission);
+    }
+
+    public boolean isPermanentlyClosed() {
+        return ticksClose == ticksOpen;
+    }
+
+    public void setTicks(int open, int close) {
+        ticksOpen = open;
+        ticksClose = close;
     }
 }
