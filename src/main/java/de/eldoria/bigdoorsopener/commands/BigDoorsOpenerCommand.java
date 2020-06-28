@@ -1,5 +1,6 @@
 package de.eldoria.bigdoorsopener.commands;
 
+import com.sun.tools.javac.util.Pair;
 import de.eldoria.bigdoorsopener.BigDoorsOpener;
 import de.eldoria.bigdoorsopener.config.Config;
 import de.eldoria.bigdoorsopener.config.TimedDoor;
@@ -15,10 +16,13 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.util.Vector;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class BigDoorsOpenerCommand implements TabExecutor {
@@ -39,16 +43,52 @@ public class BigDoorsOpenerCommand implements TabExecutor {
         if (!(sender instanceof Player)) return false;
         Player player = (Player) sender;
 
-        if (args.length == 0) return false;
-        // bdo setTime <door> <tick open> <tick close>
-        // bdo setAutoOpenRange <door> <range in blocks>
-        if ("setTime".equalsIgnoreCase(args[0])) {
-            if (args.length != 4) return false;
-            Door door = commander.getDoor(args[1], null);
+        if (args.length == 0) {
+            MessageSender.sendMessage(player,
+                    "Help for §6BigDoorOpener§r\n"
+                            + "§6setClosed <doorId>\n"
+                            + "  §rSet a door as permanent closed. It will only open on player approach.\n"
+                            + "§6setTimed <doorId> <open> <close>\n"
+                            + "  §rSet a door as timed. It will be open between open and close time. However it will open on player approach if closed. Use a permission to avoid this."
+                            + "§6setRange <doorId> <range>"
+                            + "  §rSet the approach range of a door. The range is spherical around the mass center of the door. Default is 10."
+                            + "§6info <doorId>"
+                            + "  §rGet information about this door."
+                            + "§6unregister <doorId>"
+                            + "  §rUnregister a door."
+                            + "§6invertOpen <doorId> <true|false>"
+                            + "  §rInvert the state of the door. Useful if you created it in a open state."
+                            + "§6requiresPermission <doorId> <true|false|permission>"
+                            + "  §rA gate will require a permission to open on player approach."
+                            + "§6list"
+                            + "  §rGet a list of all registered doors."
+                            + "§6reload"
+                            + "  §rThis will reload the plugin/config and force the doors in the correct state."
+                            + "§6about"
+                            + "  §rInformation about this plugin");
+            return true;
+        }
+        if ("setClosed".equalsIgnoreCase(args[0])) {
+            if (args.length == 2) return false;
+            Door door = getDoor(args[1], player);
             if (door == null) {
-                MessageSender.sendError(player, "Door not found.");
                 return true;
             }
+
+            if (!saveDoor(door, player, 0, 0)) {
+                MessageSender.sendMessage(player, "Door §6" + door.getName() + "§r is now permanent closed."
+                        + "It will only open on approach of a player.");
+            }
+            return true;
+        }
+
+        if ("setTimed".equalsIgnoreCase(args[0])) {
+            Door door = getDoor(args[1], player);
+            if (door == null) {
+                return true;
+            }
+
+            if (args.length != 4) return false;
             Integer open = Parser.parseInt(args[2]);
             Integer close = Parser.parseInt(args[3]);
 
@@ -59,39 +99,25 @@ public class BigDoorsOpenerCommand implements TabExecutor {
                     MessageSender.sendError(player, "Could not parse time.");
                     return true;
                 }
+
+                if (open > 24000 || open < 0 || close > 24000 || close < 0) {
+                    MessageSender.sendError(player, "Invalid time.");
+                    return true;
+                }
             }
 
-            World world = door.getWorld();
-            if (world == null) {
-                MessageSender.sendError(player, "The world of this door is not loaded.");
-                return true;
+            if (saveDoor(door, player, open, close)) {
+                MessageSender.sendMessage(player, "Time for door §6" + door.getName() + "§r set.\n"
+                        + "Open at: §6" + Parser.parseTicksToTime(open) + "§r\n"
+                        + "Close at: §6" + Parser.parseTicksToTime(close));
             }
-            Location maximum = door.getMaximum();
-            Location minimum = door.getMinimum();
-            Vector vector = new Vector(
-                    (maximum.getX() + minimum.getX()) / 2,
-                    (maximum.getY() + minimum.getY()) / 2,
-                    (maximum.getZ() + minimum.getZ()) / 2);
-
-            TimedDoor timedDoor = config.getDoors().computeIfAbsent(door.getDoorUID(),
-                    d -> new TimedDoor(d, world.getName(), vector));
-            timedDoor.setTicksOpen(open);
-            timedDoor.setTicksClose(close);
-            config.safeConfig();
-
-            scheduler.registerDoor(timedDoor);
-
-            MessageSender.sendMessage(player, "Time for door §6" + door.getName() + "§r set.\n"
-                    + "Open at: §6" + Parser.parseTicksToTime(open) + "§r\n"
-                    + "Close at: §6" + Parser.parseTicksToTime(close));
             return true;
         }
 
         if ("setRange".equalsIgnoreCase(args[0])) {
             if (args.length != 3) return false;
-            Door door = commander.getDoor(args[1], null);
+            Door door = getDoor(args[1], player);
             if (door == null) {
-                MessageSender.sendError(player, "Door not found.");
                 return true;
             }
             Double range = Parser.parseDouble(args[2]);
@@ -100,7 +126,7 @@ public class BigDoorsOpenerCommand implements TabExecutor {
                 return true;
             }
             if (!config.getDoors().containsKey(door.getDoorUID())) {
-                MessageSender.sendError(player, "Please set the time first.");
+                MessageSender.sendError(player, "Please set the door timed or closed first.");
                 return true;
             }
 
@@ -117,45 +143,103 @@ public class BigDoorsOpenerCommand implements TabExecutor {
             return true;
         }
 
-        if ("doorInfo".equalsIgnoreCase(args[0])) {
+        if ("info".equalsIgnoreCase(args[0])) {
             if (args.length != 2) return false;
-            Door door = commander.getDoor(args[1], null);
+            Pair<TimedDoor, Door> door = getTimedDoor(args[1], player);
             if (door == null) {
-                MessageSender.sendError(player, "Door not found.");
                 return true;
             }
-            TimedDoor timedDoor = config.getDoors().get(door.getDoorUID());
-            if (timedDoor == null) {
-                MessageSender.sendMessage(player, "This door is not registered.");
-                return true;
+
+            TimedDoor d = door.fst;
+            StringBuilder builder = new StringBuilder("§6" + door.snd.getName() + "§r Info:\n")
+                    .append("§rRange: §6").append(d.getOpenRange()).append("\n");
+            if (d.isPermanentlyClosed()) {
+                builder.append("§6Permanently closed.\n");
+            } else {
+                builder.append("§rOpen at: §6").append(Parser.parseTicksToTime(d.getTicksOpen())).append("\n")
+                        .append("§rClose at: §6").append(Parser.parseTicksToTime(d.getTicksClose())).append("\n");
             }
-            MessageSender.sendMessage(player,
-                    door.getName() + " Info:"
-                            + "Range: " + timedDoor.getOpenRange() + "\n"
-                            + "Open at: " + Parser.parseTicksToTime(timedDoor.getTicksOpen()) + "\n"
-                            + "Close at: " + Parser.parseTicksToTime(timedDoor.getTicksClose()) + "\n"
-            );
+            if (d.getPermission().isEmpty()) {
+                builder.append("§rPermission: §6none").append("\n");
+            } else {
+                builder.append("§rPermission: §6").append(d.getPermission()).append("\n");
+            }
+            builder.append("§rInverted open: §6").append(d.isInvertOpen());
+
+            MessageSender.sendMessage(player, builder.toString());
             return true;
         }
 
-        if ("unregisterDoor".equalsIgnoreCase(args[0])) {
+        if ("unregister".equalsIgnoreCase(args[0])) {
             if (args.length != 2) return false;
-            Door door = commander.getDoor(args[1], null);
-
+            Pair<TimedDoor, Door> door = getTimedDoor(args[1], player);
 
             if (door == null) {
-                MessageSender.sendError(player, "Door not found.");
                 return true;
             }
 
-            if (!config.getDoors().containsKey(door.getDoorUID())) {
-                MessageSender.sendError(player, "This door is not registered.");
-            }
-
-            config.getDoors().remove(door.getDoorUID());
+            config.getDoors().remove(door.snd.getDoorUID());
             config.safeConfig();
 
-            MessageSender.sendMessage(player, "Unregistered door §6" + door.getName() + "§r.");
+            MessageSender.sendMessage(player, "Unregistered door §6" + door.snd.getName() + "§r.");
+            return true;
+        }
+
+        if ("invertOpen".equalsIgnoreCase(args[0])) {
+            if (args.length != 3) return false;
+            Pair<TimedDoor, Door> door = getTimedDoor(args[1], null);
+            if (door == null) {
+                return true;
+            }
+
+            if ("true".equalsIgnoreCase(args[1])) {
+                door.fst.setInvertOpen(true);
+                MessageSender.sendMessage(player, "Open state is now inverted.");
+                return true;
+            }
+            if ("false".equalsIgnoreCase(args[1])) {
+                door.fst.setInvertOpen(false);
+                MessageSender.sendMessage(player, "Open state is not inverted.");
+                return true;
+            }
+            MessageSender.sendError(player, "Invalid input. §2True§r or §4False§r.");
+            return true;
+        }
+
+        if ("requiresPermission".equalsIgnoreCase(args[0])) {
+            if (args.length != 2) return false;
+            Pair<TimedDoor, Door> door = getTimedDoor(args[1], null);
+            if (door == null) {
+                return true;
+            }
+
+            if ("true".equalsIgnoreCase(args[1])) {
+                door.fst.setPermission("bdo.use." + door.snd.getDoorUID());
+                MessageSender.sendMessage(player, "The permission §6" + door.fst.getPermission() + "§r is now required to use this door.");
+                return true;
+            }
+            if ("false".equalsIgnoreCase(args[1])) {
+                door.fst.setInvertOpen(false);
+                MessageSender.sendMessage(player, "No permission is required for this door.");
+                return true;
+            }
+            door.fst.setPermission(args[1]);
+            MessageSender.sendMessage(player, "The permission §6" + door.fst.getPermission() + "§r is now required to use this door.");
+            return true;
+        }
+
+        if ("list".equalsIgnoreCase(args[0])) {
+            Map<Long, TimedDoor> doors = config.getDoors();
+            StringBuilder builder = new StringBuilder("Registered doors:\n");
+
+            for (TimedDoor value : doors.values()) {
+                Door door = commander.getDoor(String.valueOf(value.getDoorUID()), null);
+                builder.append(value.getDoorUID()).append(" | ")
+                        .append(door.getName())
+                        .append("(").append(door.getWorld().getName()).append(")\n");
+            }
+            MessageSender.sendMessage(player, builder.toString());
+
             return true;
         }
 
@@ -166,15 +250,69 @@ public class BigDoorsOpenerCommand implements TabExecutor {
             MessageSender.sendMessage(player, "Reload complete.");
             return true;
         }
+
+        if ("about".equalsIgnoreCase(args[0])) {
+            PluginDescriptionFile descr = plugin.getDescription();
+            String info = "§bBig Doors opener§r by §b" + String.join(", ", descr.getAuthors()) + "§r\n"
+                    + "§bVersion§r : " + descr.getVersion() + "\n"
+                    + "§bSpigot:§r " + descr.getWebsite() + "\n"
+                    + "§bSupport:§r https://discord.gg/zRW9Vpu";
+
+            return true;
+        }
         return false;
+    }
+
+    private boolean saveDoor(Door door, Player player, int open, int close) {
+        World world = door.getWorld();
+        if (world == null) {
+            MessageSender.sendError(player, "The world of this door is not loaded.");
+            return false;
+        }
+        Location maximum = door.getMaximum();
+        Location minimum = door.getMinimum();
+        Vector vector = new Vector(
+                (maximum.getX() + minimum.getX()) / 2,
+                (maximum.getY() + minimum.getY()) / 2,
+                (maximum.getZ() + minimum.getZ()) / 2);
+
+        TimedDoor timedDoor = config.getDoors().computeIfAbsent(door.getDoorUID(),
+                d -> new TimedDoor(d, world.getName(), vector));
+        timedDoor.setTicks(open, close);
+        config.safeConfig();
+
+        scheduler.registerDoor(timedDoor);
+        return true;
+    }
+
+    private Pair<TimedDoor, Door> getTimedDoor(String doorUID, Player player) {
+        Door door = getDoor(doorUID, player);
+        if (door == null) {
+            return null;
+        }
+        TimedDoor timedDoor = config.getDoors().get(door.getDoorUID());
+        if (timedDoor == null) {
+            MessageSender.sendMessage(player, "This door is not registered.");
+            return null;
+        }
+        return new Pair<>(timedDoor, door);
+    }
+
+    private Door getDoor(String doorUID, Player player) {
+        Door door = commander.getDoor(doorUID, null);
+        if (door == null) {
+            MessageSender.sendError(player, "Door not found.");
+            return null;
+        }
+        return door;
     }
 
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
-        if ("setTime".equalsIgnoreCase(args[0])) {
+        if ("setTimed".equalsIgnoreCase(args[0])) {
             if (args.length == 2) {
-                return Collections.singletonList("<door name>");
+                return Collections.singletonList("<doorId>");
             }
             if (args.length == 3) {
                 return Collections.singletonList("<open in ticks (0-24000) or time (HH:mm)>");
@@ -185,9 +323,16 @@ public class BigDoorsOpenerCommand implements TabExecutor {
             return Collections.emptyList();
         }
 
+        if ("setClosed".equalsIgnoreCase(args[0])) {
+            if (args.length == 2) {
+                return Collections.singletonList("<doorId>");
+            }
+            return Collections.emptyList();
+        }
+
         if ("setRange".equalsIgnoreCase(args[0])) {
             if (args.length == 2) {
-                return Collections.singletonList("<door name>");
+                return Collections.singletonList("<doorId>");
             }
             if (args.length == 3) {
                 return Collections.singletonList("<range 0-100, 0 to disable>");
@@ -195,16 +340,36 @@ public class BigDoorsOpenerCommand implements TabExecutor {
             return Collections.emptyList();
         }
 
-        if ("doorInfo".equalsIgnoreCase(args[0])) {
+        if ("info".equalsIgnoreCase(args[0])) {
             if (args.length == 2) {
-                return Collections.singletonList("<door name>");
+                return Collections.singletonList("<doorId>");
             }
             return Collections.emptyList();
         }
 
-        if ("unregisterDoor".equalsIgnoreCase(args[0])) {
+        if ("unregister".equalsIgnoreCase(args[0])) {
             if (args.length == 2) {
-                return Collections.singletonList("<door name>");
+                return Collections.singletonList("<doorId>");
+            }
+            return Collections.emptyList();
+        }
+
+        if ("invertOpen".equalsIgnoreCase(args[0])) {
+            if (args.length == 2) {
+                return Collections.singletonList("<doorId>");
+            }
+            if (args.length == 3) {
+                return Arrays.asList("true", "false");
+            }
+            return Collections.emptyList();
+        }
+
+        if ("requiresPermission".equalsIgnoreCase(args[0])) {
+            if (args.length == 2) {
+                return Collections.singletonList("<doorId>");
+            }
+            if (args.length == 3) {
+                return Arrays.asList("true", "false", "own.permission.node");
             }
             return Collections.emptyList();
         }
@@ -213,9 +378,8 @@ public class BigDoorsOpenerCommand implements TabExecutor {
             return Collections.emptyList();
         }
 
-
         return ArrayUtil.startingWithInArray(args[0],
-                new String[] {"setTime", "setRange", "unregisterDoor", "doorInfo", "reload"})
+                new String[] {"setTimed", "setClosed", "setRange", "unregister", "info", "invertOpen", "list", "requiresPermission", "reload"})
                 .collect(Collectors.toList());
     }
 }
