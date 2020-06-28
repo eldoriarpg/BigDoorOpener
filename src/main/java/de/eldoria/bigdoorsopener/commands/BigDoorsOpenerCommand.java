@@ -1,7 +1,6 @@
 package de.eldoria.bigdoorsopener.commands;
 
 import de.eldoria.bigdoorsopener.BigDoorsOpener;
-import de.eldoria.bigdoorsopener.util.Permissions;
 import de.eldoria.bigdoorsopener.config.Config;
 import de.eldoria.bigdoorsopener.config.TimedDoor;
 import de.eldoria.bigdoorsopener.scheduler.TimedDoorScheduler;
@@ -9,6 +8,7 @@ import de.eldoria.bigdoorsopener.util.ArrayUtil;
 import de.eldoria.bigdoorsopener.util.MessageSender;
 import de.eldoria.bigdoorsopener.util.Pair;
 import de.eldoria.bigdoorsopener.util.Parser;
+import de.eldoria.bigdoorsopener.util.Permissions;
 import nl.pim16aap2.bigDoors.Commander;
 import nl.pim16aap2.bigDoors.Door;
 import org.bukkit.Location;
@@ -24,6 +24,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.OptionalDouble;
+import java.util.OptionalInt;
 import java.util.stream.Collectors;
 
 public class BigDoorsOpenerCommand implements TabExecutor {
@@ -80,6 +82,9 @@ public class BigDoorsOpenerCommand implements TabExecutor {
             return true;
         }
 
+        // TODO: Weather based door. Closes when it rains or when sky is clear.
+        // TODO: Key door. Define a item which is needed to open this door, when in range. Item can be consumed.
+
 
         if ("setClosed".equalsIgnoreCase(args[0])) {
             if (!player.hasPermission(Permissions.USE)) {
@@ -112,31 +117,36 @@ public class BigDoorsOpenerCommand implements TabExecutor {
             }
 
             if (args.length != 4) return false;
-            Integer open = Parser.parseInt(args[2]);
-            Integer close = Parser.parseInt(args[3]);
 
-            if (open == null || close == null) {
+            OptionalInt open = Parser.parseInt(args[2]);
+            OptionalInt close = Parser.parseInt(args[3]);
+
+            if (!open.isPresent() || !close.isPresent()) {
                 open = Parser.parseTimeToTicks(args[2]);
                 close = Parser.parseTimeToTicks(args[3]);
-                if (open == null || close == null) {
+                if (!open.isPresent() || !close.isPresent()) {
                     MessageSender.sendError(player, "Could not parse time.");
                     return true;
                 }
 
-                if (open > 24000 || open < 0 || close > 24000 || close < 0) {
+                if (open.getAsInt() > 24000 || open.getAsInt() < 0
+                        || close.getAsInt() > 24000 || close.getAsInt() < 0) {
                     MessageSender.sendError(player, "Invalid time.");
                     return true;
                 }
             }
 
-            if (saveDoor(door, player, open, close)) {
+            if (saveDoor(door, player, open.getAsInt(), close.getAsInt())) {
                 MessageSender.sendMessage(player, "Time for door §6" + door.getName() + "§r set.\n"
-                        + "Open at: §6" + Parser.parseTicksToTime(open) + "§r\n"
-                        + "Close at: §6" + Parser.parseTicksToTime(close));
+                        + "Open at: §6" + Parser.parseTicksToTime(open.getAsInt()) + "§r\n"
+                        + "Close at: §6" + Parser.parseTicksToTime(close.getAsInt()));
             }
             return true;
         }
 
+        // TODO: Enter range also as x,y,z range
+        // TODO: Enter region version: (CUBOID, ELIPSOID)
+        // TODO: Enter World Guard region?
         if ("setRange".equalsIgnoreCase(args[0])) {
             if (!player.hasPermission(Permissions.USE)) {
                 MessageSender.sendError(player, Permissions.MESSAGE);
@@ -147,8 +157,8 @@ public class BigDoorsOpenerCommand implements TabExecutor {
             if (door == null) {
                 return true;
             }
-            Double range = Parser.parseDouble(args[2]);
-            if (range == null) {
+            OptionalDouble range = Parser.parseDouble(args[2]);
+            if (!range.isPresent()) {
                 MessageSender.sendError(player, "Could not parse range.");
                 return true;
             }
@@ -157,13 +167,13 @@ public class BigDoorsOpenerCommand implements TabExecutor {
                 return true;
             }
 
-            if (range > 100 || range < 0) {
+            if (range.getAsDouble() > 100 || range.getAsDouble() < 0) {
                 MessageSender.sendError(player, "Invalid range");
                 return true;
             }
 
             TimedDoor timedDoor = config.getDoors().get(door.getDoorUID());
-            timedDoor.setOpenRange(range);
+            timedDoor.setOpenRange(range.getAsDouble());
             config.safeConfig();
 
             MessageSender.sendMessage(player, "Set range of door §6" + door.getName() + "§r to §6" + range + "§r.");
@@ -226,7 +236,7 @@ public class BigDoorsOpenerCommand implements TabExecutor {
                 return true;
             }
             if (args.length != 3) return false;
-            Pair<TimedDoor, Door> door = getTimedDoor(args[1], null);
+            Pair<TimedDoor, Door> door = getTimedDoor(args[1], player);
             if (door == null) {
                 return true;
             }
@@ -251,7 +261,7 @@ public class BigDoorsOpenerCommand implements TabExecutor {
                 return true;
             }
             if (args.length != 3) return false;
-            Pair<TimedDoor, Door> door = getTimedDoor(args[1], null);
+            Pair<TimedDoor, Door> door = getTimedDoor(args[1], player);
             if (door == null) {
                 return true;
             }

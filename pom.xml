@@ -6,7 +6,7 @@
 
     <groupId>de.eldoria</groupId>
     <artifactId>BigDoorsOpener</artifactId>
-    <version>1.1-BETA</version>
+    <version>1.1a-BETA</version>
     <build>
         <plugins>
             <plugin>
