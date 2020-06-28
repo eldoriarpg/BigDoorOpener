@@ -34,11 +34,11 @@ public class TimedDoor implements ConfigurationSerializable {
     /**
      * The ticks from when to door should be closed
      */
-    private int ticksClose;
+    private int ticksClose = 0;
     /**
      * The ticks from when the door should be open.
      */
-    private int ticksOpen;
+    private int ticksOpen = 14000;
     /**
      * If a player is in this range the door will open.
      * If not the door will be closed if open.
@@ -55,13 +55,13 @@ public class TimedDoor implements ConfigurationSerializable {
         this.position = position;
     }
 
-    public TimedDoor(long doorUID, String world, Vector position, int ticksClose, int ticksOpen, double openRange) {
-        this.doorUID = doorUID;
-        this.world = world;
-        this.position = position;
+    public TimedDoor(long doorUID, String world, Vector position, String permission, int ticksClose, int ticksOpen, double openRange, boolean invertOpen) {
+        this(doorUID, world, position);
+        this.permission = permission;
         this.ticksClose = ticksClose;
         this.ticksOpen = ticksOpen;
         this.openRange = openRange;
+        this.invertOpen = invertOpen;
     }
 
     @Override
@@ -83,10 +83,12 @@ public class TimedDoor implements ConfigurationSerializable {
         long doorUID = Long.parseLong(resolvingMap.getValue("doorUID"));
         String world = resolvingMap.getValue("world");
         Vector position = resolvingMap.getValue("position");
+        String permission = resolvingMap.getValue("permission");
         int ticksClose = resolvingMap.getValue("ticksClose");
         int ticksOpen = resolvingMap.getValue("ticksOpen");
         double range = resolvingMap.getValue("range");
-        return new TimedDoor(doorUID, world, position, ticksClose, ticksOpen, range);
+        boolean invertOpen = resolvingMap.getValue("invertOpen");
+        return new TimedDoor(doorUID, world, position,permission, ticksClose, ticksOpen, range, invertOpen);
     }
 
     public boolean shouldBeOpen(long fulltime) {

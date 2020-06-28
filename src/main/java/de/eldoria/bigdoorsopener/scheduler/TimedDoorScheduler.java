@@ -43,7 +43,7 @@ public class TimedDoorScheduler extends BigDoorsAdapter implements Runnable {
         process(closeQueue, openQueue, false, (s, l) -> s.getDoor().nextOpen(l));
     }
 
-    private ScheduledDoor savepeekQueue(Queue<ScheduledDoor> queue) {
+    private ScheduledDoor savePeekQueue(Queue<ScheduledDoor> queue) {
         ScheduledDoor peek = queue.peek();
 
         if (peek == null) return null;
@@ -65,7 +65,7 @@ public class TimedDoorScheduler extends BigDoorsAdapter implements Runnable {
         if (current.isEmpty()) return;
 
         while (!current.isEmpty()) {
-            ScheduledDoor scheduledDoor = savepeekQueue(current);
+            ScheduledDoor scheduledDoor = savePeekQueue(current);
             if (scheduledDoor == null) continue;
 
             long fullTime = server.getWorld(scheduledDoor.getDoor().getWorld()).getFullTime();

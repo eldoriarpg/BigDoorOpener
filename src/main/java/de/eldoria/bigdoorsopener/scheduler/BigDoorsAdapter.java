@@ -23,8 +23,12 @@ public abstract class BigDoorsAdapter {
     protected void setDoorState(boolean open, TimedDoorScheduler.ScheduledDoor door) {
         setDoorState(open, door.getDoor());
     }
+
     protected void setDoorState(boolean open, TimedDoor door) {
-        if (isOpen(door) && open) return;
+        if (commander.isDoorBusy(door.getDoorUID())) {
+            return;
+        }
+        if (isOpen(door) == open) return;
         bigDoors.toggleDoor(door.getDoorUID());
     }
 

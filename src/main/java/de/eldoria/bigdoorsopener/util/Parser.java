@@ -41,7 +41,7 @@ public class Parser {
     public static String parseTicksToTime(long ticks) {
         long time = ticks % 24000;
         int hours = ((int) Math.floor(time / 1000d) + 6) % 24;
-        int min = (int) Math.floor((time % 1000) / (1000 / 60d));
+        int min = (int) Math.floor(((time % 1000) + 1) / (1000 / 60d));
         if (min < 10) return hours + ":0" + min;
         return hours + ":" + min;
     }

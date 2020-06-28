@@ -16,7 +16,7 @@ Simply drop the jar in your plugin folder.
 
 Make suer that you have [Big Doors](https://www.spigotmc.org/resources/big-doors.58669/) installed as well.
 
-# Ingame setup
+# Commands
 
 Every door created will have a range of 10 blocks to open.
 
@@ -73,3 +73,9 @@ This will reload the plugin with the config.
 #### About
 `/bdo about`
 Some information about the plugin.
+
+# Permissions
+
+To use this plugin you will need `bdo.use`
+
+To reload this plugin you wil need `bdo.reload`
