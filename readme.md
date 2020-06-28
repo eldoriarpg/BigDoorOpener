@@ -36,7 +36,7 @@ It will open when a player approaches it. [See permissions to change this.](#Doo
 `/bdo setClosed <doorId>`  
 This creates a closed door which only opens on player approach.
 
-![closed door](http://chojo.u.catgirlsare.sexy/bJ9SrW-a.gif)
+![closed door](http://chojo.u.catgirlsare.sexy/2aZr_Ngq.gif)
 
 #### Set the approach range
 `/bdo setRange <doorId> <range>`  
