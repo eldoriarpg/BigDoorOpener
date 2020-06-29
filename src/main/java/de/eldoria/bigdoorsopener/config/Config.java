@@ -18,7 +18,6 @@ public class Config {
     private int approachRefreshRate;
     private int timedRefreshRate;
     private boolean enableMetrics;
-    private String language;
 
     public Config(Plugin plugin) {
         this.plugin = plugin;
@@ -49,14 +48,10 @@ public class Config {
         setIfAbsent(config, "approachRefreshRate", 20);
         setIfAbsent(config, "timedRefreshRate", 20);
         setIfAbsent(config, "enableMetrics", true);
-        setIfAbsent(config, "language", "en_US");
-
-        plugin.saveConfig();
 
         approachRefreshRate = config.getInt("approachRefreshRate", 20);
         timedRefreshRate = config.getInt("timedRefreshRate", 20);
         enableMetrics = config.getBoolean("enableMetrics", true);
-        language = config.getString("language", "en_US");
 
         BigDoorsOpener.logger().info("Config reloaded!");
     }
