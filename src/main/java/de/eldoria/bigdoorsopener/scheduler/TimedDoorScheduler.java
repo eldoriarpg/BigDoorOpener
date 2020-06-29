@@ -5,6 +5,7 @@ import com.google.common.base.Objects;
 import de.eldoria.bigdoorsopener.BigDoorsOpener;
 import de.eldoria.bigdoorsopener.config.Config;
 import de.eldoria.bigdoorsopener.config.TimedDoor;
+import de.eldoria.bigdoorsopener.localization.Localizer;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -31,8 +32,8 @@ public class TimedDoorScheduler extends BigDoorsAdapter implements Runnable {
 
     private final Logger logger = BigDoorsOpener.logger();
 
-    public TimedDoorScheduler(BigDoors bigDoors, Config config) {
-        super(bigDoors);
+    public TimedDoorScheduler(BigDoors bigDoors, Config config, Localizer localizer) {
+        super(bigDoors, localizer);
         this.config = config;
         reload();
     }

@@ -2,6 +2,8 @@ package de.eldoria.bigdoorsopener.scheduler;
 
 import de.eldoria.bigdoorsopener.BigDoorsOpener;
 import de.eldoria.bigdoorsopener.config.TimedDoor;
+import de.eldoria.bigdoorsopener.localization.Localizer;
+import de.eldoria.bigdoorsopener.localization.Replacement;
 import lombok.Getter;
 import nl.pim16aap2.bigDoors.BigDoors;
 import nl.pim16aap2.bigDoors.Commander;
@@ -14,10 +16,12 @@ public abstract class BigDoorsAdapter {
     private final Commander commander;
     private final BigDoors bigDoors;
     private final Server server = Bukkit.getServer();
+    private final Localizer localizer;
 
-    public BigDoorsAdapter(BigDoors bigDoors) {
+    public BigDoorsAdapter(BigDoors bigDoors, Localizer localizer) {
         this.bigDoors = bigDoors;
         commander = bigDoors.getCommander();
+        this.localizer = localizer;
     }
 
     protected void setDoorState(boolean open, TimedDoorScheduler.ScheduledDoor door) {
@@ -41,7 +45,8 @@ public abstract class BigDoorsAdapter {
     protected boolean doorExists(TimedDoor door) {
         World world = server.getWorld(door.getWorld());
         if (world == null) {
-            BigDoorsOpener.logger().info("World of door " + door.getDoorUID() + " is null. Removed.");
+            BigDoorsOpener.logger().info(localizer.getMessage("error.worldIsNull",
+                    Replacement.create("DOOR_NAME", door.getDoorUID())));
             return false;
         }
 
