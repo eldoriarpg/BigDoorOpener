@@ -6,7 +6,7 @@
 
     <groupId>de.eldoria</groupId>
     <artifactId>BigDoorsOpener</artifactId>
-    <version>1.1a-BETA</version>
+    <version>1.2-BETA</version>
     <build>
         <plugins>
             <plugin>
@@ -26,7 +26,7 @@
                 <configuration>
                     <relocations>
                         <relocation>
-                            <pattern>org.bstats</pattern>
+                            <pattern>org.bstats.bukkit</pattern>
                             <shadedPattern>de.eldoria.bigdoorsopener.bstats</shadedPattern>
                         </relocation>
                     </relocations>

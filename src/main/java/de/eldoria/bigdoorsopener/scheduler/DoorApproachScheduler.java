@@ -3,6 +3,7 @@ package de.eldoria.bigdoorsopener.scheduler;
 import de.eldoria.bigdoorsopener.BigDoorsOpener;
 import de.eldoria.bigdoorsopener.config.Config;
 import de.eldoria.bigdoorsopener.config.TimedDoor;
+import de.eldoria.bigdoorsopener.localization.Localizer;
 import nl.pim16aap2.bigDoors.BigDoors;
 import org.bukkit.Bukkit;
 import org.bukkit.Server;
@@ -22,8 +23,8 @@ public class DoorApproachScheduler extends BigDoorsAdapter implements Runnable {
     private final Config config;
     private Logger logger = BigDoorsOpener.logger();
 
-    public DoorApproachScheduler(Config config, BigDoors doors) {
-        super(doors);
+    public DoorApproachScheduler(Config config, BigDoors doors, Localizer localizer) {
+        super(doors, localizer);
         this.config = config;
     }
 
