@@ -3,7 +3,6 @@ package de.eldoria.bigdoorsopener;
 import de.eldoria.bigdoorsopener.commands.BigDoorsOpenerCommand;
 import de.eldoria.bigdoorsopener.config.Config;
 import de.eldoria.bigdoorsopener.config.TimedDoor;
-import de.eldoria.bigdoorsopener.localization.Localizer;
 import de.eldoria.bigdoorsopener.scheduler.DoorApproachScheduler;
 import de.eldoria.bigdoorsopener.scheduler.TimedDoorScheduler;
 import de.eldoria.bigdoorsopener.util.UpdateChecker;
@@ -18,7 +17,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Locale;
 import java.util.logging.Logger;
 
 public class BigDoorsOpener extends JavaPlugin {
@@ -27,7 +25,6 @@ public class BigDoorsOpener extends JavaPlugin {
     private final BukkitScheduler scheduler = Bukkit.getScheduler();
     private Config config;
     private boolean initialized;
-    private Localizer localizer;
 
     private BigDoors doors;
     private Commander commander;
@@ -48,26 +45,22 @@ public class BigDoorsOpener extends JavaPlugin {
             doors = (BigDoors) bigDoorsPlugin;
             commander = doors.getCommander();
             config = new Config(this);
-            localizer = new Localizer(this, config.getLanguage(), "messages",
-                    "messages", Locale.US, "de_DE", "en_US");
-            if (config.isEnableMetrics()) {
+            if(config.isEnableMetrics()){
                 enableMetrics();
             }
         }
 
-        TimedDoorScheduler timedDoorScheduler = new TimedDoorScheduler(doors, config, localizer);
+        TimedDoorScheduler timedDoorScheduler = new TimedDoorScheduler(doors, config);
 
         if (!initialized) {
-            getCommand("bigdoorsopener")
-                    .setExecutor(new BigDoorsOpenerCommand(this, commander, config, localizer, timedDoorScheduler));
+            getCommand("bigdoorsopener").setExecutor(new BigDoorsOpenerCommand(this, commander, config, timedDoorScheduler));
         }
 
         if (initialized) {
-            localizer.setLocale(config.getLanguage());
             scheduler.cancelTasks(this);
         }
 
-        scheduler.scheduleSyncRepeatingTask(this, new DoorApproachScheduler(config, doors, localizer), 100, config.getApproachRefreshRate());
+        scheduler.scheduleSyncRepeatingTask(this, new DoorApproachScheduler(config, doors), 100, config.getApproachRefreshRate());
         scheduler.scheduleSyncRepeatingTask(this, timedDoorScheduler, 100, config.getTimedRefreshRate());
 
         initialized = true;
@@ -82,7 +75,7 @@ public class BigDoorsOpener extends JavaPlugin {
     private void enableMetrics() {
         Metrics metrics = new Metrics(this, 8015);
 
-        logger().info(localizer.getMessage("general.metrics"));
+        logger().info("Metrics enabled. Thank you very much!");
 
         metrics.addCustomChart(new Metrics.SimplePie("big_doors_version",
                 () -> doors.getDescription().getVersion()));
