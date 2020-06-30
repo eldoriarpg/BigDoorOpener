@@ -77,7 +77,9 @@ public class DoorApproachScheduler extends BigDoorsAdapter implements Runnable {
             }
             //if (doors.isOpen(door.getDoorUID())) continue;
             World world = server.getWorld(door.getWorld());
-            setDoorState(door.shouldBeOpen(world.getFullTime()), door);
+            if (!door.shouldBeOpen(world.getFullTime())) {
+                setDoorState(false, door);
+            }
         }
     }
 
