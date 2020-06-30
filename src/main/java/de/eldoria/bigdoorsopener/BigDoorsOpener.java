@@ -3,6 +3,7 @@ package de.eldoria.bigdoorsopener;
 import de.eldoria.bigdoorsopener.commands.BigDoorsOpenerCommand;
 import de.eldoria.bigdoorsopener.config.Config;
 import de.eldoria.bigdoorsopener.config.TimedDoor;
+import de.eldoria.bigdoorsopener.listener.TimeSkipListener;
 import de.eldoria.bigdoorsopener.scheduler.DoorApproachScheduler;
 import de.eldoria.bigdoorsopener.scheduler.TimedDoorScheduler;
 import de.eldoria.eldoutilities.localization.Localizer;
@@ -33,6 +34,8 @@ public class BigDoorsOpener extends JavaPlugin {
     private BigDoors doors;
     private Commander commander;
 
+    private TimeSkipListener timeSkipListener;
+
     @Override
     public void onDisable() {
         super.onDisable();
@@ -40,11 +43,11 @@ public class BigDoorsOpener extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        PluginManager pm = Bukkit.getPluginManager();
         if (!initialized) {
             logger = this.getLogger();
             UpdateChecker.performAndNotifyUpdateCheck(this, 80805, true);
             ConfigurationSerialization.registerClass(TimedDoor.class, "timedDoor");
-            PluginManager pm = Bukkit.getPluginManager();
             Plugin bigDoorsPlugin = pm.getPlugin("BigDoors");
             doors = (BigDoors) bigDoorsPlugin;
             commander = doors.getCommander();
@@ -60,11 +63,14 @@ public class BigDoorsOpener extends JavaPlugin {
         TimedDoorScheduler timedDoorScheduler = new TimedDoorScheduler(doors, config, localizer);
 
         if (!initialized) {
+            timeSkipListener = new TimeSkipListener(timedDoorScheduler);
+            pm.registerEvents(timeSkipListener, this);
             getCommand("bigdoorsopener")
                     .setExecutor(new BigDoorsOpenerCommand(this, commander, config, localizer, timedDoorScheduler));
         }
 
         if (initialized) {
+            timeSkipListener.reload(timedDoorScheduler);
             localizer.setLocale(config.getLanguage());
             scheduler.cancelTasks(this);
         }
