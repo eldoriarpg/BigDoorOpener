@@ -2,8 +2,8 @@ package de.eldoria.bigdoorsopener.scheduler;
 
 import de.eldoria.bigdoorsopener.BigDoorsOpener;
 import de.eldoria.bigdoorsopener.config.TimedDoor;
-import de.eldoria.bigdoorsopener.localization.Localizer;
-import de.eldoria.bigdoorsopener.localization.Replacement;
+import de.eldoria.eldoutilities.localization.Localizer;
+import de.eldoria.eldoutilities.localization.Replacement;
 import lombok.Getter;
 import nl.pim16aap2.bigDoors.BigDoors;
 import nl.pim16aap2.bigDoors.Commander;

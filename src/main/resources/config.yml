@@ -1,8 +1,8 @@
-# The refresh rate of aproach detection in ticks. 1 sec = 20 ticks
+# The refresh rate of approach detection in ticks. 1 sec = 20 ticks
 approachRefreshRate: 20
 # The refresh rate of time changes in ticks. 1 sec = 20 ticks
 timedRefreshRate: 20
 # Help us improving this plugin by sending some anonymized metrics.
 enableMetrics: true
-# We save your doors. If its empty you should change this :P
+# We save your doors. If it is empty you should change this :P
 doors:

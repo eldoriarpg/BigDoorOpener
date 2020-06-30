@@ -6,7 +6,15 @@
 
     <groupId>de.eldoria</groupId>
     <artifactId>BigDoorsOpener</artifactId>
-    <version>1.2-BETA</version>
+    <version>1.2a-BETA</version>
+    <name>BigDoorsOpener</name>
+    <url>https://github.com/eldoriarpg/BigDoorOpener</url>
+    <description>Open and close doors automatically on certain conditions</description>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
     <build>
         <plugins>
             <plugin>
@@ -41,6 +49,12 @@
                 </executions>
             </plugin>
         </plugins>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
     </build>
 
     <repositories>
@@ -90,6 +104,12 @@
             <groupId>org.bstats</groupId>
             <artifactId>bstats-bukkit</artifactId>
             <version>1.7</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.eldoria</groupId>
+            <artifactId>eldo-utilities</artifactId>
+            <version>1.0.4</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>
