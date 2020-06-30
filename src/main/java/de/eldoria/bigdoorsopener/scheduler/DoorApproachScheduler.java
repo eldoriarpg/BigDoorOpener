@@ -3,7 +3,7 @@ package de.eldoria.bigdoorsopener.scheduler;
 import de.eldoria.bigdoorsopener.BigDoorsOpener;
 import de.eldoria.bigdoorsopener.config.Config;
 import de.eldoria.bigdoorsopener.config.TimedDoor;
-import de.eldoria.bigdoorsopener.localization.Localizer;
+import de.eldoria.eldoutilities.localization.Localizer;
 import nl.pim16aap2.bigDoors.BigDoors;
 import org.bukkit.Bukkit;
 import org.bukkit.Server;
@@ -42,7 +42,7 @@ public class DoorApproachScheduler extends BigDoorsAdapter implements Runnable {
 
             Vector playerPos = player.getLocation().toVector();
             for (TimedDoor door : worldDoors) {
-                if (door.getOpenRange() < 1) {
+                if (!(door.getOpenRange() > 0)) {
                     continue;
                 }
 
@@ -56,7 +56,7 @@ public class DoorApproachScheduler extends BigDoorsAdapter implements Runnable {
 
         // mark doors without a player in reach as closeable
         Set<TimedDoor> closeDoors = config.getDoors().values().stream()
-                .filter(d -> !openDoors.contains(d)).collect(Collectors.toSet());
+                .filter(d -> !openDoors.contains(d) && d.getOpenRange() > 0).collect(Collectors.toSet());
 
         // open closed doors
         for (TimedDoor door : openDoors) {
