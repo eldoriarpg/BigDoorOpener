@@ -1,8 +1,8 @@
 package de.eldoria.bigdoorsopener.config;
 
 import com.google.common.base.Objects;
-import de.eldoria.bigdoorsopener.util.serialization.SerializationUtil;
-import de.eldoria.bigdoorsopener.util.serialization.TypeResolvingMap;
+import de.eldoria.eldoutilities.serialization.SerializationUtil;
+import de.eldoria.eldoutilities.serialization.TypeResolvingMap;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
