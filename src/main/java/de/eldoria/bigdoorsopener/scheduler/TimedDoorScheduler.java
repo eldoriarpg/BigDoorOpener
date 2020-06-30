@@ -99,7 +99,7 @@ public class TimedDoorScheduler extends BigDoorsAdapter implements Runnable {
             return;
         }
 
-        if (door.getTicksClose() == door.getTicksClose()) {
+        if (door.isPermanentlyClosed()) {
             return;
         }
 
