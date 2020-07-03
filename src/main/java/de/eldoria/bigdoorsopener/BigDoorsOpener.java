@@ -20,8 +20,12 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class BigDoorsOpener extends JavaPlugin {
 
@@ -88,11 +92,24 @@ public class BigDoorsOpener extends JavaPlugin {
     }
 
     private void enableMetrics() {
+        Pattern version = Pattern.compile("([0-9]\\.(?:[0-9]\\.?)+)");
+        Pattern build = Pattern.compile("\\((b[0-9]+)\\)");
+
         Metrics metrics = new Metrics(this, 8015);
 
         logger().info(localizer.getMessage("general.metrics"));
 
-        metrics.addCustomChart(new Metrics.SimplePie("big_doors_version",
-                () -> doors.getDescription().getVersion()));
+        metrics.addCustomChart(new Metrics.DrilldownPie("big_doors_version", () -> {
+            String ver = doors.getDescription().getVersion();
+            Map<String, Map<String, Integer>> map = new HashMap<>();
+            Matcher versionMatcher = version.matcher(ver);
+            Matcher buildMatcher = build.matcher(ver);
+            if (versionMatcher.find() || buildMatcher.find()) {
+                Map<String, Integer> versionMap = new HashMap<>();
+                versionMap.put(buildMatcher.group(1), 1);
+                map.put(versionMatcher.group(1), versionMap);
+            }
+            return map;
+        }));
     }
 }
