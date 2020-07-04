@@ -5,6 +5,8 @@ import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
 import de.eldoria.bigdoorsopener.doors.doorkey.item.ItemKey;
 import de.eldoria.bigdoorsopener.doors.doorkey.location.LocationKey;
 import de.eldoria.bigdoorsopener.util.KeyChainEvaluator;
+import lombok.Getter;
+import lombok.Setter;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 
@@ -13,6 +15,8 @@ import java.util.Arrays;
 /**
  * A key chain represents a set of multiple keys.
  */
+@Setter
+@Getter
 public class KeyChain {
     private ItemKey itemKey;
     private PermissionKey permissionKey;
