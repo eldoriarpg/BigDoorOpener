@@ -2,6 +2,7 @@ package de.eldoria.bigdoorsopener.scheduler;
 
 import de.eldoria.bigdoorsopener.BigDoorsOpener;
 import de.eldoria.bigdoorsopener.config.TimedDoor;
+import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
 import de.eldoria.eldoutilities.localization.Localizer;
 import de.eldoria.eldoutilities.localization.Replacement;
 import lombok.Getter;
@@ -24,16 +25,33 @@ public abstract class BigDoorsAdapter {
         this.localizer = localizer;
     }
 
+    @Deprecated
     protected void setDoorState(boolean open, TimedDoorScheduler.ScheduledDoor door) {
         setDoorState(open, door.getDoor());
     }
 
+    @Deprecated
     protected void setDoorState(boolean open, TimedDoor door) {
         if (commander.isDoorBusy(door.getDoorUID())) {
             return;
         }
         if (isOpen(door) == open) return;
         bigDoors.toggleDoor(door.getDoorUID());
+    }
+    protected void setDoorState(boolean open, ConditionalDoor door) {
+        if (commander.isDoorBusy(door.getDoorUID())) {
+            return;
+        }
+        if (isOpen(door) == open) return;
+        bigDoors.toggleDoor(door.getDoorUID());
+    }
+
+    @Deprecated
+    protected boolean isOpen(TimedDoor door) {
+        return door.openInverted(bigDoors.isOpen(door.getDoorUID()));
+    }
+    protected boolean isOpen(ConditionalDoor door) {
+        return door.openInverted(bigDoors.isOpen(door.getDoorUID()));
     }
 
     /**
@@ -52,9 +70,5 @@ public abstract class BigDoorsAdapter {
 
         // Make sure that this door still exists on the doors plugin.
         return commander.getDoor(null, door.getDoorUID()) != null;
-    }
-
-    protected boolean isOpen(TimedDoor door) {
-        return door.openInverted(bigDoors.isOpen(door.getDoorUID()));
     }
 }
