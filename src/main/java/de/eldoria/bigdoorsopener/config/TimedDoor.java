@@ -13,6 +13,7 @@ import java.util.Map;
 
 @Getter
 @Setter
+@Deprecated
 public class TimedDoor implements ConfigurationSerializable {
     /**
      * UUID of the door.
