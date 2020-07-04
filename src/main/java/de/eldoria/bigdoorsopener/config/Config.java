@@ -1,10 +1,16 @@
 package de.eldoria.bigdoorsopener.config;
 
 import de.eldoria.bigdoorsopener.BigDoorsOpener;
+import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
+import de.eldoria.bigdoorsopener.doors.doorkey.KeyChain;
+import de.eldoria.bigdoorsopener.doors.doorkey.PermissionKey;
+import de.eldoria.bigdoorsopener.doors.doorkey.TimeKey;
+import de.eldoria.bigdoorsopener.doors.doorkey.location.ProximityKey;
 import lombok.Getter;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,11 +20,12 @@ import java.util.Map;
 @Getter
 public class Config {
     private final Plugin plugin;
-    private final Map<Long, TimedDoor> doors = new HashMap<>();
+    private final Map<Long, ConditionalDoor> doors = new HashMap<>();
     private int approachRefreshRate;
     private int timedRefreshRate;
     private boolean enableMetrics;
     private String language;
+    private int refreshRate;
 
     public Config(Plugin plugin) {
         this.plugin = plugin;
@@ -27,7 +34,90 @@ public class Config {
 
     @SuppressWarnings("unchecked")
     public void loadConfig() {
+        updateConfig();
+        forceConfigConsitency();
         reloadConfig();
+    }
+
+    private void updateConfig() {
+        plugin.saveDefaultConfig();
+        plugin.reloadConfig();
+
+        FileConfiguration config = plugin.getConfig();
+
+        if (!config.contains("version")) {
+            plugin.getLogger().info("Config has no version key.");
+            plugin.getLogger().info("Detected config version 0. Performing migration to version 1.");
+
+            updateVersion0();
+        }
+        int version = config.getInt("version");
+        switch (version) {
+            case 1:
+                plugin.getLogger().info("Config is up to date.");
+                return;
+        }
+    }
+
+    private void updateVersion0() {
+
+        FileConfiguration config = plugin.getConfig();
+        // set new config version
+        config.set("version", 1);
+
+        // Convert TimedDoor to ConditionDoor
+        List<TimedDoor> timedDoors = (List<TimedDoor>) config.getList("doors");
+
+        if (timedDoors != null) {
+            List<ConditionalDoor> conditionalDoors = new ArrayList<>();
+
+            for (TimedDoor tD : timedDoors) {
+                ConditionalDoor cD = new ConditionalDoor(tD.getDoorUID(), tD.getWorld(), tD.getPosition());
+
+                KeyChain keyChain = cD.getKeyChain();
+
+                if (tD.getPermission() != null || tD.getPermission().isEmpty()) {
+                    keyChain.setPermissionKey(new PermissionKey(tD.getPermission()));
+                }
+
+                if (!tD.isPermanentlyClosed()) {
+                    keyChain.setTimeKey(new TimeKey(tD.getTicksOpen(), tD.getTicksClose(), false));
+                }
+
+                if (tD.getOpenRange() > 0) {
+                    keyChain.setLocationKey(
+                            new ProximityKey(
+                                    new Vector(tD.getOpenRange(), tD.getOpenRange(), tD.getOpenRange()),
+                                    ProximityKey.ProximityForm.ELIPSOID));
+                }
+            }
+            config.set("doors", conditionalDoors);
+        }
+
+        setIfAbsent(config, "refreshRate", 20);
+
+        config.set("approachRefreshRate", null);
+        config.set("timedRefreshRate", null);
+
+        plugin.saveConfig();
+        plugin.getLogger().info("Config migration to version 1 completed.");
+    }
+
+    /**
+     * Forces the current actual config values.
+     * Must be always executed after {@link #updateConfig()}
+     */
+    private void forceConfigConsitency() {
+        plugin.saveDefaultConfig();
+        plugin.reloadConfig();
+
+        FileConfiguration config = plugin.getConfig();
+
+        setIfAbsent(config, "doors", new ArrayList<ConditionalDoor>());
+
+        setIfAbsent(config, "refreshRate", 20);
+        setIfAbsent(config, "enableMetrics", true);
+        setIfAbsent(config, "language", "en_US");
     }
 
     @SuppressWarnings("unchecked")
@@ -35,30 +125,23 @@ public class Config {
         plugin.saveDefaultConfig();
         plugin.reloadConfig();
         FileConfiguration config = plugin.getConfig();
-        setIfAbsent(config, "doors", new ArrayList<TimedDoor>());
-        List<TimedDoor> configDoors = (List<TimedDoor>) config.getList("doors");
+
+        setIfAbsent(config, "doors", new ArrayList<ConditionalDoor>());
+        List<ConditionalDoor> configDoors = (List<ConditionalDoor>) config.getList("doors");
         if (configDoors != null) {
             doors.clear();
-            for (TimedDoor door : configDoors) {
+            for (ConditionalDoor door : configDoors) {
                 doors.put(door.getDoorUID(), door);
             }
         } else {
             BigDoorsOpener.logger().info("No doors defined.");
         }
 
-        setIfAbsent(config, "approachRefreshRate", 20);
-        setIfAbsent(config, "timedRefreshRate", 20);
-        setIfAbsent(config, "enableMetrics", true);
-        setIfAbsent(config, "language", "en_US");
-
-        plugin.saveConfig();
-
-        approachRefreshRate = config.getInt("approachRefreshRate", 20);
-        timedRefreshRate = config.getInt("timedRefreshRate", 20);
+        refreshRate = config.getInt("refreshRate", 20);
         enableMetrics = config.getBoolean("enableMetrics", true);
         language = config.getString("language", "en_US");
 
-        BigDoorsOpener.logger().info("Config reloaded!");
+        BigDoorsOpener.logger().info("Config loaded!");
     }
 
     public void safeConfig() {
