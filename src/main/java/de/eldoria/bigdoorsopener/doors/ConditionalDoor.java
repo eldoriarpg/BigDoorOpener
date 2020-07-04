@@ -59,7 +59,7 @@ public abstract class ConditionalDoor {
         switch (evaluationType) {
             case CUSTOM:
                 String custom = keyChain.custom(evaluator, player, world, door, currentState);
-                return JS.evalBool(custom, currentState);
+                return JS.eval(custom, currentState);
             case AND:
                 return keyChain.and(player, world, door, currentState);
             case OR:

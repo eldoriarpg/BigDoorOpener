@@ -7,7 +7,7 @@ import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import java.util.logging.Level;
 
-public class CachingJSEngine<T> {
+public class CachingJSEngine {
     private final ScriptEngine engine;
     private final HeatCache<String, Object> cache;
 
@@ -17,7 +17,7 @@ public class CachingJSEngine<T> {
     }
 
     @SuppressWarnings("unchecked")
-    public T eval(String string, T defaultValue) {
+    public <T> T eval(String string, T defaultValue) {
         try {
             Object t = cache.computeIfAbsent(string, (k) -> {
                 try {
