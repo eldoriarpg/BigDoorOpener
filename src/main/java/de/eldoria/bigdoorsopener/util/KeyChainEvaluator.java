@@ -11,11 +11,15 @@ public class KeyChainEvaluator {
     public KeyChainEvaluator or(DoorKey doorKey, Player player, World world, ConditionalDoor door, boolean currentState) {
         if (doorKey == null) return this;
 
+
         if (current == null) {
             current = doorKey.isOpen(player, world, door, currentState);
+            return this;
         }
 
-        current = current && doorKey.isOpen(player, world, door, currentState);
+        if (current) return this;
+
+        current = doorKey.isOpen(player, world, door, currentState);
         return this;
     }
 
@@ -24,7 +28,10 @@ public class KeyChainEvaluator {
 
         if (current == null) {
             current = doorKey.isOpen(player, world, door, currentState);
+            return this;
         }
+
+        if (!current) return this;
 
         current = current && doorKey.isOpen(player, world, door, currentState);
         return this;
