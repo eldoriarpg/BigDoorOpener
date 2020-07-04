@@ -78,15 +78,19 @@ public class DoorChecker extends BigDoorsAdapter implements Runnable {
                         break;
                     }
                 }
-                if (!opened) {
+                if (!opened && open) {
                     close.add(door);
                 }
             } else {
                 // Evaluate door.
                 if (door.getState(null, world, open)) {
-                    this.open.add(door);
+                    if (!open) {
+                        this.open.add(door);
+                    }
                 } else {
-                    close.add(door);
+                    if (open) {
+                        close.add(door);
+                    }
                 }
             }
         }
