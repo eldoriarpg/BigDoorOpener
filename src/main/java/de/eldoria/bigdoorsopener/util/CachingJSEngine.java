@@ -11,9 +11,9 @@ public class CachingJSEngine {
     private final ScriptEngine engine;
     private final HeatCache<String, Object> cache;
 
-    public CachingJSEngine() {
+    public CachingJSEngine(int cacheSize) {
         engine = new ScriptEngineManager().getEngineByName("nashorn");
-        cache = new HeatCache<>(200);
+        cache = new HeatCache<>(cacheSize);
     }
 
     @SuppressWarnings("unchecked")
