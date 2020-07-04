@@ -4,6 +4,7 @@ import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 
@@ -15,11 +16,11 @@ public class TimeKey implements DoorKey {
     /**
      * The ticks from when to door should be closed
      */
-    private int openTick = 0;
+    private int openTick;
     /**
      * The ticks from when the door should be open.
      */
-    private int closeTick = 14000;
+    private int closeTick;
 
     private boolean forceState;
 
@@ -41,7 +42,7 @@ public class TimeKey implements DoorKey {
     }
 
     @Override
-    public boolean isOpen(Player player, World world, ConditionalDoor door, boolean currentState) {
+    public boolean isOpen(@Nullable Player player, World world, @Nullable ConditionalDoor door, boolean currentState) {
         return shouldBeOpen(world.getFullTime(), currentState);
     }
 

@@ -29,7 +29,7 @@ public abstract class ItemKey implements DoorKey {
      *
      * @param player player which opened the door.
      */
-    public abstract void consume(Player player);
+    public abstract void used(Player player);
 
     /**
      * Checks if a player has a item in the off or main hand.
@@ -135,5 +135,12 @@ public abstract class ItemKey implements DoorKey {
             return true;
         }
         return false;
+    }
+
+    /**
+     * This method is called after the check for the door of this key is done and a new evaluation cycle starts.
+     * Deletes any internal data in this key.
+     */
+    public void clear() {
     }
 }

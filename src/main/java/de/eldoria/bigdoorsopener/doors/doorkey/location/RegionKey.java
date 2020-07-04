@@ -23,7 +23,6 @@ public class RegionKey implements LocationKey {
 
     @Override
     public boolean isOpen(Player player, World world, ConditionalDoor door, boolean currentState) {
-        if (!player.getWorld().getName().equalsIgnoreCase(door.getWorld())) return false;
         return region.contains(BukkitAdapter.asBlockVector(player.getLocation()));
     }
 

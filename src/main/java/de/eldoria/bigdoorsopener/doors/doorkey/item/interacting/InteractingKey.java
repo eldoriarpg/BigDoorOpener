@@ -38,7 +38,7 @@ public abstract class InteractingKey extends ItemKey {
      * @param player player which opened the door.
      */
     @Override
-    public abstract void consume(Player player);
+    public abstract void used(Player player);
 
     /**
      * This method is called when player interact event is fired.
@@ -50,9 +50,7 @@ public abstract class InteractingKey extends ItemKey {
         playersClicked.add(event.getPlayer().getUniqueId());
     }
 
-    /**
-     * This method is called after the check for the door of this key is done and a new evaluation cycle starts.
-     */
+    @Override
     public void clear() {
         playersClicked.clear();
     }

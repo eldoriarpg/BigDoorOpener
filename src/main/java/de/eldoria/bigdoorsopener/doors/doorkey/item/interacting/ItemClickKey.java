@@ -27,7 +27,7 @@ public class ItemClickKey extends InteractingKey {
     }
 
     @Override
-    public void consume(Player player) {
+    public void used(Player player) {
         if (!isConsumed()) return;
         tryTakeFromHands(player);
     }

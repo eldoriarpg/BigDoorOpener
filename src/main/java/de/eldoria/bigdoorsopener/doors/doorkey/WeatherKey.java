@@ -8,6 +8,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nullable;
 import java.util.Map;
 
 @KeyParameter("weatherKey")
@@ -19,7 +20,7 @@ public class WeatherKey implements DoorKey {
     }
 
     @Override
-    public boolean isOpen(Player player, World world, ConditionalDoor door, boolean currentState) {
+    public boolean isOpen(@Nullable Player player, World world, ConditionalDoor door, boolean currentState) {
         Vector pos = door.getPosition();
 
         boolean raining = WeatherListener.isRaining(world);

@@ -19,7 +19,7 @@ public class ItemOwningKey extends ItemKey {
     }
 
     @Override
-    public void consume(Player player) {
+    public void used(Player player) {
         if(!isConsumed()) return;
         takeFromInventory(player, getItem());
     }

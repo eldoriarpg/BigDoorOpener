@@ -19,7 +19,7 @@ public class ItemHoldingKey extends ItemKey {
     }
 
     @Override
-    public void consume(Player player) {
+    public void used(Player player) {
         if (!isConsumed()) return;
         tryTakeFromHands(player);
     }

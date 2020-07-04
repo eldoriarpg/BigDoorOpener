@@ -42,12 +42,25 @@ public class KeyChain {
             String key = doorKey.getClass().getAnnotation(KeyParameter.class).value();
             evaluationString = evaluationString.replaceAll("(?i)" + key,
                     String.valueOf(itemKey.isOpen(player, world, door, currentState)));
-
         }
 
         evaluationString = evaluationString.replaceAll("(?i)currentState",
                 String.valueOf(currentState));
 
         return evaluationString;
+    }
+
+    public boolean requiresPlayerEvaluation() {
+        return itemKey != null || permissionKey != null || locationKey != null;
+    }
+
+    public void evaluated() {
+        if (itemKey != null) {
+            itemKey.clear();
+        }
+    }
+
+    public void opened(Player player) {
+        itemKey.used(player);
     }
 }

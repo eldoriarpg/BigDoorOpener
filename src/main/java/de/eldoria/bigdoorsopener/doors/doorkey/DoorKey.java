@@ -9,9 +9,9 @@ public interface DoorKey extends ConfigurationSerializable {
     /**
      * Indicates if the key would open the door under the current circumstances.
      *
-     * @param player player which should be checked.
-     * @param world world of the door
-     * @param door door data
+     * @param player       player which should be checked.
+     * @param world        world of the door
+     * @param door         door data
      * @param currentState the current state of the door.
      * @return true if the key settings are matched.
      */
