@@ -26,6 +26,7 @@ public class Config {
     private boolean enableMetrics;
     private String language;
     private int refreshRate;
+    private boolean checkUpdates;
 
     public Config(Plugin plugin) {
         this.plugin = plugin;
@@ -94,8 +95,11 @@ public class Config {
             config.set("doors", conditionalDoors);
         }
 
-        setIfAbsent(config, "refreshRate", 20);
+        // set added keys
+        config.set("refreshRate", 20);
+        config.set("checkUpdates", true);
 
+        // remove no longer used keys
         config.set("approachRefreshRate", null);
         config.set("timedRefreshRate", null);
 
@@ -118,6 +122,7 @@ public class Config {
         setIfAbsent(config, "refreshRate", 20);
         setIfAbsent(config, "enableMetrics", true);
         setIfAbsent(config, "language", "en_US");
+        setIfAbsent(config, "checkUpdates", true);
     }
 
     @SuppressWarnings("unchecked")
@@ -137,9 +142,10 @@ public class Config {
             BigDoorsOpener.logger().info("No doors defined.");
         }
 
-        refreshRate = config.getInt("refreshRate", 20);
-        enableMetrics = config.getBoolean("enableMetrics", true);
-        language = config.getString("language", "en_US");
+        refreshRate = config.getInt("refreshRate");
+        enableMetrics = config.getBoolean("enableMetrics");
+        checkUpdates = config.getBoolean("checkUpdates");
+        language = config.getString("language");
 
         BigDoorsOpener.logger().info("Config loaded!");
     }
