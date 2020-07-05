@@ -7,7 +7,7 @@ import de.eldoria.bigdoorsopener.doors.conditions.location.Location;
 import de.eldoria.bigdoorsopener.doors.conditions.standalone.Permission;
 import de.eldoria.bigdoorsopener.doors.conditions.standalone.Time;
 import de.eldoria.bigdoorsopener.doors.conditions.standalone.Weather;
-import de.eldoria.bigdoorsopener.util.KeyChainEvaluator;
+import de.eldoria.bigdoorsopener.util.ConditionChainEvaluator;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.World;
@@ -28,12 +28,12 @@ public class ConditionChain {
     private Weather weather;
 
     public boolean or(Player player, World world, ConditionalDoor door, boolean currentState) {
-        return KeyChainEvaluator.or(player, world, door, currentState,
+        return ConditionChainEvaluator.or(player, world, door, currentState,
                 itemKey, permission, location, time, weather);
     }
 
     public boolean and(Player player, World world, ConditionalDoor door, boolean currentState) {
-        return KeyChainEvaluator.and(player, world, door, currentState,
+        return ConditionChainEvaluator.and(player, world, door, currentState,
                 itemKey, permission, location, time, weather);
     }
 

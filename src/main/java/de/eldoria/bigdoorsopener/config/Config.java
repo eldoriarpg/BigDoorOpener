@@ -2,10 +2,10 @@ package de.eldoria.bigdoorsopener.config;
 
 import de.eldoria.bigdoorsopener.BigDoorsOpener;
 import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
-import de.eldoria.bigdoorsopener.doors.doorkey.KeyChain;
-import de.eldoria.bigdoorsopener.doors.doorkey.PermissionKey;
-import de.eldoria.bigdoorsopener.doors.doorkey.TimeKey;
-import de.eldoria.bigdoorsopener.doors.doorkey.location.ProximityKey;
+import de.eldoria.bigdoorsopener.doors.conditions.ConditionChain;
+import de.eldoria.bigdoorsopener.doors.conditions.location.Proximity;
+import de.eldoria.bigdoorsopener.doors.conditions.standalone.Permission;
+import de.eldoria.bigdoorsopener.doors.conditions.standalone.Time;
 import lombok.Getter;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -61,7 +61,6 @@ public class Config {
     }
 
     private void updateVersion0() {
-
         FileConfiguration config = plugin.getConfig();
         // set new config version
         config.set("version", 1);
@@ -75,21 +74,21 @@ public class Config {
             for (TimedDoor tD : timedDoors) {
                 ConditionalDoor cD = new ConditionalDoor(tD.getDoorUID(), tD.getWorld(), tD.getPosition());
 
-                KeyChain keyChain = cD.getKeyChain();
+                ConditionChain conditionChain = cD.getConditionChain();
 
                 if (tD.getPermission() != null || tD.getPermission().isEmpty()) {
-                    keyChain.setPermissionKey(new PermissionKey(tD.getPermission()));
+                    conditionChain.setPermission(new Permission(tD.getPermission()));
                 }
 
                 if (!tD.isPermanentlyClosed()) {
-                    keyChain.setTimeKey(new TimeKey(tD.getTicksOpen(), tD.getTicksClose(), false));
+                    conditionChain.setTime(new Time(tD.getTicksOpen(), tD.getTicksClose(), false));
                 }
 
                 if (tD.getOpenRange() > 0) {
-                    keyChain.setLocationKey(
-                            new ProximityKey(
+                    conditionChain.setLocation(
+                            new Proximity(
                                     new Vector(tD.getOpenRange(), tD.getOpenRange(), tD.getOpenRange()),
-                                    ProximityKey.ProximityForm.ELIPSOID));
+                                    Proximity.ProximityForm.ELIPSOID));
                 }
             }
             config.set("doors", conditionalDoors);
