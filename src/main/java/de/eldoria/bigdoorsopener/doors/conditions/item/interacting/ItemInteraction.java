@@ -1,7 +1,7 @@
-package de.eldoria.bigdoorsopener.doors.doorkey.item.interacting;
+package de.eldoria.bigdoorsopener.doors.conditions.item.interacting;
 
 import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
-import de.eldoria.bigdoorsopener.doors.doorkey.item.ItemKey;
+import de.eldoria.bigdoorsopener.doors.conditions.item.ItemCondition;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -10,7 +10,7 @@ import org.bukkit.inventory.ItemStack;
 import java.util.Set;
 import java.util.UUID;
 
-public abstract class InteractingKey extends ItemKey {
+public abstract class ItemInteraction extends ItemCondition {
 
     /**
      * A set of user which has clicked since the last check.
@@ -23,12 +23,12 @@ public abstract class InteractingKey extends ItemKey {
      * @param item     item stack which defines the item needed to open the door. amount matters.
      * @param consumed true if the items are consumed when the door is opened
      */
-    public InteractingKey(ItemStack item, boolean consumed) {
+    public ItemInteraction(ItemStack item, boolean consumed) {
         super(item, consumed);
     }
 
     @Override
-    public boolean isOpen(Player player, World world, ConditionalDoor door, boolean currentState) {
+    public Boolean isOpen(Player player, World world, ConditionalDoor door, boolean currentState) {
         return playersClicked.contains(player.getUniqueId());
     }
 

@@ -1,17 +1,25 @@
-package de.eldoria.bigdoorsopener.doors.doorkey.item;
+package de.eldoria.bigdoorsopener.doors.conditions.item;
 
-import de.eldoria.bigdoorsopener.doors.doorkey.DoorKey;
-import de.eldoria.bigdoorsopener.doors.doorkey.KeyParameter;
+import com.google.gson.Gson;
+import de.eldoria.bigdoorsopener.doors.conditions.DoorCondition;
+import de.eldoria.bigdoorsopener.util.C;
+import de.eldoria.eldoutilities.localization.Localizer;
 import lombok.Getter;
+import net.kyori.text.TextComponent;
+import net.kyori.text.event.HoverEvent;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
 @Getter
-@KeyParameter("itemKey")
-public abstract class ItemKey implements DoorKey {
-    private ItemStack item;
-    private boolean consumed;
+public abstract class ItemCondition implements DoorCondition {
+    private final ItemStack item;
+    private final boolean consumed;
+    private static final Gson GSON;
+
+    static {
+        GSON = new Gson();
+    }
 
     /**
      * Creates a new item key
@@ -19,7 +27,7 @@ public abstract class ItemKey implements DoorKey {
      * @param item     item stack which defines the item needed to open the door. amount matters.
      * @param consumed true if the items are consumed when the door is opened
      */
-    public ItemKey(ItemStack item, boolean consumed) {
+    public ItemCondition(ItemStack item, boolean consumed) {
         this.item = item;
         this.consumed = consumed;
     }
@@ -142,5 +150,16 @@ public abstract class ItemKey implements DoorKey {
      * Deletes any internal data in this key.
      */
     public void clear() {
+    }
+
+    @Override
+    public TextComponent getDescription(Localizer localizer) {
+        return TextComponent.builder()
+                .content(localizer.getMessage("conditionDesc.item"))
+                .append(TextComponent.builder("[" + item.getType().name().toLowerCase() + "] x" + item.getAmount())
+                        .hoverEvent(HoverEvent.showItem(TextComponent.of(GSON.toJson(item)))).color(C.highlightColor))
+                .append(TextComponent.newline())
+                .append(TextComponent.builder(localizer.getMessage("conditionDesc.consumed")).color(C.highlightColor))
+                .append(TextComponent.builder(Boolean.toString(isConsumed()))).build();
     }
 }

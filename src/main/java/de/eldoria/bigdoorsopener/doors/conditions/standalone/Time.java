@@ -1,6 +1,13 @@
-package de.eldoria.bigdoorsopener.doors.doorkey;
+package de.eldoria.bigdoorsopener.doors.conditions.standalone;
 
 import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
+import de.eldoria.bigdoorsopener.doors.conditions.DoorCondition;
+import de.eldoria.bigdoorsopener.doors.conditions.ConditionType;
+import de.eldoria.bigdoorsopener.util.C;
+import de.eldoria.eldoutilities.localization.Localizer;
+import de.eldoria.eldoutilities.localization.Replacement;
+import de.eldoria.eldoutilities.utils.Parser;
+import net.kyori.text.TextComponent;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -11,8 +18,7 @@ import java.util.Map;
 /**
  * A key which defines the door state by current world time.
  */
-@KeyParameter("timeKey")
-public class TimeKey implements DoorKey {
+public class Time implements DoorCondition {
     /**
      * The ticks from when to door should be closed
      */
@@ -35,18 +41,33 @@ public class TimeKey implements DoorKey {
      * @param closeTick  when the door should close
      * @param forceState if true the state will be forced.
      */
-    public TimeKey(int openTick, int closeTick, boolean forceState) {
+    public Time(int openTick, int closeTick, boolean forceState) {
         this.openTick = openTick;
         this.closeTick = closeTick;
         this.forceState = forceState;
     }
 
     @Override
-    public boolean isOpen(@Nullable Player player, World world, @Nullable ConditionalDoor door, boolean currentState) {
-        return shouldBeOpen(world.getFullTime(), currentState);
+    public Boolean isOpen(@Nullable Player player, World world, @Nullable ConditionalDoor door, boolean currentState) {
+        return shouldBeOpen(world.getFullTime());
     }
 
-    public boolean shouldBeOpen(long fulltime, boolean currentState) {
+    @Override
+    public TextComponent getDescription(Localizer localizer) {
+        return TextComponent.builder(
+                localizer.getMessage("conditionDesc.type.time",
+                        Replacement.create("NAME", ConditionType.TIME.keyName))).color(C.baseColor)
+                .append(TextComponent.newline())
+                .append(TextComponent.builder(localizer.getMessage("conditionDesc.open")).color(C.baseColor))
+                .append(TextComponent.builder(Parser.parseTicksToTime(openTick)).color(C.highlightColor))
+                .append(TextComponent.builder(localizer.getMessage("conditionDesc.close")).color(C.baseColor))
+                .append(TextComponent.builder(Parser.parseTicksToTime(closeTick)).color(C.highlightColor))
+                .append(TextComponent.builder(localizer.getMessage("conditionDesc.forceState")).color(C.baseColor))
+                .append(TextComponent.builder(Boolean.toString(forceState)).color(C.highlightColor))
+                .build();
+    }
+
+    public Boolean shouldBeOpen(long fulltime) {
         long openInTicks = getDiff(fulltime, openTick);
         long closedInTicks = getDiff(fulltime, closeTick);
         // check if door should be open
@@ -67,7 +88,7 @@ public class TimeKey implements DoorKey {
                 return false;
             }
         }
-        return currentState;
+        return null;
     }
 
     private long getDiff(long fullTime, long nextTime) {
