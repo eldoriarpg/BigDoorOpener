@@ -25,19 +25,6 @@ public abstract class BigDoorsAdapter {
         this.localizer = localizer;
     }
 
-    @Deprecated
-    protected void setDoorState(boolean open, TimedDoorScheduler.ScheduledDoor door) {
-        setDoorState(open, door.getDoor());
-    }
-
-    @Deprecated
-    protected void setDoorState(boolean open, TimedDoor door) {
-        if (commander.isDoorBusy(door.getDoorUID())) {
-            return;
-        }
-        if (isOpen(door) == open) return;
-        bigDoors.toggleDoor(door.getDoorUID());
-    }
     protected void setDoorState(boolean open, ConditionalDoor door) {
         if (commander.isDoorBusy(door.getDoorUID())) {
             return;
