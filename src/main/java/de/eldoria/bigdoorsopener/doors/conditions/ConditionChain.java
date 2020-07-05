@@ -1,9 +1,12 @@
-package de.eldoria.bigdoorsopener.doors.doorkey;
+package de.eldoria.bigdoorsopener.doors.conditions;
 
 import de.eldoria.bigdoorsopener.BigDoorsOpener;
 import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
-import de.eldoria.bigdoorsopener.doors.doorkey.item.ItemKey;
-import de.eldoria.bigdoorsopener.doors.doorkey.location.LocationKey;
+import de.eldoria.bigdoorsopener.doors.conditions.item.ItemCondition;
+import de.eldoria.bigdoorsopener.doors.conditions.location.Location;
+import de.eldoria.bigdoorsopener.doors.conditions.standalone.Permission;
+import de.eldoria.bigdoorsopener.doors.conditions.standalone.Time;
+import de.eldoria.bigdoorsopener.doors.conditions.standalone.Weather;
 import de.eldoria.bigdoorsopener.util.KeyChainEvaluator;
 import lombok.Getter;
 import lombok.Setter;
@@ -17,34 +20,35 @@ import java.util.Arrays;
  */
 @Setter
 @Getter
-public class KeyChain {
-    private ItemKey itemKey;
-    private PermissionKey permissionKey;
-    private LocationKey locationKey;
-    private TimeKey timeKey;
-    private WeatherKey weatherKey;
+public class ConditionChain {
+    private ItemCondition itemKey;
+    private Permission permission;
+    private Location location;
+    private Time time;
+    private Weather weather;
 
     public boolean or(Player player, World world, ConditionalDoor door, boolean currentState) {
         return KeyChainEvaluator.or(player, world, door, currentState,
-                itemKey, permissionKey, locationKey, timeKey, weatherKey);
+                itemKey, permission, location, time, weather);
     }
 
     public boolean and(Player player, World world, ConditionalDoor door, boolean currentState) {
         return KeyChainEvaluator.and(player, world, door, currentState,
-                itemKey, permissionKey, locationKey, timeKey, weatherKey);
+                itemKey, permission, location, time, weather);
     }
 
     public String custom(String string, Player player, World world, ConditionalDoor door, boolean currentState) {
         String evaluationString = string;
 
-        for (DoorKey doorKey : Arrays.asList(itemKey, permissionKey, locationKey, timeKey, weatherKey)) {
-            if (doorKey == null) continue;
-            if (!doorKey.getClass().isAnnotationPresent(KeyParameter.class)) {
-                BigDoorsOpener.logger().warning("Key Parameter annotation is missing on class: "
-                        + doorKey.getClass().getSimpleName());
+        for (DoorCondition doorCondition : Arrays.asList(itemKey, permission, location, time, weather)) {
+            if (doorCondition == null) continue;
+            ConditionType.ConditionGroup key = ConditionType.getType(doorCondition.getClass());
+            if (key == null) {
+                BigDoorsOpener.logger().warning("Class " + doorCondition.getClass().getSimpleName() + " is not registered as key type."
+                        + doorCondition.getClass().getSimpleName());
+                continue;
             }
-            String key = doorKey.getClass().getAnnotation(KeyParameter.class).value();
-            evaluationString = evaluationString.replaceAll("(?i)" + key,
+            evaluationString = evaluationString.replaceAll("(?i)" + key.keyParameter,
                     String.valueOf(itemKey.isOpen(player, world, door, currentState)));
         }
 
@@ -55,7 +59,7 @@ public class KeyChain {
     }
 
     public boolean requiresPlayerEvaluation() {
-        return itemKey != null || permissionKey != null || locationKey != null;
+        return itemKey != null || permission != null || location != null;
     }
 
     public void evaluated() {
