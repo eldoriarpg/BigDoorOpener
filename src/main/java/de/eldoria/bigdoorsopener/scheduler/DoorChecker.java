@@ -36,6 +36,13 @@ public class DoorChecker extends BigDoorsAdapter implements Runnable {
         }
     }
 
+    public void reload() {
+        synchronized (doors) {
+            doors.clear();
+            doors.addAll(config.getDoors().values());
+        }
+    }
+
     @Override
     public void run() {
         if (doors.isEmpty()) return;
@@ -59,7 +66,6 @@ public class DoorChecker extends BigDoorsAdapter implements Runnable {
             World world = server.getWorld(door.getWorld());
             // If the world of the door does not exists, why should we evaluate it.
             if (world == null) continue;
-
 
             boolean open = isOpen(door);
 
@@ -109,5 +115,9 @@ public class DoorChecker extends BigDoorsAdapter implements Runnable {
         for (ConditionalDoor conditionalDoor : evaluated) {
             conditionalDoor.evaluated();
         }
+    }
+
+    public void unregister(ConditionalDoor first) {
+        doors.remove(first);
     }
 }
