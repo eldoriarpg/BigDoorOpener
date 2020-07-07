@@ -42,13 +42,13 @@ public class ConditionChain {
 
         for (DoorCondition doorCondition : Arrays.asList(itemKey, permission, location, time, weather)) {
             if (doorCondition == null) continue;
-            ConditionType.ConditionGroup key = ConditionType.getType(doorCondition.getClass());
-            if (key == null) {
-                BigDoorsOpener.logger().warning("Class " + doorCondition.getClass().getSimpleName() + " is not registered as key type."
+            ConditionType.ConditionGroup condition = ConditionType.getType(doorCondition.getClass());
+            if (condition == null) {
+                BigDoorsOpener.logger().warning("Class " + doorCondition.getClass().getSimpleName() + " is not registered as condition type."
                         + doorCondition.getClass().getSimpleName());
                 continue;
             }
-            evaluationString = evaluationString.replaceAll("(?i)" + key.keyParameter,
+            evaluationString = evaluationString.replaceAll("(?i)" + condition.conditionParameter,
                     String.valueOf(itemKey.isOpen(player, world, door, currentState)));
         }
 

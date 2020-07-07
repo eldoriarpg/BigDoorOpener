@@ -32,17 +32,17 @@ public enum ConditionType {
     }
 
     public enum ConditionGroup {
-        ITEM("itemKey", ItemCondition.class),
-        LOCATION("locationKey", Location.class),
-        PERMISSION("permissionKey", Permission.class),
-        TIME("timeKey", Time.class),
-        WEATHER("weatherKey", Weather.class);
+        ITEM("item", ItemCondition.class),
+        LOCATION("location", Location.class),
+        PERMISSION("permission", Permission.class),
+        TIME("time", Time.class),
+        WEATHER("weather", Weather.class);
 
-        public final String keyParameter;
+        public final String conditionParameter;
         public final Class<? extends DoorCondition> keyClass;
 
-        <T extends DoorCondition> ConditionGroup(String keyParameter, Class<T> keyClass) {
-            this.keyParameter = keyParameter;
+        <T extends DoorCondition> ConditionGroup(String conditionParameter, Class<T> keyClass) {
+            this.conditionParameter = conditionParameter;
             this.keyClass = keyClass;
         }
     }
