@@ -10,8 +10,9 @@ public final class JsSyntaxHelper {
 
     private static final ScriptEngine ENGINE = new ScriptEngineManager().getEngineByExtension("nashorn");
     private static final Pattern VARIABLE = Pattern.compile("[a-zA-Z]+");
-    private static final Pattern OPERATORS = Pattern.compile("[^&]&[^&]|[^|]\\|[^|]|[^=!]=[^=]|![^=]");
-    private static final Pattern SYNTAX = Pattern.compile("\\||&|!|=|\\(|\\)|\\s");
+    private static final Pattern ALLOWED_OPERATORS = Pattern.compile("&&|\\|\\||!=|==|!");
+    private static final Pattern UNALLOWED_OPERATORS = Pattern.compile("&|\\||=");
+    private static final Pattern SYNTAX = Pattern.compile("\\||&|!|=|\\(|\\)|\\s\\{\\};");
 
     private JsSyntaxHelper() {
     }
@@ -46,26 +47,27 @@ public final class JsSyntaxHelper {
             return new Pair<>(ValidatorResult.UNBALANCED_PARENTHESIS, "");
         }
 
-        String cleaned = evaluator.replaceAll("(?i)itemKey|locationKey|permissionKey|timeKey|weatherKey", "");
+        String cleaned = evaluator.replaceAll("(?i)if|item|location|permission|time|weather|currentState", "");
         Matcher matcher = VARIABLE.matcher(cleaned);
         if (matcher.find()) {
             return new Pair<>(ValidatorResult.INVALID_VARIABLE, matcher.group());
         }
 
-        matcher = OPERATORS.matcher(evaluator);
+        cleaned = cleaned.replaceAll(ALLOWED_OPERATORS.pattern(), "");
+        matcher = UNALLOWED_OPERATORS.matcher(cleaned);
         if (matcher.find()) {
             return new Pair<>(ValidatorResult.INVALID_OPERATOR, matcher.group());
         }
 
         // remove operators to see if some operators are left.
-        cleaned = cleaned.replaceAll("\\||&|!|=|\\(|\\)|\\s", "");
-        if (!cleaned.replaceAll("\\||&|!|=|\\(|\\)|\\s", "").isEmpty()) {
-            return new Pair<>(ValidatorResult.INVALID_SYNTAX, cleaned);
+        cleaned = cleaned.replaceAll(SYNTAX.pattern(), "");
+        if (!cleaned.replaceAll(SYNTAX.pattern(), "").isEmpty()) {
+            return new Pair<>(ValidatorResult.INVALID_SYNTAX, cleaned.replaceAll(SYNTAX.pattern(), ""));
         }
 
 
         try {
-            boolean aTrue = (boolean) ENGINE.eval(evaluator.replaceAll("(?i)itemKey|locationKey|permissionKey|timeKey|weatherKey", "true"));
+            boolean aTrue = (boolean) ENGINE.eval(evaluator.replaceAll("(?i)item|location|permission|time|weather|currentState", "true"));
         } catch (ScriptException e) {
             return new Pair<>(ValidatorResult.EXECUTION_FAILED, evaluator);
         } catch (ClassCastException e) {
@@ -75,7 +77,39 @@ public final class JsSyntaxHelper {
         return new Pair<>(ValidatorResult.FINE, evaluator);
     }
 
-    private enum ValidatorResult {
-        UNBALANCED_PARENTHESIS, INVALID_VARIABLE, INVALID_OPERATOR, INVALID_SYNTAX, EXECUTION_FAILED, NON_BOOLEAN_RESULT, FINE
+    public enum ValidatorResult {
+        /**
+         * Indicates that the parenthesis on the string are not balanced
+         */
+        UNBALANCED_PARENTHESIS,
+        /**
+         * Indicates that a variable which is not a key was used.
+         * Will include the part which was not a variable
+         */
+        INVALID_VARIABLE,
+        /**
+         * Indicates that a invalid operator was used.
+         * Will return the invalid operator.
+         */
+        INVALID_OPERATOR,
+        /**
+         * Indicates that the overall syntax is innvalid.
+         * Will return all invalid chars.
+         */
+        INVALID_SYNTAX,
+        /**
+         * Indicates that the execution failed.
+         * Will return the validator which was parsed.
+         */
+        EXECUTION_FAILED,
+        /**
+         * Indicates that the result was not a boolean.
+         * Will return the validator which was parsed.
+         */
+        NON_BOOLEAN_RESULT,
+        /**
+         * Indicates that the syntax is valid and can be used.
+         */
+        FINE
     }
 }
