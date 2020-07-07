@@ -3,6 +3,7 @@ package de.eldoria.bigdoorsopener.doors;
 import com.google.common.base.Objects;
 import de.eldoria.bigdoorsopener.doors.conditions.ConditionChain;
 import de.eldoria.bigdoorsopener.util.CachingJSEngine;
+import de.eldoria.bigdoorsopener.util.EnumUtil;
 import lombok.Getter;
 import org.bukkit.World;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
@@ -13,6 +14,8 @@ import org.jetbrains.annotations.NotNull;
 import javax.annotation.Nonnull;
 import java.time.Instant;
 import java.util.Map;
+
+import static java.time.temporal.ChronoUnit.SECONDS;
 
 @Getter
 public class ConditionalDoor implements ConfigurationSerializable {
@@ -65,7 +68,17 @@ public class ConditionalDoor implements ConfigurationSerializable {
         this(doorUID, world, position, new ConditionChain());
     }
 
+    /**
+     * Get the state of the door.
+     *
+     * @param player
+     * @param world
+     * @param currentState
+     * @return
+     */
     public boolean getState(Player player, World world, boolean currentState) {
+        if (openTill.isAfter(Instant.now())) return true;
+
         switch (evaluationType) {
             case CUSTOM:
                 String custom = conditionChain.custom(evaluator, player, world, this, currentState);
@@ -97,7 +110,13 @@ public class ConditionalDoor implements ConfigurationSerializable {
         return Objects.hashCode(doorUID);
     }
 
+    /**
+     * This method is called when a door changes its state from closed to open.
+     *
+     * @param player player which opened the door.
+     */
     public void opened(Player player) {
+        openTill = Instant.now().plus(stayOpen, SECONDS);
         //TODO stay open
         conditionChain.opened(player);
     }
@@ -109,10 +128,6 @@ public class ConditionalDoor implements ConfigurationSerializable {
     @Override
     public @NotNull Map<String, Object> serialize() {
         return null;
-    }
-
-    public enum EvaluationType {
-        CUSTOM, AND, OR
     }
 
     public boolean requiresPlayerEvaluation() {
@@ -147,4 +162,14 @@ public class ConditionalDoor implements ConfigurationSerializable {
     public void invertOpen() {
         invertOpen = !invertOpen;
     }
+
+    public enum EvaluationType {
+        CUSTOM, AND, OR;
+
+        public static EvaluationType parse(String argument) {
+            return EnumUtil.parse(argument, values(),false);
+        }
+    }
+
 }
+
