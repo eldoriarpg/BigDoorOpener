@@ -21,6 +21,8 @@ import de.eldoria.bigdoorsopener.doors.conditions.standalone.Weather;
 import de.eldoria.bigdoorsopener.listener.registration.RegisterInteraction;
 import de.eldoria.bigdoorsopener.scheduler.DoorChecker;
 import de.eldoria.bigdoorsopener.util.C;
+import de.eldoria.bigdoorsopener.util.EnumUtil;
+import de.eldoria.bigdoorsopener.util.JsSyntaxHelper;
 import de.eldoria.bigdoorsopener.util.Pair;
 import de.eldoria.bigdoorsopener.util.Permissions;
 import de.eldoria.eldoutilities.localization.Localizer;
@@ -88,40 +90,13 @@ public class BigDoorsOpenerCommand implements TabExecutor {
         }
 
         if (args.length == 0 || (args.length == 1 && "help".equalsIgnoreCase(args[0]))) {
-            messageSender.sendMessage(player,
-                    localizer.getMessage("help.title",
-                            Replacement.create("PLUGIN_NAME", plugin.getDescription().getName()).addFormatting('6')) + "\n"
-                            + "§setCondition <condition> <doorId> <condition values>\n"
-                            + "  §r" + localizer.getMessage("help.setCondition") + "\n"
-                            + "§removeCondition <condition> <doorId>\n"
-                            + "  §r" + localizer.getMessage("help.removeCondition") + "\n"
-                            + "§6invertOpen <doorId> <true|false>\n"
-                            + "  §r" + localizer.getMessage("help.invertOpen") + "\n"
-                            + "§6unregister <doorId>\n"
-                            + "  §r" + localizer.getMessage("help.unregister") + "\n"
-                            + "§6info <doorId>\n"
-                            + "  §r" + localizer.getMessage("help.info") + "\n"
-                            + "§6list\n"
-                            + "  §r" + localizer.getMessage("help.list") + "\n"
-                            + "§6reload\n"
-                            + "  §r" + localizer.getMessage("help.reload") + "\n"
-                            + "§6about\n"
-                            + "  §r" + localizer.getMessage("help.about"));
-            return true;
+            return help(player);
         }
 
         String cmd = args[0];
 
         if ("about".equalsIgnoreCase(cmd)) {
-            PluginDescriptionFile descr = plugin.getDescription();
-            String info = localizer.getMessage("about",
-                    Replacement.create("PLUGIN_NAME", "Big Doors Opener").addFormatting('b'),
-                    Replacement.create("AUTHORS", String.join(", ", descr.getAuthors())).addFormatting('b'),
-                    Replacement.create("VERSION", descr.getVersion()).addFormatting('b'),
-                    Replacement.create("WEBSITE", descr.getWebsite()).addFormatting('b'),
-                    Replacement.create("DISCORD", "https://discord.gg/JJdx3xe").addFormatting('b'));
-            messageSender.sendMessage(player, info);
-            return true;
+            return about(player);
         }
 
         // TODO: Password door. Enter a password to open a door when a player approaches it. https://hub.spigotmc.org/javadocs/spigot/org/bukkit/conversations/Conversation.html
@@ -154,6 +129,14 @@ public class BigDoorsOpenerCommand implements TabExecutor {
             return invertOpen(arguments, player);
         }
 
+        if ("setEvaluator".equalsIgnoreCase(cmd)) {
+            return setEvaluator(player, arguments);
+        }
+
+        if ("stayOpen".equalsIgnoreCase(cmd)) {
+            return stayOpen(player, arguments);
+        }
+
         if ("list".equalsIgnoreCase(cmd)) {
             return list(player);
         }
@@ -161,266 +144,42 @@ public class BigDoorsOpenerCommand implements TabExecutor {
         if ("reload".equalsIgnoreCase(cmd)) {
             return reload(player);
         }
-        return false;
-    }
-
-    private boolean reload(Player player) {
-        if (player != null && !player.hasPermission(Permissions.RELOAD)) {
-            messageSender.sendError(player, localizer.getMessage("error.permission"));
-            return true;
-        }
-        config.reloadConfig();
-        doorChecker.reload();
-        plugin.onEnable();
-        messageSender.sendMessage(player, localizer.getMessage("reload.completed"));
+        messageSender.sendError(player, localizer.getMessage("error.invalidCommand"));
         return true;
     }
 
-    private boolean list(Player player) {
-        if (player != null && !player.hasPermission(Permissions.USE)) {
-            messageSender.sendError(player, localizer.getMessage("error.permission"));
-            return true;
-        }
-        Map<Long, ConditionalDoor> doors = config.getDoors();
-        StringBuilder builder = new StringBuilder(localizer.getMessage("list.title"));
-
-        for (ConditionalDoor value : doors.values()) {
-            Door door = commander.getDoor(String.valueOf(value.getDoorUID()), null);
-            builder.append(value.getDoorUID()).append(" | ")
-                    .append(door.getName())
-                    .append("(").append(door.getWorld().getName()).append(")\n");
-        }
-
-        messageSender.sendMessage(player, builder.toString());
+    private boolean help(Player player) {
+        messageSender.sendMessage(player,
+                localizer.getMessage("help.title",
+                        Replacement.create("PLUGIN_NAME", plugin.getDescription().getName()).addFormatting('6')) + "\n"
+                        + "§setCondition <condition> <doorId> <condition values>\n"
+                        + "  §r" + localizer.getMessage("help.setCondition") + "\n"
+                        + "§removeCondition <condition> <doorId>\n"
+                        + "  §r" + localizer.getMessage("help.removeCondition") + "\n"
+                        + "§6invertOpen <doorId> <true|false>\n"
+                        + "  §r" + localizer.getMessage("help.invertOpen") + "\n"
+                        + "§6unregister <doorId>\n"
+                        + "  §r" + localizer.getMessage("help.unregister") + "\n"
+                        + "§6info <doorId>\n"
+                        + "  §r" + localizer.getMessage("help.info") + "\n"
+                        + "§6list\n"
+                        + "  §r" + localizer.getMessage("help.list") + "\n"
+                        + "§6reload\n"
+                        + "  §r" + localizer.getMessage("help.reload") + "\n"
+                        + "§6about\n"
+                        + "  §r" + localizer.getMessage("help.about"));
         return true;
     }
 
-    private boolean invertOpen(String[] args, Player player) {
-        if (player != null && !player.hasPermission(Permissions.USE)) {
-            messageSender.sendError(player, localizer.getMessage("error.permission"));
-            return true;
-        }
-        if (args.length != 1) {
-            messageSender.sendError(player, localizer.getMessage("error.invalidArguments"));
-            return true;
-        }
-        Pair<ConditionalDoor, Door> door = getConditionalPlayerDoor(args[0], player);
-        if (door == null) {
-            return true;
-        }
-
-        door.first.invertOpen();
-        messageSender.sendMessage(player, localizer.getMessage("invertOpen.inverted"));
-        config.safeConfig();
-        return true;
-    }
-
-    private boolean unregister(String[] args, Player player) {
-        if (player != null && !player.hasPermission(Permissions.USE)) {
-            messageSender.sendError(player, localizer.getMessage("error.permission"));
-            return true;
-        }
-        if (args.length != 1) {
-            messageSender.sendError(player, localizer.getMessage("error.invalidArguments"));
-            return true;
-        }
-        Pair<ConditionalDoor, Door> door = getConditionalPlayerDoor(args[0], player);
-
-        if (door == null) {
-            return true;
-        }
-
-        config.getDoors().remove(door.second.getDoorUID());
-        doorChecker.unregister(door.first);
-        config.safeConfig();
-
-        messageSender.sendMessage(player, localizer.getMessage("unregister.message",
-                Replacement.create("DOOR_NAME", door.second.getName()).addFormatting('6')));
-        return true;
-    }
-
-    private boolean info(CommandSender sender, String[] args, Player player) {
-        if (player != null && !player.hasPermission(Permissions.USE)) {
-            messageSender.sendError(player, localizer.getMessage("error.permission"));
-            return true;
-        }
-
-        if (args.length != 1) {
-            messageSender.sendError(player, localizer.getMessage("error.invalidArguments"));
-            return true;
-        }
-        Pair<ConditionalDoor, Door> door = getConditionalPlayerDoor(args[1], player);
-        if (door == null) {
-            return true;
-        }
-
-        ConditionalDoor cDoor = door.first;
-        TextComponent.Builder builder = TextComponent.builder()
-                .append(TextComponent.builder(localizer.getMessage(door.second.getName() + " ")).color(C.highlightColor))
-                .append(TextComponent.builder("(Id:" + door.second.getDoorUID() + ") ")).color(C.highlightColor)
-                .append(TextComponent.builder(localizer.getMessage("info.info")).color(C.baseColor))
-                .append(TextComponent.newline())
-                .append(TextComponent.builder(localizer.getMessage("info.world") + " ").color(C.baseColor))
-                .append(TextComponent.builder(cDoor.getWorld()).color(C.highlightColor))
-                .append(TextComponent.newline());
-
-        // append evaluator
-        builder.append(TextComponent.builder(localizer.getMessage("info.evaluator")).color(C.baseColor));
-        if (cDoor.getEvaluationType() == ConditionalDoor.EvaluationType.CUSTOM) {
-            builder.append(TextComponent.builder(cDoor.getEvaluator()).color(C.highlightColor));
-        } else {
-            builder.append(TextComponent.builder(cDoor.getEvaluationType().name()).color(C.highlightColor));
-        }
-        builder.append(TextComponent.newline());
-
-        // append open time
-        builder.append(TextComponent.builder(localizer.getMessage("info.stayOpen")).color(C.baseColor))
-                .append(TextComponent.builder(String.valueOf(cDoor.getStayOpen())).color(C.highlightColor))
-                .append(TextComponent.newline());
-
-        // start of key list
-        builder.append(TextComponent.builder(localizer.getMessage("info.conditions"))
-                .style(Style.builder().color(C.highlightColor).decoration(TextDecoration.BOLD, true).build()))
-                .append(TextComponent.newline());
-
-        ConditionChain conditionChain = cDoor.getConditionChain();
-        if (conditionChain.getItemKey() != null) {
-            builder.append(conditionChain.getItemKey().getDescription(localizer))
-                    .append(TextComponent.newline())
-                    .append(TextComponent.builder("[" + localizer.getMessage("info.remove") + "]")
-                            .color(TextColor.DARK_RED)
-                            .clickEvent(ClickEvent.runCommand("bdo removeCondition item " + cDoor.getDoorUID())));
-
-        } else {
-            builder.append(TextComponent.builder(localizer.getMessage("info.itemCondition") + " ").color(C.highlightColor))
-                    .append(TextComponent.builder("[" + localizer.getMessage("info.add") + "]")
-                            .color(TextColor.GREEN)
-                            .clickEvent(ClickEvent.suggestCommand("bdo setCondition item")));
-        }
-        builder.append(TextComponent.newline());
-
-        if (conditionChain.getLocation() != null) {
-            builder.append(conditionChain.getLocation().getDescription(localizer))
-                    .append(TextComponent.newline())
-                    .append(TextComponent.builder("[" + localizer.getMessage("info.remove") + "]")
-                            .color(TextColor.DARK_RED)
-                            .clickEvent(ClickEvent.runCommand("bdo removeCondition location " + cDoor.getDoorUID())));
-
-        } else {
-            builder.append(TextComponent.builder(localizer.getMessage("info.location") + " ").color(C.highlightColor))
-                    .append(TextComponent.builder("[" + localizer.getMessage("info.add") + "]")
-                            .color(TextColor.GREEN)
-                            .clickEvent(ClickEvent.suggestCommand("bdo setCondition ")));
-        }
-        builder.append(TextComponent.newline());
-
-        if (conditionChain.getPermission() != null) {
-            builder.append(conditionChain.getLocation().getDescription(localizer))
-                    .append(TextComponent.newline())
-                    .append(TextComponent.builder("[" + localizer.getMessage("info.remove") + "]")
-                            .color(TextColor.DARK_RED)
-                            .clickEvent(ClickEvent.runCommand("bdo removeCondition permission " + cDoor.getDoorUID())));
-        } else {
-            builder.append(TextComponent.builder(localizer.getMessage("info.permission") + " ").color(C.highlightColor))
-                    .append(TextComponent.builder("[" + localizer.getMessage("info.add") + "]")
-                            .color(TextColor.GREEN)
-                            .clickEvent(ClickEvent.suggestCommand("bdo setCondition permission " + cDoor.getDoorUID())));
-        }
-        builder.append(TextComponent.newline());
-
-        if (conditionChain.getTime() != null) {
-            builder.append(conditionChain.getTime().getDescription(localizer))
-                    .append(TextComponent.newline())
-                    .append(TextComponent.builder("[" + localizer.getMessage("info.remove") + "]")
-                            .color(TextColor.DARK_RED)
-                            .clickEvent(ClickEvent.runCommand("bdo removeCondition time " + cDoor.getDoorUID())));
-        } else {
-            builder.append(TextComponent.builder(localizer.getMessage("info.time") + " ").color(C.highlightColor))
-                    .append(TextComponent.builder("[" + localizer.getMessage("info.add") + "]")
-                            .color(TextColor.GREEN)
-                            .clickEvent(ClickEvent.suggestCommand("bdo setCondition time " + cDoor.getDoorUID())));
-        }
-        builder.append(TextComponent.newline());
-
-        if (conditionChain.getWeather() != null) {
-            builder.append(conditionChain.getTime().getDescription(localizer))
-                    .append(TextComponent.newline())
-                    .append(TextComponent.builder("[" + localizer.getMessage("info.remove") + "]")
-                            .color(TextColor.DARK_RED)
-                            .clickEvent(ClickEvent.runCommand("bdo removeCondition weather " + cDoor.getDoorUID())));
-        } else {
-            builder.append(TextComponent.builder(localizer.getMessage("info.weather") + " ").color(C.highlightColor))
-                    .append(TextComponent.builder("[" + localizer.getMessage("info.add") + "]")
-                            .color(TextColor.GREEN)
-                            .clickEvent(ClickEvent.suggestCommand("bdo setCondition weather " + cDoor.getDoorUID())));
-        }
-
-        TextAdapter.sendMessage(sender, builder.build());
-        return true;
-    }
-
-    private boolean removeCondition(Player player, String[] arguments) {
-        Door playerDoor = getPlayerDoor(arguments[3], player);
-
-        if (playerDoor == null) {
-            return true;
-        }
-
-        ConditionalDoor cDoor = getOrRegister(playerDoor, player);
-
-        if (cDoor == null) {
-            return true;
-        }
-
-        ConditionType type = ConditionType.getType(arguments[4]);
-        if (type == null) {
-            messageSender.sendError(player, localizer.getMessage("error.invalidConditionType"));
-            return true;
-        }
-
-        ConditionChain conditionChain = cDoor.getConditionChain();
-        switch (type.conditionGroup) {
-            case ITEM:
-                if (conditionChain.getItemKey() == null) {
-                    messageSender.sendError(player, localizer.getMessage("removeCondition.notSet"));
-                    return true;
-                }
-                conditionChain.setItemKey(null);
-                messageSender.sendMessage(player, localizer.getMessage("removeCondition.item"));
-                break;
-            case LOCATION:
-                if (conditionChain.getItemKey() == null) {
-                    messageSender.sendError(player, localizer.getMessage("removeCondition.notSet"));
-                    return true;
-                }
-                conditionChain.setLocation(null);
-                messageSender.sendMessage(player, localizer.getMessage("removeCondition.location"));
-                break;
-            case PERMISSION:
-                if (conditionChain.getItemKey() == null) {
-                    messageSender.sendError(player, localizer.getMessage("removeCondition.notSet"));
-                    return true;
-                }
-                conditionChain.setPermission(null);
-                messageSender.sendMessage(player, localizer.getMessage("removeCondition.permission"));
-                break;
-            case TIME:
-                if (conditionChain.getItemKey() == null) {
-                    messageSender.sendError(player, localizer.getMessage("removeCondition.notSet"));
-                    return true;
-                }
-                conditionChain.setTime(null);
-                messageSender.sendMessage(player, localizer.getMessage("removeCondition.time"));
-                break;
-            case WEATHER:
-                if (conditionChain.getItemKey() == null) {
-                    messageSender.sendError(player, localizer.getMessage("removeCondition.notSet"));
-                    return true;
-                }
-                conditionChain.setWeather(null);
-                messageSender.sendMessage(player, localizer.getMessage("removeCondition.weather"));
-                break;
-        }
+    private boolean about(Player player) {
+        PluginDescriptionFile descr = plugin.getDescription();
+        String info = localizer.getMessage("about",
+                Replacement.create("PLUGIN_NAME", "Big Doors Opener").addFormatting('b'),
+                Replacement.create("AUTHORS", String.join(", ", descr.getAuthors())).addFormatting('b'),
+                Replacement.create("VERSION", descr.getVersion()).addFormatting('b'),
+                Replacement.create("WEBSITE", descr.getWebsite()).addFormatting('b'),
+                Replacement.create("DISCORD", "https://discord.gg/JJdx3xe").addFormatting('b'));
+        messageSender.sendMessage(player, info);
         return true;
     }
 
@@ -666,6 +425,355 @@ public class BigDoorsOpenerCommand implements TabExecutor {
         return false;
     }
 
+    private boolean removeCondition(Player player, String[] arguments) {
+        Door playerDoor = getPlayerDoor(arguments[3], player);
+
+        if (playerDoor == null) {
+            return true;
+        }
+
+        ConditionalDoor cDoor = getOrRegister(playerDoor, player);
+
+        if (cDoor == null) {
+            return true;
+        }
+
+        ConditionType type = ConditionType.getType(arguments[4]);
+        if (type == null) {
+            messageSender.sendError(player, localizer.getMessage("error.invalidConditionType"));
+            return true;
+        }
+
+        ConditionChain conditionChain = cDoor.getConditionChain();
+        switch (type.conditionGroup) {
+            case ITEM:
+                if (conditionChain.getItemKey() == null) {
+                    messageSender.sendError(player, localizer.getMessage("removeCondition.notSet"));
+                    return true;
+                }
+                conditionChain.setItemKey(null);
+                messageSender.sendMessage(player, localizer.getMessage("removeCondition.item"));
+                break;
+            case LOCATION:
+                if (conditionChain.getItemKey() == null) {
+                    messageSender.sendError(player, localizer.getMessage("removeCondition.notSet"));
+                    return true;
+                }
+                conditionChain.setLocation(null);
+                messageSender.sendMessage(player, localizer.getMessage("removeCondition.location"));
+                break;
+            case PERMISSION:
+                if (conditionChain.getItemKey() == null) {
+                    messageSender.sendError(player, localizer.getMessage("removeCondition.notSet"));
+                    return true;
+                }
+                conditionChain.setPermission(null);
+                messageSender.sendMessage(player, localizer.getMessage("removeCondition.permission"));
+                break;
+            case TIME:
+                if (conditionChain.getItemKey() == null) {
+                    messageSender.sendError(player, localizer.getMessage("removeCondition.notSet"));
+                    return true;
+                }
+                conditionChain.setTime(null);
+                messageSender.sendMessage(player, localizer.getMessage("removeCondition.time"));
+                break;
+            case WEATHER:
+                if (conditionChain.getItemKey() == null) {
+                    messageSender.sendError(player, localizer.getMessage("removeCondition.notSet"));
+                    return true;
+                }
+                conditionChain.setWeather(null);
+                messageSender.sendMessage(player, localizer.getMessage("removeCondition.weather"));
+                break;
+        }
+        return true;
+    }
+
+    private boolean info(CommandSender sender, String[] args, Player player) {
+        if (player != null && !player.hasPermission(Permissions.USE)) {
+            messageSender.sendError(player, localizer.getMessage("error.permission"));
+            return true;
+        }
+
+        if (args.length != 1) {
+            messageSender.sendError(player, localizer.getMessage("error.invalidArguments"));
+            return true;
+        }
+        Pair<ConditionalDoor, Door> door = getConditionalPlayerDoor(args[1], player);
+        if (door == null) {
+            return true;
+        }
+
+        ConditionalDoor cDoor = door.first;
+        TextComponent.Builder builder = TextComponent.builder()
+                .append(TextComponent.builder(localizer.getMessage(door.second.getName() + " ")).color(C.highlightColor))
+                .append(TextComponent.builder("(Id:" + door.second.getDoorUID() + ") ")).color(C.highlightColor)
+                .append(TextComponent.builder(localizer.getMessage("info.info")).color(C.baseColor))
+                .append(TextComponent.newline())
+                .append(TextComponent.builder(localizer.getMessage("info.world") + " ").color(C.baseColor))
+                .append(TextComponent.builder(cDoor.getWorld()).color(C.highlightColor))
+                .append(TextComponent.newline());
+
+        // append evaluator
+        builder.append(TextComponent.builder(localizer.getMessage("info.evaluator")).color(C.baseColor));
+        if (cDoor.getEvaluationType() == ConditionalDoor.EvaluationType.CUSTOM) {
+            builder.append(TextComponent.builder(cDoor.getEvaluator()).color(C.highlightColor));
+        } else {
+            builder.append(TextComponent.builder(cDoor.getEvaluationType().name()).color(C.highlightColor));
+        }
+        builder.append(TextComponent.newline());
+
+        // append open time
+        builder.append(TextComponent.builder(localizer.getMessage("info.stayOpen")).color(C.baseColor))
+                .append(TextComponent.builder(String.valueOf(cDoor.getStayOpen())).color(C.highlightColor))
+                .append(TextComponent.newline());
+
+        // start of key list
+        builder.append(TextComponent.builder(localizer.getMessage("info.conditions"))
+                .style(Style.builder().color(C.highlightColor).decoration(TextDecoration.BOLD, true).build()))
+                .append(TextComponent.newline());
+
+        ConditionChain conditionChain = cDoor.getConditionChain();
+        if (conditionChain.getItemKey() != null) {
+            builder.append(conditionChain.getItemKey().getDescription(localizer))
+                    .append(TextComponent.newline())
+                    .append(TextComponent.builder("[" + localizer.getMessage("info.remove") + "]")
+                            .color(TextColor.DARK_RED)
+                            .clickEvent(ClickEvent.runCommand("bdo removeCondition item " + cDoor.getDoorUID())));
+
+        } else {
+            builder.append(TextComponent.builder(localizer.getMessage("info.itemCondition") + " ").color(C.highlightColor))
+                    .append(TextComponent.builder("[" + localizer.getMessage("info.add") + "]")
+                            .color(TextColor.GREEN)
+                            .clickEvent(ClickEvent.suggestCommand("bdo setCondition item")));
+        }
+        builder.append(TextComponent.newline());
+
+        if (conditionChain.getLocation() != null) {
+            builder.append(conditionChain.getLocation().getDescription(localizer))
+                    .append(TextComponent.newline())
+                    .append(TextComponent.builder("[" + localizer.getMessage("info.remove") + "]")
+                            .color(TextColor.DARK_RED)
+                            .clickEvent(ClickEvent.runCommand("bdo removeCondition location " + cDoor.getDoorUID())));
+
+        } else {
+            builder.append(TextComponent.builder(localizer.getMessage("info.location") + " ").color(C.highlightColor))
+                    .append(TextComponent.builder("[" + localizer.getMessage("info.add") + "]")
+                            .color(TextColor.GREEN)
+                            .clickEvent(ClickEvent.suggestCommand("bdo setCondition ")));
+        }
+        builder.append(TextComponent.newline());
+
+        if (conditionChain.getPermission() != null) {
+            builder.append(conditionChain.getLocation().getDescription(localizer))
+                    .append(TextComponent.newline())
+                    .append(TextComponent.builder("[" + localizer.getMessage("info.remove") + "]")
+                            .color(TextColor.DARK_RED)
+                            .clickEvent(ClickEvent.runCommand("bdo removeCondition permission " + cDoor.getDoorUID())));
+        } else {
+            builder.append(TextComponent.builder(localizer.getMessage("info.permission") + " ").color(C.highlightColor))
+                    .append(TextComponent.builder("[" + localizer.getMessage("info.add") + "]")
+                            .color(TextColor.GREEN)
+                            .clickEvent(ClickEvent.suggestCommand("bdo setCondition permission " + cDoor.getDoorUID())));
+        }
+        builder.append(TextComponent.newline());
+
+        if (conditionChain.getTime() != null) {
+            builder.append(conditionChain.getTime().getDescription(localizer))
+                    .append(TextComponent.newline())
+                    .append(TextComponent.builder("[" + localizer.getMessage("info.remove") + "]")
+                            .color(TextColor.DARK_RED)
+                            .clickEvent(ClickEvent.runCommand("bdo removeCondition time " + cDoor.getDoorUID())));
+        } else {
+            builder.append(TextComponent.builder(localizer.getMessage("info.time") + " ").color(C.highlightColor))
+                    .append(TextComponent.builder("[" + localizer.getMessage("info.add") + "]")
+                            .color(TextColor.GREEN)
+                            .clickEvent(ClickEvent.suggestCommand("bdo setCondition time " + cDoor.getDoorUID())));
+        }
+        builder.append(TextComponent.newline());
+
+        if (conditionChain.getWeather() != null) {
+            builder.append(conditionChain.getTime().getDescription(localizer))
+                    .append(TextComponent.newline())
+                    .append(TextComponent.builder("[" + localizer.getMessage("info.remove") + "]")
+                            .color(TextColor.DARK_RED)
+                            .clickEvent(ClickEvent.runCommand("bdo removeCondition weather " + cDoor.getDoorUID())));
+        } else {
+            builder.append(TextComponent.builder(localizer.getMessage("info.weather") + " ").color(C.highlightColor))
+                    .append(TextComponent.builder("[" + localizer.getMessage("info.add") + "]")
+                            .color(TextColor.GREEN)
+                            .clickEvent(ClickEvent.suggestCommand("bdo setCondition weather " + cDoor.getDoorUID())));
+        }
+
+        TextAdapter.sendMessage(sender, builder.build());
+        return true;
+    }
+
+    private boolean unregister(String[] args, Player player) {
+        if (player != null && !player.hasPermission(Permissions.USE)) {
+            messageSender.sendError(player, localizer.getMessage("error.permission"));
+            return true;
+        }
+        if (args.length != 1) {
+            messageSender.sendError(player, localizer.getMessage("error.invalidArguments"));
+            return true;
+        }
+        Pair<ConditionalDoor, Door> door = getConditionalPlayerDoor(args[0], player);
+
+        if (door == null) {
+            return true;
+        }
+
+        config.getDoors().remove(door.second.getDoorUID());
+        doorChecker.unregister(door.first);
+        config.safeConfig();
+
+        messageSender.sendMessage(player, localizer.getMessage("unregister.message",
+                Replacement.create("DOOR_NAME", door.second.getName()).addFormatting('6')));
+        return true;
+    }
+
+    private boolean invertOpen(String[] args, Player player) {
+        if (player != null && !player.hasPermission(Permissions.USE)) {
+            messageSender.sendError(player, localizer.getMessage("error.permission"));
+            return true;
+        }
+        if (args.length != 1) {
+            messageSender.sendError(player, localizer.getMessage("error.invalidArguments"));
+            return true;
+        }
+        Pair<ConditionalDoor, Door> door = getConditionalPlayerDoor(args[0], player);
+        if (door == null) {
+            return true;
+        }
+
+        door.first.invertOpen();
+        messageSender.sendMessage(player, localizer.getMessage("invertOpen.inverted"));
+        config.safeConfig();
+        return true;
+    }
+
+    private boolean setEvaluator(Player player, String[] arguments) {
+        if (player != null && !player.hasPermission(Permissions.USE)) {
+            messageSender.sendError(player, localizer.getMessage("error.permission"));
+            return true;
+        }
+        if (arguments.length < 2) {
+            messageSender.sendError(player, localizer.getMessage("error.invalidArguments"));
+            return true;
+        }
+
+        Pair<ConditionalDoor, Door> door = getConditionalPlayerDoor(arguments[0], player);
+
+        if (door == null) {
+            return true;
+        }
+
+        ConditionalDoor.EvaluationType type = EnumUtil.parse(arguments[1], ConditionalDoor.EvaluationType.values(), false);
+        if (type == null) {
+            messageSender.sendMessage(player, localizer.getMessage("error.invalidEvaluationType"));
+            return true;
+        }
+        if (type != ConditionalDoor.EvaluationType.CUSTOM) {
+            door.first.setEvaluator(type);
+            if (type == ConditionalDoor.EvaluationType.AND) {
+                messageSender.sendMessage(player, localizer.getMessage("setEvaluator.and"));
+            } else {
+                messageSender.sendMessage(player, localizer.getMessage("setEvaluator.or"));
+            }
+            return true;
+        }
+
+        if (arguments.length < 3) {
+            messageSender.sendError(player, localizer.getMessage("error.noEvaluatorFound"));
+            return true;
+        }
+        String evaluator = String.join(" ", Arrays.copyOfRange(arguments, 2, arguments.length));
+        Pair<JsSyntaxHelper.ValidatorResult, String> result = JsSyntaxHelper.validateEvaluator(evaluator);
+
+        switch (result.first) {
+            case UNBALANCED_PARENTHESIS:
+                messageSender.sendError(player, localizer.getMessage("error.unbalancedParenthesis"));
+                break;
+            case INVALID_VARIABLE:
+                messageSender.sendError(player, localizer.getMessage("error.invalidVariable",
+                        Replacement.create("ERROR", result.second).addFormatting('6')));
+                return true;
+            case INVALID_OPERATOR:
+                messageSender.sendError(player, localizer.getMessage("error.invalidOperator",
+                        Replacement.create("ERROR", result.second).addFormatting('6')));
+                return true;
+            case INVALID_SYNTAX:
+                messageSender.sendError(player, localizer.getMessage("error.invalidSyntax",
+                        Replacement.create("ERROR", result.second).addFormatting('6')));
+                return true;
+            case EXECUTION_FAILED:
+                messageSender.sendError(player, localizer.getMessage("error.executionFailed",
+                        Replacement.create("ERROR", result.second).addFormatting('6')));
+                return true;
+            case NON_BOOLEAN_RESULT:
+                messageSender.sendError(player, localizer.getMessage("error.nonBooleanResult",
+                        Replacement.create("ERROR", result.second).addFormatting('6')));
+                return true;
+            case FINE:
+                door.first.setEvaluator(JsSyntaxHelper.translateEvaluator(evaluator));
+                break;
+        }
+        messageSender.sendMessage(player, localizer.getMessage("setEvaluator.custom",
+                Replacement.create("EVALUATOR", JsSyntaxHelper.translateEvaluator(evaluator))));
+        return true;
+    }
+
+    private boolean stayOpen(Player player, String[] arguments) {
+        Pair<ConditionalDoor, Door> door = getConditionalPlayerDoor(arguments[0], player);
+
+        if (door == null) {
+            return true;
+        }
+
+        OptionalInt optionalInt = Parser.parseInt(arguments[1]);
+        if (!optionalInt.isPresent()) {
+            messageSender.sendError(player, localizer.getMessage("error.invalidAmount"));
+            return true;
+        }
+        door.first.setStayOpen(optionalInt.getAsInt());
+        messageSender.sendError(player, localizer.getMessage("stayOpen.message",
+                Replacement.create("SECONDS", optionalInt.getAsInt())));
+        return true;
+    }
+
+    private boolean list(Player player) {
+        if (player != null && !player.hasPermission(Permissions.USE)) {
+            messageSender.sendError(player, localizer.getMessage("error.permission"));
+            return true;
+        }
+        Map<Long, ConditionalDoor> doors = config.getDoors();
+        StringBuilder builder = new StringBuilder(localizer.getMessage("list.title"));
+
+        for (ConditionalDoor value : doors.values()) {
+            Door door = commander.getDoor(String.valueOf(value.getDoorUID()), null);
+            builder.append(value.getDoorUID()).append(" | ")
+                    .append(door.getName())
+                    .append("(").append(door.getWorld().getName()).append(")\n");
+        }
+
+        messageSender.sendMessage(player, builder.toString());
+        return true;
+    }
+
+    private boolean reload(Player player) {
+        if (player != null && !player.hasPermission(Permissions.RELOAD)) {
+            messageSender.sendError(player, localizer.getMessage("error.permission"));
+            return true;
+        }
+        config.reloadConfig();
+        doorChecker.reload();
+        plugin.onEnable();
+        messageSender.sendMessage(player, localizer.getMessage("reload.completed"));
+        return true;
+    }
+
     /**
      * Returns the door from config or creates it if not in config.
      *
@@ -699,8 +807,15 @@ public class BigDoorsOpenerCommand implements TabExecutor {
         return conditionalDoor;
     }
 
+    /**
+     * Tries to find the door for a player.
+     *
+     * @param doorUID uid or name of the door
+     * @param player
+     * @return door with conditional door or null if the door is not registered or the user has no access.
+     */
     private Pair<ConditionalDoor, Door> getConditionalPlayerDoor(String doorUID, Player player) {
-        Door door = getDoor(doorUID, player);
+        Door door = getPlayerDoor(doorUID, player);
         if (door == null) {
             return null;
         }
@@ -711,22 +826,6 @@ public class BigDoorsOpenerCommand implements TabExecutor {
             return null;
         }
         return new Pair<>(timedDoor, door);
-    }
-
-    /**
-     * Get a door which is not associated to the player.
-     *
-     * @param doorUID id of door
-     * @param player  player which requested the door.
-     * @return a door or null if no door with this id was found.
-     */
-    private Door getDoor(String doorUID, Player player) {
-        Door door = commander.getDoor(doorUID, null);
-        if (door == null) {
-            messageSender.sendError(player, localizer.getMessage("error.doorNotFound"));
-            return null;
-        }
-        return door;
     }
 
     /**
@@ -742,12 +841,25 @@ public class BigDoorsOpenerCommand implements TabExecutor {
      */
     private Door getPlayerDoor(String doorUID, Player player) {
         if (player == null) {
-            return getDoor(doorUID, null);
+            // requester is console. should always have access to all doors.
+            Door door = commander.getDoor(doorUID, null);
+            if (door == null) {
+                messageSender.sendError(null, localizer.getMessage("error.doorNotFound"));
+                return null;
+            }
+            return door;
         }
+        // sender id not console. retrieve door of player.
         Door door = commander.getDoor(doorUID, player);
         if (door == null) {
-            door = getDoor(doorUID, player);
-            if (door != null && player.hasPermission(Permissions.ACCESS_ALL)) {
+            // door is null. check if door exists.
+            door = commander.getDoor(doorUID, null);
+            if (door == null) {
+                messageSender.sendError(null, localizer.getMessage("error.doorNotFound"));
+                return null;
+            }
+            // when the door exists and the player has access to all doors return it.
+            if (player.hasPermission(Permissions.ACCESS_ALL)) {
                 return door;
             } else {
                 messageSender.sendError(player, localizer.getMessage("error.notYourDoor"));
