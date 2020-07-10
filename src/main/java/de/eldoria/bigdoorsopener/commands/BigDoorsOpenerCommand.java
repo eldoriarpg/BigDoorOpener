@@ -21,14 +21,14 @@ import de.eldoria.bigdoorsopener.doors.conditions.standalone.Weather;
 import de.eldoria.bigdoorsopener.listener.registration.RegisterInteraction;
 import de.eldoria.bigdoorsopener.scheduler.DoorChecker;
 import de.eldoria.bigdoorsopener.util.C;
-import de.eldoria.bigdoorsopener.util.EnumUtil;
 import de.eldoria.bigdoorsopener.util.JsSyntaxHelper;
-import de.eldoria.bigdoorsopener.util.Pair;
 import de.eldoria.bigdoorsopener.util.Permissions;
+import de.eldoria.eldoutilities.container.Pair;
 import de.eldoria.eldoutilities.localization.Localizer;
 import de.eldoria.eldoutilities.localization.Replacement;
 import de.eldoria.eldoutilities.messages.MessageSender;
 import de.eldoria.eldoutilities.utils.ArrayUtil;
+import de.eldoria.eldoutilities.utils.EnumUtil;
 import de.eldoria.eldoutilities.utils.Parser;
 import net.kyori.text.TextComponent;
 import net.kyori.text.adapter.bukkit.TextAdapter;
@@ -51,6 +51,7 @@ import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.util.BlockVector;
 import org.bukkit.util.Vector;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -69,6 +70,11 @@ public class BigDoorsOpenerCommand implements TabExecutor {
     private final MessageSender messageSender;
     private final RegisterInteraction registerInteraction;
     private final RegionContainer regionContainer;
+    private final String[] conditionTypes = (String[]) Arrays.stream(ConditionType.values()).map(v -> v.conditionName).toArray();
+    private final String[] conditionGroups = (String[]) Arrays.stream(ConditionType.ConditionGroup.values()).map(v -> v.name().toLowerCase()).toArray();
+    private final String[] proximityForm = (String[]) Arrays.stream(Proximity.ProximityForm.values()).map(v -> v.name().toLowerCase()).toArray();
+    private final String[] weatherType = (String[]) Arrays.stream(WeatherType.values()).map(v -> v.name().toLowerCase()).toArray();
+    private final String[] evaluatorTypes = (String[]) Arrays.stream(ConditionalDoor.EvaluationType.values()).map(v -> v.name().toLowerCase()).toArray();
 
     public BigDoorsOpenerCommand(BigDoorsOpener plugin, Commander commander, Config config, Localizer localizer,
                                  DoorChecker doorChecker, RegisterInteraction registerInteraction) {
@@ -184,6 +190,11 @@ public class BigDoorsOpenerCommand implements TabExecutor {
     }
 
     private boolean setCondition(Player player, String[] arguments) {
+        if (player != null && !player.hasPermission(Permissions.USE)) {
+            messageSender.sendError(player, localizer.getMessage("error.permission"));
+            return true;
+        }
+
         if (arguments.length < 3) {
             messageSender.sendError(player, localizer.getMessage("error.invalidArguments"));
             return true;
@@ -207,6 +218,12 @@ public class BigDoorsOpenerCommand implements TabExecutor {
             messageSender.sendError(player, localizer.getMessage("error.invalidConditionType"));
             return true;
         }
+
+        if (player != null && !player.hasPermission(type.permission)) {
+            messageSender.sendError(player, localizer.getMessage("error.permission"));
+            return true;
+        }
+
 
         ItemStack itemInMainHand = null;
         if (player != null) {
@@ -237,7 +254,7 @@ public class BigDoorsOpenerCommand implements TabExecutor {
 
                 }
                 itemInMainHand.setAmount(amount.getAsInt());
-                conditionChain.setItemKey(new ItemClick(itemInMainHand, consume.get()));
+                conditionChain.setItem(new ItemClick(itemInMainHand, consume.get()));
                 messageSender.sendMessage(player, localizer.getMessage("setCondition.itemClick"));
                 break;
             // <amount> <consumed>
@@ -290,7 +307,7 @@ public class BigDoorsOpenerCommand implements TabExecutor {
 
                 }
                 itemInMainHand.setAmount(amount.getAsInt());
-                conditionChain.setItemKey(new ItemHolding(itemInMainHand, consume.get()));
+                conditionChain.setItem(new ItemHolding(itemInMainHand, consume.get()));
                 messageSender.sendMessage(player, localizer.getMessage("setCondition.itemHolding"));
                 break;
             // <amount> <consumed>
@@ -311,7 +328,7 @@ public class BigDoorsOpenerCommand implements TabExecutor {
 
                 }
                 itemInMainHand.setAmount(amount.getAsInt());
-                conditionChain.setItemKey(new ItemOwning(itemInMainHand, consume.get()));
+                conditionChain.setItem(new ItemOwning(itemInMainHand, consume.get()));
                 messageSender.sendMessage(player, localizer.getMessage("setCondition.itemOwning"));
                 break;
             // <dimensions> <form>
@@ -339,7 +356,8 @@ public class BigDoorsOpenerCommand implements TabExecutor {
                     messageSender.sendError(player, localizer.getMessage("error.invalidVector"));
                     return true;
                 }
-                Proximity.ProximityForm form = Proximity.ProximityForm.parse(arguments[4]);
+                Proximity.ProximityForm form = EnumUtil.parse(arguments[4], Proximity.ProximityForm.class);
+
                 if (form == null) {
                     messageSender.sendError(player, localizer.getMessage("error.invalidForm"));
                     return true;
@@ -425,8 +443,14 @@ public class BigDoorsOpenerCommand implements TabExecutor {
         return false;
     }
 
+    // bdo removeCondition <doorId> <condition>
     private boolean removeCondition(Player player, String[] arguments) {
-        Door playerDoor = getPlayerDoor(arguments[3], player);
+        if (player != null && !player.hasPermission(Permissions.USE)) {
+            messageSender.sendError(player, localizer.getMessage("error.permission"));
+            return true;
+        }
+
+        Door playerDoor = getPlayerDoor(arguments[0], player);
 
         if (playerDoor == null) {
             return true;
@@ -438,24 +462,25 @@ public class BigDoorsOpenerCommand implements TabExecutor {
             return true;
         }
 
-        ConditionType type = ConditionType.getType(arguments[4]);
+        ConditionType type = ConditionType.getType(arguments[1]);
         if (type == null) {
             messageSender.sendError(player, localizer.getMessage("error.invalidConditionType"));
             return true;
         }
 
+
         ConditionChain conditionChain = cDoor.getConditionChain();
         switch (type.conditionGroup) {
             case ITEM:
-                if (conditionChain.getItemKey() == null) {
+                if (conditionChain.getItem() == null) {
                     messageSender.sendError(player, localizer.getMessage("removeCondition.notSet"));
                     return true;
                 }
-                conditionChain.setItemKey(null);
+                conditionChain.setItem(null);
                 messageSender.sendMessage(player, localizer.getMessage("removeCondition.item"));
                 break;
             case LOCATION:
-                if (conditionChain.getItemKey() == null) {
+                if (conditionChain.getItem() == null) {
                     messageSender.sendError(player, localizer.getMessage("removeCondition.notSet"));
                     return true;
                 }
@@ -463,7 +488,7 @@ public class BigDoorsOpenerCommand implements TabExecutor {
                 messageSender.sendMessage(player, localizer.getMessage("removeCondition.location"));
                 break;
             case PERMISSION:
-                if (conditionChain.getItemKey() == null) {
+                if (conditionChain.getItem() == null) {
                     messageSender.sendError(player, localizer.getMessage("removeCondition.notSet"));
                     return true;
                 }
@@ -471,7 +496,7 @@ public class BigDoorsOpenerCommand implements TabExecutor {
                 messageSender.sendMessage(player, localizer.getMessage("removeCondition.permission"));
                 break;
             case TIME:
-                if (conditionChain.getItemKey() == null) {
+                if (conditionChain.getItem() == null) {
                     messageSender.sendError(player, localizer.getMessage("removeCondition.notSet"));
                     return true;
                 }
@@ -479,7 +504,7 @@ public class BigDoorsOpenerCommand implements TabExecutor {
                 messageSender.sendMessage(player, localizer.getMessage("removeCondition.time"));
                 break;
             case WEATHER:
-                if (conditionChain.getItemKey() == null) {
+                if (conditionChain.getItem() == null) {
                     messageSender.sendError(player, localizer.getMessage("removeCondition.notSet"));
                     return true;
                 }
@@ -490,6 +515,7 @@ public class BigDoorsOpenerCommand implements TabExecutor {
         return true;
     }
 
+    //bdo info <doorid>
     private boolean info(CommandSender sender, String[] args, Player player) {
         if (player != null && !player.hasPermission(Permissions.USE)) {
             messageSender.sendError(player, localizer.getMessage("error.permission"));
@@ -500,7 +526,7 @@ public class BigDoorsOpenerCommand implements TabExecutor {
             messageSender.sendError(player, localizer.getMessage("error.invalidArguments"));
             return true;
         }
-        Pair<ConditionalDoor, Door> door = getConditionalPlayerDoor(args[1], player);
+        Pair<ConditionalDoor, Door> door = getConditionalPlayerDoor(args[0], player);
         if (door == null) {
             return true;
         }
@@ -535,8 +561,8 @@ public class BigDoorsOpenerCommand implements TabExecutor {
                 .append(TextComponent.newline());
 
         ConditionChain conditionChain = cDoor.getConditionChain();
-        if (conditionChain.getItemKey() != null) {
-            builder.append(conditionChain.getItemKey().getDescription(localizer))
+        if (conditionChain.getItem() != null) {
+            builder.append(conditionChain.getItem().getDescription(localizer))
                     .append(TextComponent.newline())
                     .append(TextComponent.builder("[" + localizer.getMessage("info.remove") + "]")
                             .color(TextColor.DARK_RED)
@@ -610,6 +636,7 @@ public class BigDoorsOpenerCommand implements TabExecutor {
         return true;
     }
 
+    //bdo unregister <doorid>
     private boolean unregister(String[] args, Player player) {
         if (player != null && !player.hasPermission(Permissions.USE)) {
             messageSender.sendError(player, localizer.getMessage("error.permission"));
@@ -634,6 +661,7 @@ public class BigDoorsOpenerCommand implements TabExecutor {
         return true;
     }
 
+    //bdo invertOpen <doorid>
     private boolean invertOpen(String[] args, Player player) {
         if (player != null && !player.hasPermission(Permissions.USE)) {
             messageSender.sendError(player, localizer.getMessage("error.permission"));
@@ -654,11 +682,13 @@ public class BigDoorsOpenerCommand implements TabExecutor {
         return true;
     }
 
+    //bod setEvaluator <type> [args]
     private boolean setEvaluator(Player player, String[] arguments) {
         if (player != null && !player.hasPermission(Permissions.USE)) {
             messageSender.sendError(player, localizer.getMessage("error.permission"));
             return true;
         }
+
         if (arguments.length < 2) {
             messageSender.sendError(player, localizer.getMessage("error.invalidArguments"));
             return true;
@@ -670,7 +700,7 @@ public class BigDoorsOpenerCommand implements TabExecutor {
             return true;
         }
 
-        ConditionalDoor.EvaluationType type = EnumUtil.parse(arguments[1], ConditionalDoor.EvaluationType.values(), false);
+        ConditionalDoor.EvaluationType type = EnumUtil.parse(arguments[1], ConditionalDoor.EvaluationType.class, false);
         if (type == null) {
             messageSender.sendMessage(player, localizer.getMessage("error.invalidEvaluationType"));
             return true;
@@ -682,6 +712,11 @@ public class BigDoorsOpenerCommand implements TabExecutor {
             } else {
                 messageSender.sendMessage(player, localizer.getMessage("setEvaluator.or"));
             }
+            return true;
+        }
+
+        if (player != null && !player.hasPermission(Permissions.CUSTOM_EVALUATOR)) {
+            messageSender.sendError(player, localizer.getMessage("error.permission"));
             return true;
         }
 
@@ -726,6 +761,11 @@ public class BigDoorsOpenerCommand implements TabExecutor {
     }
 
     private boolean stayOpen(Player player, String[] arguments) {
+        if (player != null && !player.hasPermission(Permissions.USE)) {
+            messageSender.sendError(player, localizer.getMessage("error.permission"));
+            return true;
+        }
+
         Pair<ConditionalDoor, Door> door = getConditionalPlayerDoor(arguments[0], player);
 
         if (door == null) {
@@ -880,78 +920,151 @@ public class BigDoorsOpenerCommand implements TabExecutor {
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
-        if ("setTimed".equalsIgnoreCase(args[0])) {
+        String cmd = args[0];
+        if ("about".equalsIgnoreCase(cmd)) {
+            return Collections.emptyList();
+        }
+
+        if ("help".equalsIgnoreCase(cmd)) {
+            return Collections.emptyList();
+        }
+
+        if ("setCondition".equalsIgnoreCase(cmd)) {
+            if (args.length == 2) {
+                String conditionType = args[1];
+                return ArrayUtil.startingWithInArray(conditionType, conditionTypes).collect(Collectors.toList());
+            }
+
+            ConditionType type = ConditionType.getType(args[1]);
+            if (type == null) {
+                return Collections.emptyList();
+            }
+
+            if (!sender.hasPermission(type.permission)) {
+                return Collections.singletonList(localizer.getMessage("error.permission"));
+            }
+
+            if (args.length == 3) {
+                return Collections.singletonList("<doorId>");
+            }
+
+            switch (type) {
+                case ITEM_CLICK:
+                case ITEM_BLOCK:
+                case ITEM_HOLDING:
+                case ITEM_OWNING:
+                    if (args.length == 4) {
+                        return Collections.singletonList("<" + localizer.getMessage("tabcomplete.amount") + ">");
+                    }
+                    if (args.length == 5) {
+                        return Arrays.asList("<" + localizer.getMessage("tabcomplete.consumed") + ">", "true", "false");
+                    }
+                    break;
+                case PROXIMITY:
+                    if (args.length == 4) {
+                        return Arrays.asList(localizer.getMessage("tabcomplete.dimensions"), "<x,y,z>");
+                    }
+                    if (args.length == 5) {
+                        return ArrayUtil.startingWithInArray(args[4], proximityForm).collect(Collectors.toList());
+                    }
+                    break;
+                case REGION:
+                    if (args.length == 4) {
+                        return Collections.singletonList("<" + localizer.getMessage("tabcomplete.regionName") + ">");
+                    }
+                    break;
+                case PERMISSION:
+                    if (args.length == 4) {
+                        return Collections.singletonList("<" + localizer.getMessage("tabcomplete.permission") + ">");
+                    }
+                    break;
+                case TIME:
+                    if (args.length == 4) {
+                        return Collections.singletonList("<" + localizer.getMessage("tabcomplete.setTimed.open") + ">");
+                    }
+                    if (args.length == 5) {
+                        return Collections.singletonList("<" + localizer.getMessage("tabcomplete.setTimed.close") + ">");
+                    }
+                    if (args.length == 6) {
+                        return Arrays.asList("<" + localizer.getMessage("tabcomplete.forceState") + ">", "true", "false");
+                    }
+                    break;
+                case WEATHER:
+                    if (args.length == 4) {
+                        return ArrayUtil.startingWithInArray(args[4], weatherType).collect(Collectors.toList());
+                    }
+                    break;
+            }
+            return Collections.emptyList();
+        }
+
+        if ("removeCondition".equalsIgnoreCase(cmd)) {
             if (args.length == 2) {
                 return Collections.singletonList("<doorId>");
             }
             if (args.length == 3) {
-                return Collections.singletonList(localizer.getMessage("tabcomplete.setTimed.open"));
-            }
-            if (args.length == 4) {
-                return Collections.singletonList(localizer.getMessage("tabcomplete.setTimed.close"));
+                ArrayUtil.startingWithInArray(args[2], conditionGroups);
             }
             return Collections.emptyList();
         }
 
-        if ("setClosed".equalsIgnoreCase(args[0])) {
+        if ("info".equalsIgnoreCase(cmd)) {
             if (args.length == 2) {
                 return Collections.singletonList(localizer.getMessage("tabcomplete.doorId"));
             }
             return Collections.emptyList();
         }
 
-        if ("setRange".equalsIgnoreCase(args[0])) {
-            if (args.length == 2) {
-                return Collections.singletonList(localizer.getMessage("tabcomplete.doorId"));
-            }
-            if (args.length == 3) {
-                return Collections.singletonList(localizer.getMessage("tabcomplete.range"));
-            }
-            return Collections.emptyList();
-        }
-
-        if ("info".equalsIgnoreCase(args[0])) {
+        if ("unregister".equalsIgnoreCase(cmd)) {
             if (args.length == 2) {
                 return Collections.singletonList(localizer.getMessage("tabcomplete.doorId"));
             }
             return Collections.emptyList();
         }
 
-        if ("unregister".equalsIgnoreCase(args[0])) {
+        if ("invertOpen".equalsIgnoreCase(cmd)) {
             if (args.length == 2) {
                 return Collections.singletonList(localizer.getMessage("tabcomplete.doorId"));
             }
             return Collections.emptyList();
         }
 
-        if ("invertOpen".equalsIgnoreCase(args[0])) {
+        if ("setEvaluator".equalsIgnoreCase(cmd)) {
             if (args.length == 2) {
-                return Collections.singletonList(localizer.getMessage("tabcomplete.doorId"));
+                return ArrayUtil.startingWithInArray(args[1], evaluatorTypes).collect(Collectors.toList());
             }
-            if (args.length == 3) {
-                return Arrays.asList("true", "false");
+
+            ConditionalDoor.EvaluationType parse = EnumUtil.parse(args[1], ConditionalDoor.EvaluationType.class);
+            if (parse == ConditionalDoor.EvaluationType.CUSTOM) {
+                if (!sender.hasPermission(Permissions.CUSTOM_EVALUATOR)) {
+                    return Collections.singletonList(localizer.getMessage("error.permission"));
+                }
+                ArrayList<String> list = new ArrayList<>(Arrays.asList(conditionGroups));
+                list.add("currentState");
+                list.add(localizer.getMessage("tabcomplete.validValues"));
+                return list;
             }
             return Collections.emptyList();
         }
 
-        if ("requiresPermission".equalsIgnoreCase(args[0])) {
+        if ("stayOpen".equalsIgnoreCase(cmd)) {
             if (args.length == 2) {
-                return Collections.singletonList(localizer.getMessage("tabcomplete.doorId"));
-            }
-            if (args.length == 3) {
-                return Arrays.asList("true", "false", localizer.getMessage("tabcomplete.permission"));
+                return Collections.singletonList(localizer.getMessage("tabcomplete.amount"));
             }
             return Collections.emptyList();
         }
 
-        if ("reload".equalsIgnoreCase(args[0])) {
+        if ("reload".equalsIgnoreCase(cmd)) {
+            return Collections.emptyList();
+        }
+        if ("list".equalsIgnoreCase(cmd)) {
             return Collections.emptyList();
         }
 
         if (args.length == 1) {
-
-            return ArrayUtil.startingWithInArray(args[0],
-                    new String[] {"setTimed", "setClosed", "setRange", "unregister", "info", "invertOpen", "list", "requiresPermission", "reload"})
+            return ArrayUtil.startingWithInArray(cmd,
+                    new String[] {"help", "about", "setCondition", "removeCondition", "info",
+                            "unregister", "invertOpen", "setEvaluator", "stayOpen", "list", "reload"})
                     .collect(Collectors.toList());
         }
         return Collections.emptyList();
