@@ -1,5 +1,8 @@
 package de.eldoria.bigdoorsopener.util;
 
+import de.eldoria.eldoutilities.container.Pair;
+import de.eldoria.eldoutilities.utils.TextUtil;
+
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;

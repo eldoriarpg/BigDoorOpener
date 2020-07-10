@@ -51,7 +51,7 @@ public class Region implements Location {
     public TextComponent getDescription(Localizer localizer) {
         return TextComponent.builder(
                 localizer.getMessage("conditionDesc.type.region",
-                        Replacement.create("NAME", ConditionType.REGION.keyName)))
+                        Replacement.create("NAME", ConditionType.REGION.conditionName)))
                 .append(TextComponent.newline())
                 .append(TextComponent.builder(localizer.getMessage("conditionDesc.region")).color(C.highlightColor))
                 .append(TextComponent.builder(regionId))
@@ -78,6 +78,7 @@ public class Region implements Location {
             ProtectedRegion region = BigDoorsOpener.getRegionContainer().get(BukkitAdapter.adapt(world)).getRegion(regionName);
             return new Region(world, region, regionName, worldName);
         }
+        BigDoorsOpener.logger().warning("A region key is used but world guard was not found.");
         return new Region(null, null, regionName, worldName);
     }
 }

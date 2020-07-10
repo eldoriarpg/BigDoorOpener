@@ -1,12 +1,14 @@
 package de.eldoria.bigdoorsopener.doors.conditions.standalone;
 
 import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
-import de.eldoria.bigdoorsopener.doors.conditions.DoorCondition;
 import de.eldoria.bigdoorsopener.doors.conditions.ConditionType;
+import de.eldoria.bigdoorsopener.doors.conditions.DoorCondition;
 import de.eldoria.bigdoorsopener.listener.WeatherListener;
 import de.eldoria.bigdoorsopener.util.C;
 import de.eldoria.eldoutilities.localization.Localizer;
 import de.eldoria.eldoutilities.localization.Replacement;
+import de.eldoria.eldoutilities.serialization.SerializationUtil;
+import de.eldoria.eldoutilities.serialization.TypeResolvingMap;
 import net.kyori.text.TextComponent;
 import org.bukkit.WeatherType;
 import org.bukkit.World;
@@ -18,10 +20,10 @@ import javax.annotation.Nullable;
 import java.util.Map;
 
 public class Weather implements DoorCondition {
-    private final WeatherType type;
+    private final WeatherType weatherType;
 
-    public Weather(WeatherType type) {
-        this.type = type;
+    public Weather(WeatherType weatherType) {
+        this.weatherType = weatherType;
     }
 
     @Override
@@ -35,17 +37,17 @@ public class Weather implements DoorCondition {
             raining = getTemperature(world, pos) <= 95;
         }
 
-        return raining ? type == WeatherType.DOWNFALL : type == WeatherType.CLEAR;
+        return raining ? weatherType == WeatherType.DOWNFALL : weatherType == WeatherType.CLEAR;
     }
 
     @Override
     public TextComponent getDescription(Localizer localizer) {
         return TextComponent.builder(
                 localizer.getMessage("conditionDesc.type.weather",
-                        Replacement.create("NAME", ConditionType.WEATHER.keyName))).color(C.baseColor)
+                        Replacement.create("NAME", ConditionType.WEATHER.conditionName))).color(C.baseColor)
                 .append(TextComponent.newline())
                 .append(TextComponent.builder(localizer.getMessage("conditionDesc.open")).color(C.baseColor))
-                .append(TextComponent.builder(type == WeatherType.CLEAR
+                .append(TextComponent.builder(weatherType == WeatherType.CLEAR
                         ? localizer.getMessage("conditionDesc.clear")
                         : localizer.getMessage("conditionDesc.downfall")).color(C.highlightColor))
                 .build();
@@ -61,6 +63,14 @@ public class Weather implements DoorCondition {
 
     @Override
     public @NotNull Map<String, Object> serialize() {
-        return null;
+        return SerializationUtil.newBuilder()
+                .add("weatherType", weatherType)
+                .build();
+    }
+
+    public static Weather deserialize(Map<String, Object> map) {
+        TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
+        WeatherType type = resolvingMap.getValue("weatherType");
+        return new Weather(type);
     }
 }

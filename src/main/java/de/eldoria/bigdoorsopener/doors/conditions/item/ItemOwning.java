@@ -2,21 +2,23 @@ package de.eldoria.bigdoorsopener.doors.conditions.item;
 
 import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
 import de.eldoria.bigdoorsopener.doors.conditions.ConditionType;
+import de.eldoria.bigdoorsopener.doors.conditions.item.interacting.ItemClick;
 import de.eldoria.bigdoorsopener.util.C;
 import de.eldoria.eldoutilities.localization.Localizer;
 import de.eldoria.eldoutilities.localization.Replacement;
+import de.eldoria.eldoutilities.serialization.SerializationUtil;
+import de.eldoria.eldoutilities.serialization.TypeResolvingMap;
 import net.kyori.text.TextComponent;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 
 /**
  * A key which opens a doow, when the player has it in his inventory.
  */
-public class ItemOwning extends ItemCondition {
+public class ItemOwning extends Item {
     public ItemOwning(ItemStack item, boolean consumed) {
         super(item, consumed);
     }
@@ -32,16 +34,18 @@ public class ItemOwning extends ItemCondition {
         return hasPlayerItemInInventory(player, getItem());
     }
 
-    @Override
-    public @NotNull Map<String, Object> serialize() {
-        return null;
+    public static ItemClick deserialize(Map<String, Object> map) {
+        TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
+        ItemStack stack = resolvingMap.getValue("item");
+        boolean consumed = resolvingMap.getValue("consumed");
+        return new ItemClick(stack, consumed);
     }
 
     @Override
     public TextComponent getDescription(Localizer localizer) {
         return TextComponent.builder(
                 localizer.getMessage("conditionDesc.type.itemOwning",
-                        Replacement.create("NAME", ConditionType.ITEM_OWNING.keyName))).color(C.baseColor)
+                        Replacement.create("NAME", ConditionType.ITEM_OWNING.conditionName))).color(C.baseColor)
                 .append(TextComponent.newline())
                 .append(super.getDescription(localizer))
                 .build();

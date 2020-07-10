@@ -3,9 +3,10 @@ package de.eldoria.bigdoorsopener.doors.conditions.location;
 import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
 import de.eldoria.bigdoorsopener.doors.conditions.ConditionType;
 import de.eldoria.bigdoorsopener.util.C;
-import de.eldoria.bigdoorsopener.util.TriFunction;
 import de.eldoria.eldoutilities.localization.Localizer;
 import de.eldoria.eldoutilities.localization.Replacement;
+import de.eldoria.eldoutilities.serialization.SerializationUtil;
+import de.eldoria.eldoutilities.serialization.TypeResolvingMap;
 import net.kyori.text.TextComponent;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -33,7 +34,7 @@ public class Proximity implements Location {
     public TextComponent getDescription(Localizer localizer) {
         return TextComponent.builder(
                 localizer.getMessage("conditionDesc.type.proximity",
-                        Replacement.create("NAME", ConditionType.PROXIMITY.keyName))).color(C.baseColor)
+                        Replacement.create("NAME", ConditionType.PROXIMITY.conditionName))).color(C.baseColor)
                 .append(TextComponent.newline())
                 .append(TextComponent.builder(localizer.getMessage("conditionDesc.size")).color(C.baseColor))
                 .append(TextComponent.builder(dimensions.toString()).color(C.highlightColor))
@@ -45,7 +46,17 @@ public class Proximity implements Location {
 
     @Override
     public @NotNull Map<String, Object> serialize() {
-        return null;
+        return SerializationUtil.newBuilder()
+                .add("dimensions", dimensions)
+                .add("proximityForm", proximityForm)
+                .build();
+    }
+
+    public static Proximity deserialize(Map<String, Object> map) {
+        TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
+        Vector vector = resolvingMap.getValue("dimensions");
+        ProximityForm proximityForm = resolvingMap.getValue("proximityForm");
+        return new Proximity(vector, proximityForm);
     }
 
     public enum ProximityForm {
@@ -74,15 +85,6 @@ public class Proximity implements Location {
         ProximityForm(String localKey, TriFunction<Vector, Vector, Vector, Boolean> check) {
             this.localKey = localKey;
             this.check = check;
-        }
-
-        public static ProximityForm parse(String argument) {
-            for (ProximityForm value : values()) {
-                if (argument.equalsIgnoreCase(value.name())) {
-                    return value;
-                }
-            }
-            return null;
         }
     }
 }

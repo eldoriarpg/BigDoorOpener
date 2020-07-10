@@ -5,11 +5,12 @@ import de.eldoria.bigdoorsopener.doors.conditions.ConditionType;
 import de.eldoria.bigdoorsopener.util.C;
 import de.eldoria.eldoutilities.localization.Localizer;
 import de.eldoria.eldoutilities.localization.Replacement;
+import de.eldoria.eldoutilities.serialization.SerializationUtil;
+import de.eldoria.eldoutilities.serialization.TypeResolvingMap;
 import net.kyori.text.TextComponent;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 
@@ -36,17 +37,19 @@ public class ItemClick extends ItemInteraction {
     }
 
     @Override
-    public @NotNull Map<String, Object> serialize() {
-        return null;
-    }
-
-    @Override
     public TextComponent getDescription(Localizer localizer) {
         return TextComponent.builder(
                 localizer.getMessage("conditionDesc.type.itemClick",
-                        Replacement.create("NAME", ConditionType.ITEM_CLICK.keyName))).color(C.baseColor)
+                        Replacement.create("NAME", ConditionType.ITEM_CLICK.conditionName))).color(C.baseColor)
                 .append(TextComponent.newline())
                 .append(super.getDescription(localizer))
                 .build();
+    }
+
+    public static ItemClick deserialize(Map<String, Object> map) {
+        TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
+        ItemStack stack = resolvingMap.getValue("item");
+        boolean consumed = resolvingMap.getValue("consumed");
+        return new ItemClick(stack, consumed);
     }
 }

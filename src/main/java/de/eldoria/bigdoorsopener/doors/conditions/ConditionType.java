@@ -1,30 +1,36 @@
 package de.eldoria.bigdoorsopener.doors.conditions;
 
-import de.eldoria.bigdoorsopener.doors.conditions.item.ItemCondition;
+import de.eldoria.bigdoorsopener.doors.conditions.item.Item;
 import de.eldoria.bigdoorsopener.doors.conditions.location.Location;
 import de.eldoria.bigdoorsopener.doors.conditions.standalone.Permission;
 import de.eldoria.bigdoorsopener.doors.conditions.standalone.Time;
 import de.eldoria.bigdoorsopener.doors.conditions.standalone.Weather;
+import de.eldoria.bigdoorsopener.util.Permissions;
 
 public enum ConditionType {
-    ITEM_CLICK(ConditionGroup.ITEM), ITEM_BLOCK(ConditionGroup.ITEM),
-    ITEM_HOLDING(ConditionGroup.ITEM), ITEM_OWNING(ConditionGroup.ITEM),
-    PROXIMITY(ConditionGroup.LOCATION), REGION(ConditionGroup.LOCATION),
-    PERMISSION(ConditionGroup.PERMISSION),
-    TIME(ConditionGroup.TIME),
-    WEATHER(ConditionGroup.WEATHER);
+    ITEM_CLICK(ConditionGroup.ITEM, Permissions.ITEM_CLICK_CONDITION),
+    ITEM_BLOCK(ConditionGroup.ITEM, Permissions.ITEM_BLOCK_CONDITION),
+    ITEM_HOLDING(ConditionGroup.ITEM, Permissions.ITEM_HOLDING_CONDITION),
+    ITEM_OWNING(ConditionGroup.ITEM, Permissions.ITEM_OWNING_CONDITION),
+    PROXIMITY(ConditionGroup.LOCATION, Permissions.PROXIMITY_CONDITION),
+    REGION(ConditionGroup.LOCATION, Permissions.REGION_CONDITION),
+    PERMISSION(ConditionGroup.PERMISSION, Permissions.PERMISSION_CONDITION),
+    TIME(ConditionGroup.TIME, Permissions.TIME_CONDITION),
+    WEATHER(ConditionGroup.WEATHER, Permissions.WEATHER_CONDITION);
 
     public final ConditionGroup conditionGroup;
-    public final String keyName;
+    public final String permission;
+    public final String conditionName;
 
-    ConditionType(ConditionGroup keyParameter) {
+    ConditionType(ConditionGroup keyParameter, String permission) {
         this.conditionGroup = keyParameter;
-        this.keyName = name().replace("_", "").toLowerCase();
+        this.permission = permission;
+        this.conditionName = name().replace("_", "").toLowerCase();
     }
 
     public static ConditionType getType(String keyType) {
         for (ConditionType value : values()) {
-            if(value.keyName.equalsIgnoreCase(keyType)){
+            if (value.conditionName.equalsIgnoreCase(keyType)) {
                 return value;
             }
         }
@@ -32,7 +38,7 @@ public enum ConditionType {
     }
 
     public enum ConditionGroup {
-        ITEM("item", ItemCondition.class),
+        ITEM("item", Item.class),
         LOCATION("location", Location.class),
         PERMISSION("permission", Permission.class),
         TIME("time", Time.class),
@@ -49,7 +55,7 @@ public enum ConditionType {
 
     public static <T extends DoorCondition> ConditionGroup getType(Class<T> keyClass) {
         for (ConditionGroup value : ConditionGroup.values()) {
-            if(value.keyClass.isAssignableFrom(keyClass)){
+            if (value.keyClass.isAssignableFrom(keyClass)) {
                 return value;
             }
         }

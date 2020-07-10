@@ -3,7 +3,8 @@ package de.eldoria.bigdoorsopener.doors;
 import com.google.common.base.Objects;
 import de.eldoria.bigdoorsopener.doors.conditions.ConditionChain;
 import de.eldoria.bigdoorsopener.util.CachingJSEngine;
-import de.eldoria.bigdoorsopener.util.EnumUtil;
+import de.eldoria.eldoutilities.serialization.SerializationUtil;
+import de.eldoria.eldoutilities.serialization.TypeResolvingMap;
 import lombok.Getter;
 import org.bukkit.World;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
@@ -34,9 +35,10 @@ public class ConditionalDoor implements ConfigurationSerializable {
      */
     private final Vector position;
 
-    private String evaluator;
+    private Instant openTill;
+    private String evaluator = "";
 
-    private EvaluationType evaluationType;
+    private EvaluationType evaluationType = EvaluationType.AND;
 
     @Getter
     @Nonnull
@@ -44,7 +46,6 @@ public class ConditionalDoor implements ConfigurationSerializable {
 
     private int stayOpen = 0;
 
-    private Instant openTill;
 
     /**
      * True if the door was registered in open state.
@@ -68,13 +69,22 @@ public class ConditionalDoor implements ConfigurationSerializable {
         this(doorUID, world, position, new ConditionChain());
     }
 
+    public ConditionalDoor(long doorUID, String world, Vector position, boolean invertOpen, String evaluator,
+                           EvaluationType evaluationType, ConditionChain conditionChain, int stayOpen) {
+        this(doorUID, world, position, conditionChain);
+        this.invertOpen = invertOpen;
+        this.evaluator = evaluator;
+        this.evaluationType = evaluationType;
+        this.stayOpen = stayOpen;
+    }
+
     /**
      * Get the state of the door.
      *
-     * @param player
-     * @param world
-     * @param currentState
-     * @return
+     * @param player       player for player sensitive calculations
+     * @param world        world of the door
+     * @param currentState the current state of the door.
+     * @return true if the door should be open or false if not.
      */
     public boolean getState(Player player, World world, boolean currentState) {
         if (openTill.isAfter(Instant.now())) return true;
@@ -117,7 +127,6 @@ public class ConditionalDoor implements ConfigurationSerializable {
      */
     public void opened(Player player) {
         openTill = Instant.now().plus(stayOpen, SECONDS);
-        //TODO stay open
         conditionChain.opened(player);
     }
 
@@ -127,7 +136,29 @@ public class ConditionalDoor implements ConfigurationSerializable {
 
     @Override
     public @NotNull Map<String, Object> serialize() {
-        return null;
+        return SerializationUtil.newBuilder()
+                .add("doorUID", doorUID)
+                .add("world", world)
+                .add("position", position)
+                .add("invertOpen", invertOpen)
+                .add("evaluator", evaluator)
+                .add("evaluationType", evaluationType)
+                .add("conditionChain", conditionChain)
+                .add("stayOpen", stayOpen)
+                .build();
+    }
+
+    public static ConditionalDoor deserialize(Map<String, Object> map) {
+        TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
+        long doorUID = resolvingMap.getValue("doorUID");
+        String world = resolvingMap.getValue("world");
+        Vector position = resolvingMap.getValue("position");
+        boolean invertOpen = resolvingMap.getValue("invertOpen");
+        String evaluator = resolvingMap.getValue("evaluator");
+        EvaluationType evaluationType = resolvingMap.getValue("evaluationType");
+        ConditionChain conditionChain = resolvingMap.getValue("conditionChain");
+        int stayOpen = resolvingMap.getValue("stayOpen");
+        return new ConditionalDoor(doorUID, world, position, invertOpen, evaluator, evaluationType, conditionChain, stayOpen);
     }
 
     public boolean requiresPlayerEvaluation() {
@@ -164,12 +195,7 @@ public class ConditionalDoor implements ConfigurationSerializable {
     }
 
     public enum EvaluationType {
-        CUSTOM, AND, OR;
-
-        public static EvaluationType parse(String argument) {
-            return EnumUtil.parse(argument, values(),false);
-        }
+        CUSTOM, AND, OR
     }
-
 }
 

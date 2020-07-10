@@ -1,7 +1,7 @@
 package de.eldoria.bigdoorsopener.doors.conditions.item.interacting;
 
 import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
-import de.eldoria.bigdoorsopener.doors.conditions.item.ItemCondition;
+import de.eldoria.bigdoorsopener.doors.conditions.item.Item;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -10,7 +10,7 @@ import org.bukkit.inventory.ItemStack;
 import java.util.Set;
 import java.util.UUID;
 
-public abstract class ItemInteraction extends ItemCondition {
+public abstract class ItemInteraction extends Item {
 
     /**
      * A set of user which has clicked since the last check.
