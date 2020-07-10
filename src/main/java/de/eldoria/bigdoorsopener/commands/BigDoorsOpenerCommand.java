@@ -27,6 +27,7 @@ import de.eldoria.eldoutilities.container.Pair;
 import de.eldoria.eldoutilities.localization.Localizer;
 import de.eldoria.eldoutilities.localization.Replacement;
 import de.eldoria.eldoutilities.messages.MessageSender;
+import de.eldoria.eldoutilities.utils.ArgumentUtils;
 import de.eldoria.eldoutilities.utils.ArrayUtil;
 import de.eldoria.eldoutilities.utils.EnumUtil;
 import de.eldoria.eldoutilities.utils.Parser;
@@ -59,6 +60,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class BigDoorsOpenerCommand implements TabExecutor {
@@ -70,11 +72,30 @@ public class BigDoorsOpenerCommand implements TabExecutor {
     private final MessageSender messageSender;
     private final RegisterInteraction registerInteraction;
     private final RegionContainer regionContainer;
-    private final String[] conditionTypes = (String[]) Arrays.stream(ConditionType.values()).map(v -> v.conditionName).toArray();
-    private final String[] conditionGroups = (String[]) Arrays.stream(ConditionType.ConditionGroup.values()).map(v -> v.name().toLowerCase()).toArray();
-    private final String[] proximityForm = (String[]) Arrays.stream(Proximity.ProximityForm.values()).map(v -> v.name().toLowerCase()).toArray();
-    private final String[] weatherType = (String[]) Arrays.stream(WeatherType.values()).map(v -> v.name().toLowerCase()).toArray();
-    private final String[] evaluatorTypes = (String[]) Arrays.stream(ConditionalDoor.EvaluationType.values()).map(v -> v.name().toLowerCase()).toArray();
+    private static final String[] CONDITION_TYPES;
+    private static final String[] CONDITION_GROUPS;
+    private static final String[] PROXIMITY_FORM;
+    private static final String[] WEATHER_TYPE;
+    private static final String[] EVALUATOR_TYPES;
+
+    static {
+        CONDITION_TYPES = Arrays.stream(ConditionType.values())
+                .map(v -> v.conditionName)
+                .toArray(String[]::new);
+        CONDITION_GROUPS = Arrays.stream(ConditionType.ConditionGroup.values())
+                .map(v -> v.name().toLowerCase())
+                .toArray(String[]::new);
+        PROXIMITY_FORM = Arrays.stream(Proximity.ProximityForm.values())
+                .map(v -> v.name().toLowerCase())
+                .toArray(String[]::new);
+        WEATHER_TYPE = Arrays.stream(WeatherType.values())
+                .map(v -> v.name().toLowerCase())
+                .toArray(String[]::new);
+        EVALUATOR_TYPES = Arrays.stream(ConditionalDoor.EvaluationType.values())
+                .map(v -> v.name().toLowerCase())
+                .toArray(String[]::new);
+    }
+
 
     public BigDoorsOpenerCommand(BigDoorsOpener plugin, Commander commander, Config config, Localizer localizer,
                                  DoorChecker doorChecker, RegisterInteraction registerInteraction) {
@@ -189,18 +210,18 @@ public class BigDoorsOpenerCommand implements TabExecutor {
         return true;
     }
 
-    private boolean setCondition(Player player, String[] arguments) {
+    private boolean setCondition(Player player, String[] args) {
         if (player != null && !player.hasPermission(Permissions.USE)) {
             messageSender.sendError(player, localizer.getMessage("error.permission"));
             return true;
         }
 
-        if (arguments.length < 3) {
+        if (args.length < 3) {
             messageSender.sendError(player, localizer.getMessage("error.invalidArguments"));
             return true;
         }
 
-        Door playerDoor = getPlayerDoor(arguments[2], player);
+        Door playerDoor = getPlayerDoor(args[2], player);
 
         if (playerDoor == null) {
             return true;
@@ -212,7 +233,7 @@ public class BigDoorsOpenerCommand implements TabExecutor {
             return true;
         }
 
-        ConditionType type = ConditionType.getType(arguments[1]);
+        ConditionType type = ConditionType.getType(args[1]);
 
         if (type == null) {
             messageSender.sendError(player, localizer.getMessage("error.invalidConditionType"));
@@ -230,113 +251,78 @@ public class BigDoorsOpenerCommand implements TabExecutor {
             itemInMainHand = player.getInventory().getItemInMainHand();
         }
 
-        OptionalInt amount;
-        Optional<Boolean> consume;
-
         ConditionChain conditionChain = conditionalDoor.getConditionChain();
+
+        String[] conditionArgs = Arrays.copyOfRange(args, 2, args.length);
 
         switch (type) {
             // <amount> <consumed>
             case ITEM_CLICK:
-                if (player == null) {
-                    messageSender.sendError(null, localizer.getMessage("error.notAllowedFromConsole"));
-                    return true;
-                }
-                amount = Parser.parseInt(arguments[3]);
-                if (!amount.isPresent()) {
-                    messageSender.sendError(player, localizer.getMessage("error.invalidAmount"));
-                    return true;
-                }
-                consume = Parser.parseBoolean(arguments[4]);
-                if (!consume.isPresent()) {
-                    messageSender.sendError(player, localizer.getMessage("error.invalidBoolean"));
-                    return true;
-
-                }
-                itemInMainHand.setAmount(amount.getAsInt());
-                conditionChain.setItem(new ItemClick(itemInMainHand, consume.get()));
-                messageSender.sendMessage(player, localizer.getMessage("setCondition.itemClick"));
-                break;
-            // <amount> <consumed>
+                // <amount> <consumed>
             case ITEM_BLOCK:
-                if (player == null) {
-                    messageSender.sendError(null, localizer.getMessage("error.notAllowedFromConsole"));
-                    return true;
-                }
-                amount = Parser.parseInt(arguments[3]);
-                if (!amount.isPresent()) {
-                    messageSender.sendError(player, localizer.getMessage("error.invalidAmount"));
-                    return true;
-                }
-                consume = Parser.parseBoolean(arguments[4]);
-                if (!consume.isPresent()) {
-                    messageSender.sendError(player, localizer.getMessage("error.invalidBoolean"));
-                    return true;
-
-                }
-                itemInMainHand.setAmount(amount.getAsInt());
-                ItemBlock itemBlock = new ItemBlock(itemInMainHand, consume.get());
-                // Register Keyhole object at registration listener.
-                registerInteraction.register(player, event -> {
-                    if (event.getAction() != Action.RIGHT_CLICK_BLOCK) {
-                        return false;
-                    }
-                    if (event.getClickedBlock() == null) return false;
-                    BlockVector blockVector = event.getClickedBlock().getLocation().toVector().toBlockVector();
-                    itemBlock.setPosition(blockVector);
-                    messageSender.sendMessage(player, localizer.getMessage("setCondition.itemBlockRegistered"));
-                    return true;
-                });
-                messageSender.sendMessage(player, localizer.getMessage("setCondition.itemblock"));
-                break;
-            // <amount> <consumed>
+                // <amount> <consumed>
             case ITEM_HOLDING:
-                if (player == null) {
-                    messageSender.sendError(null, localizer.getMessage("error.notAllowedFromConsole"));
-                    return true;
-                }
-                amount = Parser.parseInt(arguments[3]);
-                if (!amount.isPresent()) {
-                    messageSender.sendError(player, localizer.getMessage("error.invalidAmount"));
-                    return true;
-                }
-                consume = Parser.parseBoolean(arguments[4]);
-                if (!consume.isPresent()) {
-                    messageSender.sendError(player, localizer.getMessage("error.invalidBoolean"));
-                    return true;
-
-                }
-                itemInMainHand.setAmount(amount.getAsInt());
-                conditionChain.setItem(new ItemHolding(itemInMainHand, consume.get()));
-                messageSender.sendMessage(player, localizer.getMessage("setCondition.itemHolding"));
-                break;
-            // <amount> <consumed>
+                // <amount> <consumed>
             case ITEM_OWNING:
                 if (player == null) {
                     messageSender.sendError(null, localizer.getMessage("error.notAllowedFromConsole"));
                     return true;
                 }
-                amount = Parser.parseInt(arguments[3]);
+
+                // parse amount
+                OptionalInt amount = Parser.parseInt(conditionArgs[0]);
                 if (!amount.isPresent()) {
                     messageSender.sendError(player, localizer.getMessage("error.invalidAmount"));
                     return true;
                 }
-                consume = Parser.parseBoolean(arguments[4]);
+
+                if (amount.getAsInt() > 64 || amount.getAsInt() < 1) {
+                    messageSender.sendError(player, localizer.getMessage("error.invalidRange",
+                            Replacement.create("MIN", 1).addFormatting('6'),
+                            Replacement.create("MAX", 64).addFormatting('6')));
+                    return true;
+                }
+
+                Optional<Boolean> consume = Parser.parseBoolean(conditionArgs[1]);
                 if (!consume.isPresent()) {
                     messageSender.sendError(player, localizer.getMessage("error.invalidBoolean"));
                     return true;
-
                 }
+
                 itemInMainHand.setAmount(amount.getAsInt());
-                conditionChain.setItem(new ItemOwning(itemInMainHand, consume.get()));
-                messageSender.sendMessage(player, localizer.getMessage("setCondition.itemOwning"));
+                if (type == ConditionType.ITEM_BLOCK) {
+                    ItemBlock itemBlock = new ItemBlock(itemInMainHand, consume.get());
+                    // Register Keyhole object at registration listener.
+                    registerInteraction.register(player, event -> {
+                        if (event.getAction() != Action.RIGHT_CLICK_BLOCK) {
+                            return false;
+                        }
+                        if (event.getClickedBlock() == null) return false;
+                        BlockVector blockVector = event.getClickedBlock().getLocation().toVector().toBlockVector();
+                        itemBlock.setPosition(blockVector);
+                        messageSender.sendMessage(player, localizer.getMessage("setCondition.itemBlockRegistered"));
+                        return true;
+                    });
+                    messageSender.sendMessage(player, localizer.getMessage("setCondition.itemblock"));
+                } else if (type == ConditionType.ITEM_CLICK) {
+                    conditionChain.setItem(new ItemClick(itemInMainHand, consume.get()));
+                    messageSender.sendMessage(player, localizer.getMessage("setCondition.itemClick"));
+                } else if (type == ConditionType.ITEM_OWNING) {
+                    conditionChain.setItem(new ItemOwning(itemInMainHand, consume.get()));
+                    messageSender.sendMessage(player, localizer.getMessage("setCondition.itemOwning"));
+                } else {
+                    conditionChain.setItem(new ItemHolding(itemInMainHand, consume.get()));
+                    messageSender.sendMessage(player, localizer.getMessage("setCondition.itemHolding"));
+                }
                 break;
             // <dimensions> <form>
             case PROXIMITY:
                 Vector vector;
-                String[] coords = arguments[3].split(",");
+                String[] coords = conditionArgs[0].split(",");
+
+                // parse the size.
                 if (coords.length == 1) {
-                    OptionalDouble size = Parser.parseDouble(arguments[3]);
+                    OptionalDouble size = Parser.parseDouble(conditionArgs[0]);
                     if (!size.isPresent()) {
                         messageSender.sendError(player, localizer.getMessage("error.invalidNumber"));
                         return true;
@@ -356,7 +342,19 @@ public class BigDoorsOpenerCommand implements TabExecutor {
                     messageSender.sendError(player, localizer.getMessage("error.invalidVector"));
                     return true;
                 }
-                Proximity.ProximityForm form = EnumUtil.parse(arguments[4], Proximity.ProximityForm.class);
+
+                // check if vector is inside bounds.
+                if (vector.getX() < 1 || vector.getX() > 100
+                        || vector.getY() < 1 || vector.getY() > 100
+                        || vector.getZ() < 1 || vector.getZ() > 100) {
+                    messageSender.sendError(player, localizer.getMessage("error.invalidRange",
+                            Replacement.create("MIN", 0).addFormatting('6'),
+                            Replacement.create("MAX", 100).addFormatting('6')));
+                    return true;
+                }
+
+                // check proximity form
+                Proximity.ProximityForm form = EnumUtil.parse(conditionArgs[1], Proximity.ProximityForm.class);
 
                 if (form == null) {
                     messageSender.sendError(player, localizer.getMessage("error.invalidForm"));
@@ -380,7 +378,7 @@ public class BigDoorsOpenerCommand implements TabExecutor {
                     messageSender.sendError(player, localizer.getMessage("error.regionNotFound"));
                     return true;
                 }
-                ProtectedRegion region = rm.getRegion(arguments[3]);
+                ProtectedRegion region = rm.getRegion(conditionArgs[0]);
                 if (region == null) {
                     messageSender.sendError(player, localizer.getMessage("error.regionNotFound"));
                     return true;
@@ -390,27 +388,40 @@ public class BigDoorsOpenerCommand implements TabExecutor {
                 break;
             // permission
             case PERMISSION:
-                conditionChain.setPermission(new Permission(arguments[3]));
+                conditionChain.setPermission(new Permission(conditionArgs[0]));
                 messageSender.sendMessage(player, localizer.getMessage("setCondition.permission"));
                 break;
             case TIME:
-                OptionalInt open = Parser.parseInt(arguments[3]);
+                // parse time
+                OptionalInt open = Parser.parseInt(conditionArgs[0]);
                 if (!open.isPresent()) {
-                    open = Parser.parseTimeToTicks(arguments[3]);
+                    open = Parser.parseTimeToTicks(conditionArgs[0]);
                     if (!open.isPresent()) {
                         messageSender.sendError(player, localizer.getMessage("error.invalidOpenTime"));
                         return true;
                     }
                 }
-                OptionalInt close = Parser.parseInt(arguments[4]);
+
+                OptionalInt close = Parser.parseInt(conditionArgs[1]);
                 if (!close.isPresent()) {
-                    close = Parser.parseTimeToTicks(arguments[3]);
+                    close = Parser.parseTimeToTicks(conditionArgs[1]);
                     if (!close.isPresent()) {
                         messageSender.sendError(player, localizer.getMessage("error.invalidCloseTime"));
                         return true;
                     }
                 }
-                Optional<Boolean> force = Parser.parseBoolean(arguments[4]);
+
+                if (close.getAsInt() < 0 || close.getAsInt() > 24000
+                        || open.getAsInt() < 0 || open.getAsInt() > 24000) {
+                    messageSender.sendError(player, localizer.getMessage("error.invalidRange",
+                            Replacement.create("MIN", 0).addFormatting('6'),
+                            Replacement.create("MAX", 24000).addFormatting('6')));
+                    return true;
+                }
+
+                // parse optional force argument.
+                Optional<Boolean> force = ArgumentUtils.getOptionalParameter(conditionArgs, 2, Optional.of(false), Parser::parseBoolean);
+
                 if (!force.isPresent()) {
                     messageSender.sendError(player, localizer.getMessage("error.invalidBoolean"));
                     return true;
@@ -423,7 +434,7 @@ public class BigDoorsOpenerCommand implements TabExecutor {
             case WEATHER:
                 WeatherType weatherType = null;
                 for (WeatherType value : WeatherType.values()) {
-                    if (value.name().equalsIgnoreCase(arguments[3])) {
+                    if (value.name().equalsIgnoreCase(conditionArgs[0])) {
                         weatherType = value;
                     }
                 }
@@ -437,6 +448,15 @@ public class BigDoorsOpenerCommand implements TabExecutor {
             default:
                 messageSender.sendError(player, localizer.getMessage("error.invalidConditionType"));
                 return true;
+        }
+
+        // check if condition is in evaluator if a custom evaluator is present.
+        if (conditionalDoor.getEvaluationType() == ConditionalDoor.EvaluationType.CUSTOM) {
+            Pattern compile = Pattern.compile(type.conditionGroup.conditionParameter, Pattern.CASE_INSENSITIVE);
+            if (!compile.matcher(conditionalDoor.getEvaluator()).find()) {
+                messageSender.sendError(player, localizer.getMessage("warning.valueNotInEvaluator",
+                        Replacement.create("VALUE", type.conditionGroup.conditionParameter).addFormatting('6')));
+            }
         }
 
         config.safeConfig();
@@ -512,6 +532,21 @@ public class BigDoorsOpenerCommand implements TabExecutor {
                 messageSender.sendMessage(player, localizer.getMessage("removeCondition.weather"));
                 break;
         }
+
+        // check if condition is in evaluator if a custom evaluator is present.
+        if (cDoor.getEvaluationType() == ConditionalDoor.EvaluationType.CUSTOM) {
+            Pattern compile = Pattern.compile(type.conditionGroup.conditionParameter, Pattern.CASE_INSENSITIVE);
+            if (compile.matcher(cDoor.getEvaluator()).find()) {
+                messageSender.sendError(player, localizer.getMessage("warning.valueStillUsed",
+                        Replacement.create("VALUE", type.conditionGroup.conditionParameter).addFormatting('6')));
+            }
+        }
+
+        if (conditionChain.isEmpty()) {
+            messageSender.sendMessage(player, localizer.getMessage("warning.chainIsEmpty"));
+        }
+
+        config.safeConfig();
         return true;
     }
 
@@ -932,7 +967,7 @@ public class BigDoorsOpenerCommand implements TabExecutor {
         if ("setCondition".equalsIgnoreCase(cmd)) {
             if (args.length == 2) {
                 String conditionType = args[1];
-                return ArrayUtil.startingWithInArray(conditionType, conditionTypes).collect(Collectors.toList());
+                return ArrayUtil.startingWithInArray(conditionType, CONDITION_TYPES).collect(Collectors.toList());
             }
 
             ConditionType type = ConditionType.getType(args[1]);
@@ -965,7 +1000,7 @@ public class BigDoorsOpenerCommand implements TabExecutor {
                         return Arrays.asList(localizer.getMessage("tabcomplete.dimensions"), "<x,y,z>");
                     }
                     if (args.length == 5) {
-                        return ArrayUtil.startingWithInArray(args[4], proximityForm).collect(Collectors.toList());
+                        return ArrayUtil.startingWithInArray(args[4], PROXIMITY_FORM).collect(Collectors.toList());
                     }
                     break;
                 case REGION:
@@ -991,7 +1026,7 @@ public class BigDoorsOpenerCommand implements TabExecutor {
                     break;
                 case WEATHER:
                     if (args.length == 4) {
-                        return ArrayUtil.startingWithInArray(args[4], weatherType).collect(Collectors.toList());
+                        return ArrayUtil.startingWithInArray(args[3], WEATHER_TYPE).collect(Collectors.toList());
                     }
                     break;
             }
@@ -1003,7 +1038,7 @@ public class BigDoorsOpenerCommand implements TabExecutor {
                 return Collections.singletonList("<doorId>");
             }
             if (args.length == 3) {
-                ArrayUtil.startingWithInArray(args[2], conditionGroups);
+                ArrayUtil.startingWithInArray(args[2], CONDITION_GROUPS);
             }
             return Collections.emptyList();
         }
@@ -1031,7 +1066,7 @@ public class BigDoorsOpenerCommand implements TabExecutor {
 
         if ("setEvaluator".equalsIgnoreCase(cmd)) {
             if (args.length == 2) {
-                return ArrayUtil.startingWithInArray(args[1], evaluatorTypes).collect(Collectors.toList());
+                return ArrayUtil.startingWithInArray(args[1], EVALUATOR_TYPES).collect(Collectors.toList());
             }
 
             ConditionalDoor.EvaluationType parse = EnumUtil.parse(args[1], ConditionalDoor.EvaluationType.class);
@@ -1039,7 +1074,7 @@ public class BigDoorsOpenerCommand implements TabExecutor {
                 if (!sender.hasPermission(Permissions.CUSTOM_EVALUATOR)) {
                     return Collections.singletonList(localizer.getMessage("error.permission"));
                 }
-                ArrayList<String> list = new ArrayList<>(Arrays.asList(conditionGroups));
+                ArrayList<String> list = new ArrayList<>(Arrays.asList(CONDITION_GROUPS));
                 list.add("currentState");
                 list.add(localizer.getMessage("tabcomplete.validValues"));
                 return list;
