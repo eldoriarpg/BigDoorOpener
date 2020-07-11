@@ -57,7 +57,9 @@ public class ConditionChain implements ConfigurationSerializable {
         String evaluationString = string;
 
         for (DoorCondition doorCondition : Arrays.asList(item, permission, location, time, weather)) {
-            if (doorCondition == null) continue;
+            if (doorCondition == null) {
+                continue;
+            }
             ConditionType.ConditionGroup condition = ConditionType.getType(doorCondition.getClass());
             if (condition == null) {
                 BigDoorsOpener.logger().warning("Class " + doorCondition.getClass().getSimpleName() + " is not registered as condition type."
@@ -71,6 +73,12 @@ public class ConditionChain implements ConfigurationSerializable {
         evaluationString = evaluationString.replaceAll("(?i)currentState",
                 String.valueOf(currentState));
 
+        // make sure that calculation does not fail even when the condition is not set.
+        for (ConditionType.ConditionGroup value : ConditionType.ConditionGroup.values()) {
+            evaluationString = evaluationString.replaceAll("(?i)" + value.conditionParameter,
+                    "null");
+        }
+
         return evaluationString;
     }
 
@@ -80,7 +88,7 @@ public class ConditionChain implements ConfigurationSerializable {
 
     public void evaluated() {
         if (item != null) {
-            item.clear();
+            item.evaluated();
         }
     }
 
@@ -108,5 +116,9 @@ public class ConditionChain implements ConfigurationSerializable {
         Time time = resolvingMap.getValue("time");
         Weather weather = resolvingMap.getValue("weather");
         return new ConditionChain(item, location, permission, time, weather);
+    }
+
+    public boolean isEmpty() {
+        return item == null && location == null && permission == null && time == null && weather == null;
     }
 }
