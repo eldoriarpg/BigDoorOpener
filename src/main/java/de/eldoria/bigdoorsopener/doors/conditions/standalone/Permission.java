@@ -36,9 +36,9 @@ public class Permission implements DoorCondition {
     public TextComponent getDescription(Localizer localizer) {
         return TextComponent.builder(
                 localizer.getMessage("conditionDesc.type.permission",
-                        Replacement.create("NAME", ConditionType.PERMISSION.conditionName)))
+                        Replacement.create("NAME", ConditionType.PERMISSION.conditionName))).color(C.highlightColor)
                 .append(TextComponent.newline())
-                .append(TextComponent.builder(localizer.getMessage("conditionDesc.permission")).color(C.baseColor))
+                .append(TextComponent.builder(localizer.getMessage("conditionDesc.permission") + " ").color(C.baseColor))
                 .append(TextComponent.builder(permission).color(C.highlightColor))
                 .build();
     }

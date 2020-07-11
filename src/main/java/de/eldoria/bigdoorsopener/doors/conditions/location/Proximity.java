@@ -41,12 +41,12 @@ public class Proximity implements Location {
     public TextComponent getDescription(Localizer localizer) {
         return TextComponent.builder(
                 localizer.getMessage("conditionDesc.type.proximity",
-                        Replacement.create("NAME", ConditionType.PROXIMITY.conditionName))).color(C.baseColor)
+                        Replacement.create("NAME", ConditionType.PROXIMITY.conditionName))).color(C.highlightColor)
                 .append(TextComponent.newline())
-                .append(TextComponent.builder(localizer.getMessage("conditionDesc.size")).color(C.baseColor))
+                .append(TextComponent.builder(localizer.getMessage("conditionDesc.size") + " ").color(C.baseColor))
                 .append(TextComponent.builder(dimensions.toString()).color(C.highlightColor))
                 .append(TextComponent.newline())
-                .append(TextComponent.builder(localizer.getMessage("conditionDesc.proximityForm")).color(C.baseColor))
+                .append(TextComponent.builder(localizer.getMessage("conditionDesc.proximityForm") + " ").color(C.baseColor))
                 .append(TextComponent.builder(localizer.getMessage(proximityForm.localKey)).color(C.highlightColor))
                 .build();
     }

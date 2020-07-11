@@ -53,10 +53,10 @@ public class Region implements Location {
     public TextComponent getDescription(Localizer localizer) {
         return TextComponent.builder(
                 localizer.getMessage("conditionDesc.type.region",
-                        Replacement.create("NAME", ConditionType.REGION.conditionName)))
+                        Replacement.create("NAME", ConditionType.REGION.conditionName))).color(C.highlightColor)
                 .append(TextComponent.newline())
-                .append(TextComponent.builder(localizer.getMessage("conditionDesc.region")).color(C.highlightColor))
-                .append(TextComponent.builder(regionId))
+                .append(TextComponent.builder(localizer.getMessage("conditionDesc.region") + " ").color(C.baseColor))
+                .append(TextComponent.builder(regionId)).color(C.highlightColor)
                 .build();
     }
 

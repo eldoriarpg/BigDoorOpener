@@ -2,11 +2,9 @@ package de.eldoria.bigdoorsopener.doors.conditions.item;
 
 import com.google.gson.Gson;
 import de.eldoria.bigdoorsopener.doors.conditions.DoorCondition;
-import de.eldoria.bigdoorsopener.doors.conditions.item.interacting.ItemClick;
 import de.eldoria.bigdoorsopener.util.C;
 import de.eldoria.eldoutilities.localization.Localizer;
 import de.eldoria.eldoutilities.serialization.SerializationUtil;
-import de.eldoria.eldoutilities.serialization.TypeResolvingMap;
 import lombok.Getter;
 import net.kyori.text.TextComponent;
 import net.kyori.text.event.HoverEvent;
@@ -169,11 +167,11 @@ public abstract class Item implements DoorCondition {
     @Override
     public TextComponent getDescription(Localizer localizer) {
         return TextComponent.builder()
-                .content(localizer.getMessage("conditionDesc.item"))
+                .content(localizer.getMessage("conditionDesc.item") + " ")
                 .append(TextComponent.builder("[" + item.getType().name().toLowerCase() + "] x" + item.getAmount())
                         .hoverEvent(HoverEvent.showItem(TextComponent.of(GSON.toJson(item)))).color(C.highlightColor))
                 .append(TextComponent.newline())
-                .append(TextComponent.builder(localizer.getMessage("conditionDesc.consumed")).color(C.highlightColor))
+                .append(TextComponent.builder(localizer.getMessage("conditionDesc.consumed") + " ").color(C.highlightColor))
                 .append(TextComponent.builder(Boolean.toString(isConsumed()))).build();
     }
 }

@@ -93,9 +93,9 @@ public class ItemBlock extends ItemInteraction {
     public TextComponent getDescription(Localizer localizer) {
         return TextComponent.builder(
                 localizer.getMessage("conditionDesc.type.itemBlock",
-                        Replacement.create("NAME", ConditionType.ITEM_BLOCK.conditionName))).color(C.baseColor)
+                        Replacement.create("NAME", ConditionType.ITEM_BLOCK.conditionName))).color(C.highlightColor)
                 .append(TextComponent.newline())
-                .append(TextComponent.builder(localizer.getMessage("conditionDesc.keyhole")).color(C.baseColor))
+                .append(TextComponent.builder(localizer.getMessage("conditionDesc.keyhole") + " ").color(C.baseColor))
                 .append(TextComponent.builder(position.toString()).color(C.highlightColor))
                 .append(TextComponent.newline())
                 .append(super.getDescription(localizer))

@@ -47,7 +47,7 @@ public class ItemOwning extends Item {
     public TextComponent getDescription(Localizer localizer) {
         return TextComponent.builder(
                 localizer.getMessage("conditionDesc.type.itemOwning",
-                        Replacement.create("NAME", ConditionType.ITEM_OWNING.conditionName))).color(C.baseColor)
+                        Replacement.create("NAME", ConditionType.ITEM_OWNING.conditionName))).color(C.highlightColor)
                 .append(TextComponent.newline())
                 .append(super.getDescription(localizer))
                 .build();

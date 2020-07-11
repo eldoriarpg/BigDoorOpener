@@ -40,7 +40,7 @@ public class ItemHolding extends Item {
     public TextComponent getDescription(Localizer localizer) {
         return TextComponent.builder(
                 localizer.getMessage("conditionDesc.type.itemHolding",
-                        Replacement.create("NAME", ConditionType.ITEM_HOLDING.conditionName))).color(C.baseColor)
+                        Replacement.create("NAME", ConditionType.ITEM_HOLDING.conditionName))).color(C.highlightColor)
                 .append(TextComponent.newline())
                 .append(super.getDescription(localizer))
                 .build();

@@ -42,7 +42,7 @@ public class ItemClick extends ItemInteraction {
     public TextComponent getDescription(Localizer localizer) {
         return TextComponent.builder(
                 localizer.getMessage("conditionDesc.type.itemClick",
-                        Replacement.create("NAME", ConditionType.ITEM_CLICK.conditionName))).color(C.baseColor)
+                        Replacement.create("NAME", ConditionType.ITEM_CLICK.conditionName))).color(C.highlightColor)
                 .append(TextComponent.newline())
                 .append(super.getDescription(localizer))
                 .build();

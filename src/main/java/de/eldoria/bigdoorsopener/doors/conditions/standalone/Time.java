@@ -60,13 +60,15 @@ public class Time implements DoorCondition {
     public TextComponent getDescription(Localizer localizer) {
         return TextComponent.builder(
                 localizer.getMessage("conditionDesc.type.time",
-                        Replacement.create("NAME", ConditionType.TIME.conditionName))).color(C.baseColor)
+                        Replacement.create("NAME", ConditionType.TIME.conditionName))).color(C.highlightColor)
                 .append(TextComponent.newline())
-                .append(TextComponent.builder(localizer.getMessage("conditionDesc.open")).color(C.baseColor))
+                .append(TextComponent.builder(localizer.getMessage("conditionDesc.open") + " ").color(C.baseColor))
                 .append(TextComponent.builder(Parser.parseTicksToTime(openTick)).color(C.highlightColor))
-                .append(TextComponent.builder(localizer.getMessage("conditionDesc.close")).color(C.baseColor))
+                .append(TextComponent.newline())
+                .append(TextComponent.builder(localizer.getMessage("conditionDesc.close") + " ").color(C.baseColor))
                 .append(TextComponent.builder(Parser.parseTicksToTime(closeTick)).color(C.highlightColor))
-                .append(TextComponent.builder(localizer.getMessage("conditionDesc.forceState")).color(C.baseColor))
+                .append(TextComponent.newline())
+                .append(TextComponent.builder(localizer.getMessage("conditionDesc.forceState") + " ").color(C.baseColor))
                 .append(TextComponent.builder(Boolean.toString(forceState)).color(C.highlightColor))
                 .build();
     }
