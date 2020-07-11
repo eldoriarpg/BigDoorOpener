@@ -1,5 +1,6 @@
 package de.eldoria.bigdoorsopener.scheduler;
 
+import de.eldoria.bigdoorsopener.BigDoorsOpener;
 import de.eldoria.bigdoorsopener.config.Config;
 import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
 import de.eldoria.eldoutilities.localization.Localizer;
@@ -30,6 +31,7 @@ public class DoorChecker extends BigDoorsAdapter implements Runnable {
     public DoorChecker(Config config, BigDoors bigDoors, Localizer localizer) {
         super(bigDoors, localizer);
         this.config = config;
+        doors.addAll(config.getDoors().values());
     }
 
     /**
@@ -47,6 +49,7 @@ public class DoorChecker extends BigDoorsAdapter implements Runnable {
 
     /**
      * Unregister a door.
+     *
      * @param door door to unregister.
      */
     public void unregister(ConditionalDoor door) {
@@ -79,12 +82,26 @@ public class DoorChecker extends BigDoorsAdapter implements Runnable {
         for (int i = 0; i < count; i++) {
             // poll from queue and append door again.
             ConditionalDoor door = doors.poll();
+            assert door != null : "Door is null. How could this happen?";
+
+            if (!doorExists(door)) {
+                config.getDoors().remove(door.getDoorUID());
+                BigDoorsOpener.logger().info("Door with id " + door.getDoorUID() + " has been deleted. Removing.");
+                config.safeConfig();
+                continue;
+            }
+
             doors.add(door);
+
+            // skip busy doors. bcs why should we try to open/close a door we cant open/close
+            if (getCommander().isDoorBusy(door.getDoorUID())) {
+                evaluated.clear();
+                continue;
+            }
 
             // collect all doors we evaluated.
             evaluated.add(door);
 
-            assert door != null : "Door is null. How could this happen?";
 
             World world = server.getWorld(door.getWorld());
             // If the world of the door does not exists, why should we evaluate it.
