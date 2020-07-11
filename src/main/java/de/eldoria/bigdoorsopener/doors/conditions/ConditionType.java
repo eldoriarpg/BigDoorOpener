@@ -8,23 +8,21 @@ import de.eldoria.bigdoorsopener.doors.conditions.standalone.Weather;
 import de.eldoria.bigdoorsopener.util.Permissions;
 
 public enum ConditionType {
-    ITEM_CLICK(ConditionGroup.ITEM, Permissions.ITEM_CLICK_CONDITION),
-    ITEM_BLOCK(ConditionGroup.ITEM, Permissions.ITEM_BLOCK_CONDITION),
-    ITEM_HOLDING(ConditionGroup.ITEM, Permissions.ITEM_HOLDING_CONDITION),
-    ITEM_OWNING(ConditionGroup.ITEM, Permissions.ITEM_OWNING_CONDITION),
-    PROXIMITY(ConditionGroup.LOCATION, Permissions.PROXIMITY_CONDITION),
-    REGION(ConditionGroup.LOCATION, Permissions.REGION_CONDITION),
-    PERMISSION(ConditionGroup.PERMISSION, Permissions.PERMISSION_CONDITION),
-    TIME(ConditionGroup.TIME, Permissions.TIME_CONDITION),
-    WEATHER(ConditionGroup.WEATHER, Permissions.WEATHER_CONDITION);
+    ITEM_CLICK(ConditionGroup.ITEM),
+    ITEM_BLOCK(ConditionGroup.ITEM),
+    ITEM_HOLDING(ConditionGroup.ITEM),
+    ITEM_OWNING(ConditionGroup.ITEM),
+    PROXIMITY(ConditionGroup.LOCATION),
+    REGION(ConditionGroup.LOCATION),
+    PERMISSION(ConditionGroup.PERMISSION),
+    TIME(ConditionGroup.TIME),
+    WEATHER(ConditionGroup.WEATHER);
 
     public final ConditionGroup conditionGroup;
-    public final String permission;
     public final String conditionName;
 
-    ConditionType(ConditionGroup keyParameter, String permission) {
+    ConditionType(ConditionGroup keyParameter) {
         this.conditionGroup = keyParameter;
-        this.permission = permission;
         this.conditionName = name().replace("_", "").toLowerCase();
     }
 
@@ -43,18 +41,20 @@ public enum ConditionType {
     }
 
     public enum ConditionGroup {
-        ITEM("item", Item.class),
-        LOCATION("location", Location.class),
-        PERMISSION("permission", Permission.class),
-        TIME("time", Time.class),
-        WEATHER("weather", Weather.class);
+        ITEM("item", Item.class, Permissions.ITEM_CONDITION),
+        LOCATION("location", Location.class, Permissions.LOCATION_CONDITION),
+        PERMISSION("permission", Permission.class, Permissions.PERMISSION_CONDITION),
+        TIME("time", Time.class, Permissions.TIME_CONDITION),
+        WEATHER("weather", Weather.class, Permissions.WEATHER_CONDITION);
 
         public final String conditionParameter;
         public final Class<? extends DoorCondition> keyClass;
+        public final String permission;
 
-        <T extends DoorCondition> ConditionGroup(String conditionParameter, Class<T> keyClass) {
+        <T extends DoorCondition> ConditionGroup(String conditionParameter, Class<T> keyClass, String permission) {
             this.conditionParameter = conditionParameter;
             this.keyClass = keyClass;
+            this.permission = permission;
         }
     }
 
