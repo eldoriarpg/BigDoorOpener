@@ -27,8 +27,9 @@ import java.util.Map;
 @SerializableAs("weatherCondition")
 public class Weather implements DoorCondition {
     private final WeatherType weatherType;
+    private boolean forceState;
 
-    public Weather(WeatherType weatherType) {
+    public Weather(WeatherType weatherType, boolean forceState) {
         this.weatherType = weatherType;
     }
 
@@ -50,9 +51,9 @@ public class Weather implements DoorCondition {
     public TextComponent getDescription(Localizer localizer) {
         return TextComponent.builder(
                 localizer.getMessage("conditionDesc.type.weather",
-                        Replacement.create("NAME", ConditionType.WEATHER.conditionName))).color(C.baseColor)
+                        Replacement.create("NAME", ConditionType.WEATHER.conditionName))).color(C.highlightColor)
                 .append(TextComponent.newline())
-                .append(TextComponent.builder(localizer.getMessage("conditionDesc.open")).color(C.baseColor))
+                .append(TextComponent.builder(localizer.getMessage("conditionDesc.open") + " ").color(C.baseColor))
                 .append(TextComponent.builder(weatherType == WeatherType.CLEAR
                         ? localizer.getMessage("conditionDesc.clear")
                         : localizer.getMessage("conditionDesc.downfall")).color(C.highlightColor))
@@ -71,12 +72,14 @@ public class Weather implements DoorCondition {
     public @NotNull Map<String, Object> serialize() {
         return SerializationUtil.newBuilder()
                 .add("weatherType", weatherType)
+                .add("forceState", forceState)
                 .build();
     }
 
     public static Weather deserialize(Map<String, Object> map) {
         TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
         WeatherType type = EnumUtil.parse(resolvingMap.getValue("weatherType"), WeatherType.class);
-        return new Weather(type);
+        boolean forceState = resolvingMap.getValueOrDefault("forceState", false);
+        return new Weather(type, forceState);
     }
 }
