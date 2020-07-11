@@ -24,12 +24,12 @@ public class CachingJSEngine {
     public CachingJSEngine(int cacheSize) {
         try {
             engine = new NashornScriptEngineFactory().getScriptEngine("--no-deprecation-warning");
-            engine.eval("print('Big Doors Opener nashorn script engine started.')");
+            engine.eval("print('[BigDoorsOpener] nashorn script engine started.')");
         } catch (ScriptException e) {
             BigDoorsOpener.logger().info("No nashorn script engine found. Trying to use JavaScript fallback.");
             engine = new ScriptEngineManager(null).getEngineByName("JavaScript");
             try {
-                engine.eval("print('Big Doors Opener JavaScript script engine started.')");
+                engine.eval("print('[BigDoorsOpener] JavaScript script engine started.')");
             } catch (ScriptException ex) {
                 BigDoorsOpener.logger().warning("Could not start script engine. Custom evaluator will not work.");
             }
