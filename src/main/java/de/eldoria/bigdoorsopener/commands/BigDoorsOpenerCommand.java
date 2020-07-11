@@ -57,6 +57,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
@@ -882,8 +883,7 @@ public class BigDoorsOpenerCommand implements TabExecutor {
             return true;
         }
 
-        if (player != null && !player.hasPermission(Permissions.CUSTOM_EVALUATOR)) {
-            messageSender.sendError(player, localizer.getMessage("error.permission"));
+        if (denyAccess(player, Permissions.CUSTOM_EVALUATOR)) {
             return true;
         }
 
@@ -964,13 +964,25 @@ public class BigDoorsOpenerCommand implements TabExecutor {
         }
 
         Map<Long, ConditionalDoor> doors = config.getDoors();
-        StringBuilder builder = new StringBuilder(localizer.getMessage("list.title"));
+        StringBuilder builder = new StringBuilder(localizer.getMessage("list.title")).append("\n");
 
-        for (ConditionalDoor value : doors.values()) {
-            Door door = commander.getDoor(String.valueOf(value.getDoorUID()), null);
-            builder.append(value.getDoorUID()).append(" | ")
-                    .append(door.getName())
-                    .append("(").append(door.getWorld().getName()).append(")\n");
+        if (player.hasPermission(Permissions.ACCESS_ALL)) {
+            for (ConditionalDoor value : doors.values()) {
+                Door door = commander.getDoor(String.valueOf(value.getDoorUID()), null);
+                builder.append(value.getDoorUID()).append(" | ")
+                        .append(door.getName())
+                        .append("(").append(door.getWorld().getName()).append(")\n");
+            }
+        } else {
+            List<Door> registeredDoors = commander.getDoors(player.getUniqueId().toString(), null)
+                    .stream()
+                    .filter(d -> doors.containsKey(d.getDoorUID()))
+                    .collect(Collectors.toList());
+            for (Door value : registeredDoors) {
+                builder.append(value.getDoorUID()).append(" | ")
+                        .append(value.getName())
+                        .append("(").append(value.getWorld().getName()).append(")\n");
+            }
         }
 
         messageSender.sendMessage(player, builder.toString());
@@ -1111,7 +1123,21 @@ public class BigDoorsOpenerCommand implements TabExecutor {
         return false;
     }
 
-    private boolean denyAccess(Player player, String... permissions) {
+    private boolean denyAccess(CommandSender sender, String... permissions) {
+        return denyAccess(sender, false, permissions);
+    }
+
+    private boolean denyAccess(CommandSender sender, boolean silent, String... permissions) {
+        if (sender == null) {
+            return false;
+        }
+
+        Player player = null;
+
+        if (sender instanceof Player) {
+            player = (Player) sender;
+        }
+
         if (player == null) {
             return false;
         }
@@ -1120,8 +1146,10 @@ public class BigDoorsOpenerCommand implements TabExecutor {
                 return false;
             }
         }
-        messageSender.sendMessage(player, localizer.getMessage("error.permission",
-                Replacement.create("PERMISSION", String.join(", ", permissions))));
+        if (!silent) {
+            messageSender.sendMessage(player, localizer.getMessage("error.permission",
+                    Replacement.create("PERMISSION", String.join(", ", permissions)).addFormatting('6')));
+        }
         return true;
     }
 
@@ -1152,8 +1180,9 @@ public class BigDoorsOpenerCommand implements TabExecutor {
                 return Collections.singletonList(localizer.getMessage("error.invalidConditionType"));
             }
 
-            if (!sender.hasPermission(type.conditionGroup.permission)) {
-                return Collections.singletonList(localizer.getMessage("error.permission"));
+            if (denyAccess(sender, true, type.conditionGroup.permission, Permissions.ALL_CONDITION)) {
+                return Collections.singletonList(localizer.getMessage("error.permission",
+                        Replacement.create("PERMISSION", type.conditionGroup.permission + ", " + Permissions.ALL_CONDITION)));
             }
 
             switch (type) {
@@ -1259,8 +1288,9 @@ public class BigDoorsOpenerCommand implements TabExecutor {
             }
 
             if (parse == ConditionalDoor.EvaluationType.CUSTOM) {
-                if (!sender.hasPermission(Permissions.CUSTOM_EVALUATOR)) {
-                    return Collections.singletonList(localizer.getMessage("error.permission"));
+                if (denyAccess(sender, true, Permissions.CUSTOM_EVALUATOR)) {
+                    return Collections.singletonList(localizer.getMessage("error.permission",
+                            Replacement.create("PERMISSION", Permissions.CUSTOM_EVALUATOR)));
                 }
                 ArrayList<String> list = new ArrayList<>(Arrays.asList(CONDITION_GROUPS));
                 list.add("currentState");
