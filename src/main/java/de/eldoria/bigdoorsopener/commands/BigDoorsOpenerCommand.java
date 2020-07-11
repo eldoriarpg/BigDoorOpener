@@ -143,6 +143,10 @@ public class BigDoorsOpenerCommand implements TabExecutor {
         if ("removeCondition".equalsIgnoreCase(cmd)) {
             return removeCondition(player, arguments);
         }
+        // <doorID> <doorID> [condition]
+        if ("copyConditions".equalsIgnoreCase(cmd)) {
+            return copyCondition(player, arguments);
+        }
 
         if ("info".equalsIgnoreCase(cmd)) {
             return info(sender, arguments, player);
@@ -175,6 +179,7 @@ public class BigDoorsOpenerCommand implements TabExecutor {
         return true;
     }
 
+    // bdo help
     private boolean help(Player player) {
         messageSender.sendMessage(player,
                 localizer.getMessage("help.title",
@@ -198,6 +203,7 @@ public class BigDoorsOpenerCommand implements TabExecutor {
         return true;
     }
 
+    // bdo about
     private boolean about(Player player) {
         PluginDescriptionFile descr = plugin.getDescription();
         String info = localizer.getMessage("about",
@@ -210,18 +216,20 @@ public class BigDoorsOpenerCommand implements TabExecutor {
         return true;
     }
 
+    // bdo setCondition <doorId> <condition> <condition values>
     private boolean setCondition(Player player, String[] args) {
-        if (player != null && !player.hasPermission(Permissions.USE)) {
-            messageSender.sendError(player, localizer.getMessage("error.permission"));
+        if (denyAccess(player, Permissions.USE)) {
             return true;
         }
 
-        if (args.length < 3) {
-            messageSender.sendError(player, localizer.getMessage("error.invalidArguments"));
+        if (argumentsInvalid(player, args, 2,
+                "<" + localizer.getMessage("syntax.doorId") + "> <"
+                        + localizer.getMessage("syntax.condition") + "> <"
+                        + localizer.getMessage("syntax.conditionValues") + ">")) {
             return true;
         }
 
-        Door playerDoor = getPlayerDoor(args[2], player);
+        Door playerDoor = getPlayerDoor(args[0], player);
 
         if (playerDoor == null) {
             return true;
@@ -240,11 +248,9 @@ public class BigDoorsOpenerCommand implements TabExecutor {
             return true;
         }
 
-        if (player != null && !player.hasPermission(type.permission)) {
-            messageSender.sendError(player, localizer.getMessage("error.permission"));
+        if (denyAccess(player, type.conditionGroup.permission, Permissions.ALL_CONDITION)) {
             return true;
         }
-
 
         ItemStack itemInMainHand = null;
         if (player != null) {
@@ -252,6 +258,7 @@ public class BigDoorsOpenerCommand implements TabExecutor {
         }
 
         ConditionChain conditionChain = conditionalDoor.getConditionChain();
+
 
         String[] conditionArgs = Arrays.copyOfRange(args, 2, args.length);
 
@@ -442,7 +449,15 @@ public class BigDoorsOpenerCommand implements TabExecutor {
                     messageSender.sendError(player, localizer.getMessage("error.invalidWeatherType"));
                     return true;
                 }
-                conditionChain.setWeather(new Weather(weatherType));
+
+                Optional<Boolean> forceWeather = ArgumentUtils.getOptionalParameter(conditionArgs, 1, Optional.of(false), Parser::parseBoolean);
+
+                if (!forceWeather.isPresent()) {
+                    messageSender.sendError(player, localizer.getMessage("error.invalidBoolean"));
+                    return true;
+                }
+
+                conditionChain.setWeather(new Weather(weatherType, forceWeather.get()));
                 messageSender.sendMessage(player, localizer.getMessage("setCondition.weather"));
                 break;
             default:
@@ -460,14 +475,127 @@ public class BigDoorsOpenerCommand implements TabExecutor {
         }
 
         config.safeConfig();
-        return false;
+        return true;
+    }
+
+    // bdo copyCondition <sourceDoor> <targetDoor> [condition]
+    private boolean copyCondition(Player player, String[] arguments) {
+        if (denyAccess(player, Permissions.USE)) {
+            return true;
+        }
+
+        if (argumentsInvalid(player, arguments, 2,
+                "<" + localizer.getMessage("syntax.sourceDoor") + "> <"
+                        + localizer.getMessage("syntax.targetDoor") + "> ["
+                        + localizer.getMessage("syntax.condition") + "]")) {
+            return true;
+        }
+
+        Door playerSourceDoor = getPlayerDoor(arguments[0], player);
+
+        if (playerSourceDoor == null) {
+            return true;
+        }
+
+        ConditionalDoor sourceDoor = getOrRegister(playerSourceDoor, player);
+
+        if (sourceDoor == null) {
+            return true;
+        }
+
+        Door playerTargetDoor = getPlayerDoor(arguments[1], player);
+
+        if (playerTargetDoor == null) {
+            return true;
+        }
+
+        ConditionalDoor targetDoor = getOrRegister(playerSourceDoor, player);
+
+        if (targetDoor == null) {
+            return true;
+        }
+
+        ConditionChain sourceChain = sourceDoor.getConditionChain();
+
+        if (arguments.length == 2) {
+            if (denyAccess(player, Permissions.ALL_CONDITION)) {
+                return true;
+            }
+
+            targetDoor.setConditionChain(sourceChain.copy());
+            messageSender.sendMessage(player, localizer.getMessage("copyCondition.copiedAll",
+                    Replacement.create("SOURCE", playerSourceDoor.getName()).addFormatting('6'),
+                    Replacement.create("TARGET", playerTargetDoor.getName()).addFormatting('6')));
+            return true;
+        }
+
+        ConditionType.ConditionGroup type = EnumUtil.parse(arguments[2], ConditionType.ConditionGroup.class);
+
+
+        if (type == null) {
+            messageSender.sendError(player, localizer.getMessage("error.invalidConditionType"));
+            return true;
+        }
+
+        if (denyAccess(player, type.permission, Permissions.ALL_CONDITION)) {
+            return true;
+        }
+
+        ConditionChain targetChain = targetDoor.getConditionChain();
+        switch (type) {
+            case ITEM:
+                if (sourceChain.getItem() == null) {
+                    messageSender.sendError(player, localizer.getMessage("error.conditionNotSet"));
+                    return true;
+                }
+                targetChain.setItem(sourceChain.getItem());
+                break;
+            case LOCATION:
+                if (sourceChain.getLocation() == null) {
+                    messageSender.sendError(player, localizer.getMessage("error.conditionNotSet"));
+                    return true;
+                }
+                targetChain.setLocation(sourceChain.getLocation());
+                break;
+            case PERMISSION:
+                if (sourceChain.getPermission() == null) {
+                    messageSender.sendError(player, localizer.getMessage("error.conditionNotSet"));
+                    return true;
+                }
+                targetChain.setPermission(sourceChain.getPermission());
+                break;
+            case TIME:
+                if (sourceChain.getTime() == null) {
+                    messageSender.sendError(player, localizer.getMessage("error.conditionNotSet"));
+                    return true;
+                }
+                targetChain.setTime(sourceChain.getTime());
+                break;
+            case WEATHER:
+                if (sourceChain.getWeather() == null) {
+                    messageSender.sendError(player, localizer.getMessage("error.conditionNotSet"));
+                    return true;
+                }
+                targetChain.setWeather(sourceChain.getWeather());
+                break;
+        }
+        messageSender.sendMessage(player, localizer.getMessage("copyCondition.copiedSingle",
+                Replacement.create("CONDITION", type.conditionParameter).addFormatting('6'),
+                Replacement.create("SOURCE", playerSourceDoor.getName()).addFormatting('6'),
+                Replacement.create("TARGET", playerTargetDoor.getName()).addFormatting('6')));
+        return true;
     }
 
     // bdo removeCondition <doorId> <condition>
     private boolean removeCondition(Player player, String[] arguments) {
-        if (player != null && !player.hasPermission(Permissions.USE)) {
-            messageSender.sendError(player, localizer.getMessage("error.permission"));
+        if (denyAccess(player, Permissions.USE)) {
             return true;
+        }
+
+        if (argumentsInvalid(player, arguments, 2,
+                "<" + localizer.getMessage("syntax.doorId") + "> <"
+                        + localizer.getMessage("syntax.condition") + ">")) {
+            return false;
         }
 
         Door playerDoor = getPlayerDoor(arguments[0], player);
@@ -488,12 +616,15 @@ public class BigDoorsOpenerCommand implements TabExecutor {
             return true;
         }
 
+        if (denyAccess(player, type.conditionGroup.permission, Permissions.ALL_CONDITION)) {
+            return true;
+        }
 
         ConditionChain conditionChain = cDoor.getConditionChain();
         switch (type.conditionGroup) {
             case ITEM:
                 if (conditionChain.getItem() == null) {
-                    messageSender.sendError(player, localizer.getMessage("removeCondition.notSet"));
+                    messageSender.sendError(player, localizer.getMessage("error.conditionNotSet"));
                     return true;
                 }
                 conditionChain.setItem(null);
@@ -501,7 +632,7 @@ public class BigDoorsOpenerCommand implements TabExecutor {
                 break;
             case LOCATION:
                 if (conditionChain.getItem() == null) {
-                    messageSender.sendError(player, localizer.getMessage("removeCondition.notSet"));
+                    messageSender.sendError(player, localizer.getMessage("error.conditionNotSet"));
                     return true;
                 }
                 conditionChain.setLocation(null);
@@ -509,7 +640,7 @@ public class BigDoorsOpenerCommand implements TabExecutor {
                 break;
             case PERMISSION:
                 if (conditionChain.getItem() == null) {
-                    messageSender.sendError(player, localizer.getMessage("removeCondition.notSet"));
+                    messageSender.sendError(player, localizer.getMessage("error.conditionNotSet"));
                     return true;
                 }
                 conditionChain.setPermission(null);
@@ -517,7 +648,7 @@ public class BigDoorsOpenerCommand implements TabExecutor {
                 break;
             case TIME:
                 if (conditionChain.getItem() == null) {
-                    messageSender.sendError(player, localizer.getMessage("removeCondition.notSet"));
+                    messageSender.sendError(player, localizer.getMessage("error.conditionNotSet"));
                     return true;
                 }
                 conditionChain.setTime(null);
@@ -525,7 +656,7 @@ public class BigDoorsOpenerCommand implements TabExecutor {
                 break;
             case WEATHER:
                 if (conditionChain.getItem() == null) {
-                    messageSender.sendError(player, localizer.getMessage("removeCondition.notSet"));
+                    messageSender.sendError(player, localizer.getMessage("error.conditionNotSet"));
                     return true;
                 }
                 conditionChain.setWeather(null);
@@ -552,15 +683,14 @@ public class BigDoorsOpenerCommand implements TabExecutor {
 
     //bdo info <doorid>
     private boolean info(CommandSender sender, String[] args, Player player) {
-        if (player != null && !player.hasPermission(Permissions.USE)) {
-            messageSender.sendError(player, localizer.getMessage("error.permission"));
+        if (denyAccess(player, Permissions.USE)) {
             return true;
         }
 
-        if (args.length != 1) {
-            messageSender.sendError(player, localizer.getMessage("error.invalidArguments"));
+        if (argumentsInvalid(player, args, 1, "<" + localizer.getMessage("syntax.doorId") + ">")) {
             return true;
         }
+
         Pair<ConditionalDoor, Door> door = getConditionalPlayerDoor(args[0], player);
         if (door == null) {
             return true;
@@ -568,7 +698,7 @@ public class BigDoorsOpenerCommand implements TabExecutor {
 
         ConditionalDoor cDoor = door.first;
         TextComponent.Builder builder = TextComponent.builder()
-                .append(TextComponent.builder(localizer.getMessage(door.second.getName() + " ")).color(C.highlightColor))
+                .append(TextComponent.builder(door.second.getName()).color(C.highlightColor))
                 .append(TextComponent.builder("(Id:" + door.second.getDoorUID() + ") ")).color(C.highlightColor)
                 .append(TextComponent.builder(localizer.getMessage("info.info")).color(C.baseColor))
                 .append(TextComponent.newline())
@@ -577,7 +707,7 @@ public class BigDoorsOpenerCommand implements TabExecutor {
                 .append(TextComponent.newline());
 
         // append evaluator
-        builder.append(TextComponent.builder(localizer.getMessage("info.evaluator")).color(C.baseColor));
+        builder.append(TextComponent.builder(localizer.getMessage("info.evaluator") + " ").color(C.baseColor));
         if (cDoor.getEvaluationType() == ConditionalDoor.EvaluationType.CUSTOM) {
             builder.append(TextComponent.builder(cDoor.getEvaluator()).color(C.highlightColor));
         } else {
@@ -586,7 +716,7 @@ public class BigDoorsOpenerCommand implements TabExecutor {
         builder.append(TextComponent.newline());
 
         // append open time
-        builder.append(TextComponent.builder(localizer.getMessage("info.stayOpen")).color(C.baseColor))
+        builder.append(TextComponent.builder(localizer.getMessage("info.stayOpen") + " ").color(C.baseColor))
                 .append(TextComponent.builder(String.valueOf(cDoor.getStayOpen())).color(C.highlightColor))
                 .append(TextComponent.newline());
 
@@ -601,13 +731,13 @@ public class BigDoorsOpenerCommand implements TabExecutor {
                     .append(TextComponent.newline())
                     .append(TextComponent.builder("[" + localizer.getMessage("info.remove") + "]")
                             .color(TextColor.DARK_RED)
-                            .clickEvent(ClickEvent.runCommand("bdo removeCondition item " + cDoor.getDoorUID())));
+                            .clickEvent(ClickEvent.runCommand("/bdo removeCondition item " + cDoor.getDoorUID())));
 
         } else {
             builder.append(TextComponent.builder(localizer.getMessage("info.itemCondition") + " ").color(C.highlightColor))
                     .append(TextComponent.builder("[" + localizer.getMessage("info.add") + "]")
                             .color(TextColor.GREEN)
-                            .clickEvent(ClickEvent.suggestCommand("bdo setCondition item")));
+                            .clickEvent(ClickEvent.suggestCommand("/bdo setCondition item")));
         }
         builder.append(TextComponent.newline());
 
@@ -616,27 +746,27 @@ public class BigDoorsOpenerCommand implements TabExecutor {
                     .append(TextComponent.newline())
                     .append(TextComponent.builder("[" + localizer.getMessage("info.remove") + "]")
                             .color(TextColor.DARK_RED)
-                            .clickEvent(ClickEvent.runCommand("bdo removeCondition location " + cDoor.getDoorUID())));
+                            .clickEvent(ClickEvent.runCommand("/bdo removeCondition location " + cDoor.getDoorUID())));
 
         } else {
             builder.append(TextComponent.builder(localizer.getMessage("info.location") + " ").color(C.highlightColor))
                     .append(TextComponent.builder("[" + localizer.getMessage("info.add") + "]")
                             .color(TextColor.GREEN)
-                            .clickEvent(ClickEvent.suggestCommand("bdo setCondition ")));
+                            .clickEvent(ClickEvent.suggestCommand("/bdo setCondition ")));
         }
         builder.append(TextComponent.newline());
 
         if (conditionChain.getPermission() != null) {
-            builder.append(conditionChain.getLocation().getDescription(localizer))
+            builder.append(conditionChain.getPermission().getDescription(localizer))
                     .append(TextComponent.newline())
                     .append(TextComponent.builder("[" + localizer.getMessage("info.remove") + "]")
                             .color(TextColor.DARK_RED)
-                            .clickEvent(ClickEvent.runCommand("bdo removeCondition permission " + cDoor.getDoorUID())));
+                            .clickEvent(ClickEvent.runCommand("/bdo removeCondition permission " + cDoor.getDoorUID())));
         } else {
             builder.append(TextComponent.builder(localizer.getMessage("info.permission") + " ").color(C.highlightColor))
                     .append(TextComponent.builder("[" + localizer.getMessage("info.add") + "]")
                             .color(TextColor.GREEN)
-                            .clickEvent(ClickEvent.suggestCommand("bdo setCondition permission " + cDoor.getDoorUID())));
+                            .clickEvent(ClickEvent.suggestCommand("/bdo setCondition permission " + cDoor.getDoorUID())));
         }
         builder.append(TextComponent.newline());
 
@@ -645,26 +775,26 @@ public class BigDoorsOpenerCommand implements TabExecutor {
                     .append(TextComponent.newline())
                     .append(TextComponent.builder("[" + localizer.getMessage("info.remove") + "]")
                             .color(TextColor.DARK_RED)
-                            .clickEvent(ClickEvent.runCommand("bdo removeCondition time " + cDoor.getDoorUID())));
+                            .clickEvent(ClickEvent.runCommand("/bdo removeCondition time " + cDoor.getDoorUID())));
         } else {
             builder.append(TextComponent.builder(localizer.getMessage("info.time") + " ").color(C.highlightColor))
                     .append(TextComponent.builder("[" + localizer.getMessage("info.add") + "]")
                             .color(TextColor.GREEN)
-                            .clickEvent(ClickEvent.suggestCommand("bdo setCondition time " + cDoor.getDoorUID())));
+                            .clickEvent(ClickEvent.suggestCommand("/bdo setCondition time " + cDoor.getDoorUID())));
         }
         builder.append(TextComponent.newline());
 
         if (conditionChain.getWeather() != null) {
-            builder.append(conditionChain.getTime().getDescription(localizer))
+            builder.append(conditionChain.getWeather().getDescription(localizer))
                     .append(TextComponent.newline())
                     .append(TextComponent.builder("[" + localizer.getMessage("info.remove") + "]")
                             .color(TextColor.DARK_RED)
-                            .clickEvent(ClickEvent.runCommand("bdo removeCondition weather " + cDoor.getDoorUID())));
+                            .clickEvent(ClickEvent.runCommand("/bdo removeCondition weather " + cDoor.getDoorUID())));
         } else {
             builder.append(TextComponent.builder(localizer.getMessage("info.weather") + " ").color(C.highlightColor))
                     .append(TextComponent.builder("[" + localizer.getMessage("info.add") + "]")
                             .color(TextColor.GREEN)
-                            .clickEvent(ClickEvent.suggestCommand("bdo setCondition weather " + cDoor.getDoorUID())));
+                            .clickEvent(ClickEvent.suggestCommand("/bdo setCondition weather " + cDoor.getDoorUID())));
         }
 
         TextAdapter.sendMessage(sender, builder.build());
@@ -673,14 +803,14 @@ public class BigDoorsOpenerCommand implements TabExecutor {
 
     //bdo unregister <doorid>
     private boolean unregister(String[] args, Player player) {
-        if (player != null && !player.hasPermission(Permissions.USE)) {
-            messageSender.sendError(player, localizer.getMessage("error.permission"));
+        if (denyAccess(player, Permissions.USE)) {
             return true;
         }
-        if (args.length != 1) {
-            messageSender.sendError(player, localizer.getMessage("error.invalidArguments"));
+
+        if (argumentsInvalid(player, args, 1, "<" + localizer.getMessage("syntax.doorId") + ">")) {
             return true;
         }
+
         Pair<ConditionalDoor, Door> door = getConditionalPlayerDoor(args[0], player);
 
         if (door == null) {
@@ -698,14 +828,14 @@ public class BigDoorsOpenerCommand implements TabExecutor {
 
     //bdo invertOpen <doorid>
     private boolean invertOpen(String[] args, Player player) {
-        if (player != null && !player.hasPermission(Permissions.USE)) {
-            messageSender.sendError(player, localizer.getMessage("error.permission"));
+        if (denyAccess(player, Permissions.USE)) {
             return true;
         }
-        if (args.length != 1) {
-            messageSender.sendError(player, localizer.getMessage("error.invalidArguments"));
+
+        if (argumentsInvalid(player, args, 1, "<" + localizer.getMessage("syntax.doorId") + ">")) {
             return true;
         }
+
         Pair<ConditionalDoor, Door> door = getConditionalPlayerDoor(args[0], player);
         if (door == null) {
             return true;
@@ -717,15 +847,16 @@ public class BigDoorsOpenerCommand implements TabExecutor {
         return true;
     }
 
-    //bod setEvaluator <type> [args]
+    //bod setEvaluator <doorId> <type> [args]
     private boolean setEvaluator(Player player, String[] arguments) {
-        if (player != null && !player.hasPermission(Permissions.USE)) {
-            messageSender.sendError(player, localizer.getMessage("error.permission"));
+        if (denyAccess(player, Permissions.USE)) {
             return true;
         }
 
-        if (arguments.length < 2) {
-            messageSender.sendError(player, localizer.getMessage("error.invalidArguments"));
+        if (argumentsInvalid(player, arguments, 2,
+                "<" + localizer.getMessage("syntax.doorId") + "> <"
+                        + localizer.getMessage("syntax.evaluationType") + "> ["
+                        + localizer.getMessage("syntax.customEvaluator") + "]")) {
             return true;
         }
 
@@ -747,6 +878,7 @@ public class BigDoorsOpenerCommand implements TabExecutor {
             } else {
                 messageSender.sendMessage(player, localizer.getMessage("setEvaluator.or"));
             }
+            config.safeConfig();
             return true;
         }
 
@@ -790,14 +922,21 @@ public class BigDoorsOpenerCommand implements TabExecutor {
                 door.first.setEvaluator(JsSyntaxHelper.translateEvaluator(evaluator));
                 break;
         }
+        config.safeConfig();
         messageSender.sendMessage(player, localizer.getMessage("setEvaluator.custom",
                 Replacement.create("EVALUATOR", JsSyntaxHelper.translateEvaluator(evaluator))));
         return true;
     }
 
+    // bdo stayOpen <doorId> <seconds>
     private boolean stayOpen(Player player, String[] arguments) {
-        if (player != null && !player.hasPermission(Permissions.USE)) {
-            messageSender.sendError(player, localizer.getMessage("error.permission"));
+        if (denyAccess(player, Permissions.USE)) {
+            return true;
+        }
+
+        if (argumentsInvalid(player, arguments, 2,
+                "<" + localizer.getMessage("syntax.doorId") + "> <"
+                        + localizer.getMessage("syntax.seconds") + ">")) {
             return true;
         }
 
@@ -818,11 +957,12 @@ public class BigDoorsOpenerCommand implements TabExecutor {
         return true;
     }
 
+    // bdo list
     private boolean list(Player player) {
-        if (player != null && !player.hasPermission(Permissions.USE)) {
-            messageSender.sendError(player, localizer.getMessage("error.permission"));
+        if (denyAccess(player, Permissions.USE)) {
             return true;
         }
+
         Map<Long, ConditionalDoor> doors = config.getDoors();
         StringBuilder builder = new StringBuilder(localizer.getMessage("list.title"));
 
@@ -837,11 +977,12 @@ public class BigDoorsOpenerCommand implements TabExecutor {
         return true;
     }
 
+    // bdo reload
     private boolean reload(Player player) {
-        if (player != null && !player.hasPermission(Permissions.RELOAD)) {
-            messageSender.sendError(player, localizer.getMessage("error.permission"));
+        if (denyAccess(player, Permissions.RELOAD)) {
             return true;
         }
+
         config.reloadConfig();
         doorChecker.reload();
         plugin.onEnable();
@@ -924,13 +1065,15 @@ public class BigDoorsOpenerCommand implements TabExecutor {
             }
             return door;
         }
+
         // sender id not console. retrieve door of player.
-        Door door = commander.getDoor(doorUID, player);
-        if (door == null) {
-            // door is null. check if door exists.
-            door = commander.getDoor(doorUID, null);
+        ArrayList<Door> doors = commander.getDoors(player.getUniqueId().toString(), doorUID);
+
+        if (doors.isEmpty()) {
+            // door is null. check if door exists anyway
+            Door door = commander.getDoor(doorUID, null);
             if (door == null) {
-                messageSender.sendError(null, localizer.getMessage("error.doorNotFound"));
+                messageSender.sendError(player, localizer.getMessage("error.doorNotFound"));
                 return null;
             }
             // when the door exists and the player has access to all doors return it.
@@ -941,46 +1084,76 @@ public class BigDoorsOpenerCommand implements TabExecutor {
             }
             return null;
         }
-        return door;
+
+        if (doors.size() != 1) {
+            messageSender.sendMessage(player, localizer.getMessage("error.ambigiousDoorName"));
+            return null;
+        }
+
+        return doors.get(0);
     }
 
-    private boolean checkArgumentLength(Player player, String[] args, int length, String syntax) {
-        if (args.length != length) {
+    /**
+     * Checks if the provided arguments are invalid.
+     *
+     * @param player player which executed the command.
+     * @param args   arguments to check
+     * @param length min amount of arguments.
+     * @param syntax correct syntax
+     * @return true if the arguments are invalid
+     */
+    private boolean argumentsInvalid(Player player, String[] args, int length, String syntax) {
+        if (args.length < length) {
             messageSender.sendError(player, localizer.getMessage("error.invalidArguments",
-                    Replacement.create("SYNTAX", syntax)));
+                    Replacement.create("SYNTAX", syntax).addFormatting('6')));
+            return true;
+        }
+        return false;
+    }
+
+    private boolean denyAccess(Player player, String... permissions) {
+        if (player == null) {
             return false;
         }
+        for (String permission : permissions) {
+            if (player.hasPermission(permission)) {
+                return false;
+            }
+        }
+        messageSender.sendMessage(player, localizer.getMessage("error.permission",
+                Replacement.create("PERMISSION", String.join(", ", permissions))));
         return true;
     }
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         String cmd = args[0];
-        if ("about".equalsIgnoreCase(cmd)) {
-            return Collections.emptyList();
-        }
 
-        if ("help".equalsIgnoreCase(cmd)) {
-            return Collections.emptyList();
+        if (args.length == 1) {
+            return ArrayUtil.startingWithInArray(cmd,
+                    new String[] {"help", "about", "setCondition", "removeCondition", "info",
+                            "unregister", "invertOpen", "setEvaluator", "stayOpen", "list", "reload"})
+                    .collect(Collectors.toList());
         }
 
         if ("setCondition".equalsIgnoreCase(cmd)) {
+
+
             if (args.length == 2) {
-                String conditionType = args[1];
+                return Collections.singletonList(localizer.getMessage("tabcomplete.doorId"));
+            }
+            if (args.length == 3) {
+                String conditionType = args[2];
                 return ArrayUtil.startingWithInArray(conditionType, CONDITION_TYPES).collect(Collectors.toList());
             }
 
-            ConditionType type = EnumUtil.parse(args[1], ConditionType.class);
+            ConditionType type = EnumUtil.parse(args[2], ConditionType.class);
             if (type == null) {
                 return Collections.singletonList(localizer.getMessage("error.invalidConditionType"));
             }
 
-            if (!sender.hasPermission(type.permission)) {
+            if (!sender.hasPermission(type.conditionGroup.permission)) {
                 return Collections.singletonList(localizer.getMessage("error.permission"));
-            }
-
-            if (args.length == 3) {
-                return Collections.singletonList("<doorId>");
             }
 
             switch (type) {
@@ -1030,46 +1203,61 @@ public class BigDoorsOpenerCommand implements TabExecutor {
                     }
                     break;
             }
-            return Collections.emptyList();
         }
 
         if ("removeCondition".equalsIgnoreCase(cmd)) {
             if (args.length == 2) {
-                return Collections.singletonList("<doorId>");
+                return Collections.singletonList(localizer.getMessage("tabcomplete.doorId"));
             }
             if (args.length == 3) {
                 ArrayUtil.startingWithInArray(args[2], CONDITION_GROUPS);
             }
-            return Collections.emptyList();
+        }
+
+        if ("copyCondition".equalsIgnoreCase(cmd)) {
+            if (args.length == 2) {
+                return Collections.singletonList(localizer.getMessage("syntax.sourceDoor"));
+            }
+            if (args.length == 3) {
+                return Collections.singletonList(localizer.getMessage("syntax.targetDoor"));
+            }
+            if (args.length == 4) {
+                return ArrayUtil.startingWithInArray(args[3], CONDITION_TYPES).collect(Collectors.toList());
+            }
         }
 
         if ("info".equalsIgnoreCase(cmd)) {
             if (args.length == 2) {
                 return Collections.singletonList(localizer.getMessage("tabcomplete.doorId"));
             }
-            return Collections.emptyList();
         }
 
         if ("unregister".equalsIgnoreCase(cmd)) {
             if (args.length == 2) {
                 return Collections.singletonList(localizer.getMessage("tabcomplete.doorId"));
             }
-            return Collections.emptyList();
         }
 
         if ("invertOpen".equalsIgnoreCase(cmd)) {
             if (args.length == 2) {
                 return Collections.singletonList(localizer.getMessage("tabcomplete.doorId"));
             }
-            return Collections.emptyList();
         }
 
         if ("setEvaluator".equalsIgnoreCase(cmd)) {
             if (args.length == 2) {
-                return ArrayUtil.startingWithInArray(args[1], EVALUATOR_TYPES).collect(Collectors.toList());
+                return Collections.singletonList(localizer.getMessage("tabcomplete.doorId"));
+            }
+            if (args.length == 3) {
+                return ArrayUtil.startingWithInArray(args[2], EVALUATOR_TYPES).collect(Collectors.toList());
             }
 
-            ConditionalDoor.EvaluationType parse = EnumUtil.parse(args[1], ConditionalDoor.EvaluationType.class);
+            ConditionalDoor.EvaluationType parse = EnumUtil.parse(args[2], ConditionalDoor.EvaluationType.class);
+
+            if (parse == null) {
+                return Collections.singletonList(localizer.getMessage("error.invalidEvaluationType"));
+            }
+
             if (parse == ConditionalDoor.EvaluationType.CUSTOM) {
                 if (!sender.hasPermission(Permissions.CUSTOM_EVALUATOR)) {
                     return Collections.singletonList(localizer.getMessage("error.permission"));
@@ -1079,28 +1267,15 @@ public class BigDoorsOpenerCommand implements TabExecutor {
                 list.add(localizer.getMessage("tabcomplete.validValues"));
                 return list;
             }
-            return Collections.emptyList();
         }
 
         if ("stayOpen".equalsIgnoreCase(cmd)) {
             if (args.length == 2) {
+                return Collections.singletonList(localizer.getMessage("tabcomplete.doorId"));
+            }
+            if (args.length == 3) {
                 return Collections.singletonList(localizer.getMessage("tabcomplete.amount"));
             }
-            return Collections.emptyList();
-        }
-
-        if ("reload".equalsIgnoreCase(cmd)) {
-            return Collections.emptyList();
-        }
-        if ("list".equalsIgnoreCase(cmd)) {
-            return Collections.emptyList();
-        }
-
-        if (args.length == 1) {
-            return ArrayUtil.startingWithInArray(cmd,
-                    new String[] {"help", "about", "setCondition", "removeCondition", "info",
-                            "unregister", "invertOpen", "setEvaluator", "stayOpen", "list", "reload"})
-                    .collect(Collectors.toList());
         }
         return Collections.emptyList();
     }
