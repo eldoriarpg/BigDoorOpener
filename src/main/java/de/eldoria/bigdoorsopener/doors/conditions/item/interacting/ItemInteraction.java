@@ -51,7 +51,7 @@ public abstract class ItemInteraction extends Item {
     }
 
     @Override
-    public void clear() {
+    public void evaluated() {
         playersClicked.clear();
     }
 }

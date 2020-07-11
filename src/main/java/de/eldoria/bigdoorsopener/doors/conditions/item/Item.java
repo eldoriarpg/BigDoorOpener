@@ -163,7 +163,7 @@ public abstract class Item implements DoorCondition {
      * This method is called after the check for the door of this key is done and a new evaluation cycle starts.
      * Deletes any internal data in this key.
      */
-    public void clear() {
+    public void evaluated() {
     }
 
     @Override
