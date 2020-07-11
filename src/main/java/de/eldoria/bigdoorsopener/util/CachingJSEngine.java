@@ -6,6 +6,7 @@ import de.eldoria.bigdoorsopener.BigDoorsOpener;
 import jdk.nashorn.api.scripting.NashornScriptEngineFactory;
 
 import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -17,13 +18,23 @@ import java.util.logging.Level;
  * As a key the evaluated string is used. This assumes that a result is deterministic, which it should be anyway.
  */
 public class CachingJSEngine {
-    private final ScriptEngine engine;
+    private ScriptEngine engine;
     private final Cache<String, Object> cache;
 
     public CachingJSEngine(int cacheSize) {
-        NashornScriptEngineFactory factory = new NashornScriptEngineFactory();
-        engine = factory.getScriptEngine("--no-deprecation-warning");
-        ;
+        try {
+            engine = new NashornScriptEngineFactory().getScriptEngine("--no-deprecation-warning");
+            engine.eval("print('Big Doors Opener nashorn script engine started.')");
+        } catch (ScriptException e) {
+            BigDoorsOpener.logger().info("No nashorn script engine found. Trying to use JavaScript fallback.");
+            engine = new ScriptEngineManager(null).getEngineByName("JavaScript");
+            try {
+                engine.eval("print('Big Doors Opener JavaScript script engine started.')");
+            } catch (ScriptException ex) {
+                BigDoorsOpener.logger().warning("Could not start script engine. Custom evaluator will not work.");
+            }
+        }
+
         cache = CacheBuilder.newBuilder().expireAfterAccess(24, TimeUnit.MINUTES).maximumSize(500).build();
     }
 
