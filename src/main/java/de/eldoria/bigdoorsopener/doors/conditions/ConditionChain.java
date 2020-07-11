@@ -27,7 +27,7 @@ import java.util.Map;
 @Setter
 @Getter
 @SerializableAs("conditionChain")
-public class ConditionChain implements ConfigurationSerializable {
+public class ConditionChain implements ConfigurationSerializable, Cloneable {
     private Item item = null;
     private Location location = null;
     private Permission permission = null;
@@ -45,16 +45,44 @@ public class ConditionChain implements ConfigurationSerializable {
         this.weather = weather;
     }
 
+    /**
+     * Evaluates the conditions with an or operator.
+     *
+     * @param player       player which should be checked
+     * @param world        world of the door
+     * @param door         door which is checked
+     * @param currentState the current state of the door
+     * @return result of the conditions.
+     */
     public boolean or(Player player, World world, ConditionalDoor door, boolean currentState) {
         return ConditionChainEvaluator.or(player, world, door, currentState,
                 item, permission, location, time, weather);
     }
 
+    /**
+     * Evaluates the conditions with an and operator.
+     *
+     * @param player       player which should be checked
+     * @param world        world of the door
+     * @param door         door which is checked
+     * @param currentState the current state of the door
+     * @return result of the conditions.
+     */
     public boolean and(Player player, World world, ConditionalDoor door, boolean currentState) {
         return ConditionChainEvaluator.and(player, world, door, currentState,
                 item, permission, location, time, weather);
     }
 
+    /**
+     * Evaluates the chain with a custom evaluation string.
+     *
+     * @param string       evaluator.
+     * @param player       player which should be checked
+     * @param world        world of the door
+     * @param door         door which is checked
+     * @param currentState the current state of the door
+     * @return string with the values replaced.
+     */
     public String custom(String string, Player player, World world, ConditionalDoor door, boolean currentState) {
         String evaluationString = string;
 
@@ -84,18 +112,33 @@ public class ConditionChain implements ConfigurationSerializable {
         return evaluationString;
     }
 
+    /**
+     * Checks if a key is present which needs a player lookup.
+     *
+     * @return true if a player key is present.
+     */
     public boolean requiresPlayerEvaluation() {
         return item != null || permission != null || location != null;
     }
 
+    /**
+     * Called when the door was evaluated and a new evaluation cycle begins.
+     */
     public void evaluated() {
         if (item != null) {
             item.evaluated();
         }
     }
 
+    /**
+     * Called when the chain was true and the door was opened.
+     *
+     * @param player player which opened the door.
+     */
     public void opened(Player player) {
-        item.used(player);
+        if (item != null) {
+            item.used(player);
+        }
     }
 
     @Override
@@ -120,7 +163,21 @@ public class ConditionChain implements ConfigurationSerializable {
         return new ConditionChain(item, location, permission, time, weather);
     }
 
+    /**
+     * Checks if all conditions are null.
+     *
+     * @return true if all conditions are nulkl
+     */
     public boolean isEmpty() {
         return item == null && location == null && permission == null && time == null && weather == null;
+    }
+
+    /**
+     * Get a mutable new condition chain with the same conditions like this condition chain.
+     *
+     * @return new condition chain.
+     */
+    public ConditionChain copy() {
+        return new ConditionChain(item, location, permission, time, weather);
     }
 }
