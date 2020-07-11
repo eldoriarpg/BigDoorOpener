@@ -7,6 +7,7 @@ import de.eldoria.eldoutilities.serialization.SerializationUtil;
 import de.eldoria.eldoutilities.serialization.TypeResolvingMap;
 import de.eldoria.eldoutilities.utils.EnumUtil;
 import lombok.Getter;
+import lombok.Setter;
 import org.bukkit.World;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.SerializableAs;
@@ -53,11 +54,12 @@ public class ConditionalDoor implements ConfigurationSerializable {
     /**
      * the type the condition chain uses to evaluate the conditions
      */
-    private EvaluationType evaluationType = EvaluationType.AND;
+    private EvaluationType evaluationType = EvaluationType.OR;
 
     @Getter
+    @Setter
     @Nonnull
-    private final ConditionChain conditionChain;
+    private ConditionChain conditionChain;
 
     /**
      * Amount of time in seconds a door will stay open when opened.
@@ -105,7 +107,7 @@ public class ConditionalDoor implements ConfigurationSerializable {
      * @return true if the door should be open or false if not.
      */
     public boolean getState(Player player, World world, boolean currentState) {
-        if (openTill.isAfter(Instant.now())) return true;
+        if (openTill != null && openTill.isAfter(Instant.now())) return true;
 
         switch (evaluationType) {
             case CUSTOM:
