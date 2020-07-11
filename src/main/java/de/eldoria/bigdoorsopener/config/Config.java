@@ -45,7 +45,7 @@ public class Config {
 
         FileConfiguration config = plugin.getConfig();
 
-        if (!config.contains("version")) {
+        if (!config.isSet("version")) {
             plugin.getLogger().info("Config has no version key.");
             plugin.getLogger().info("Detected config version 0. Performing migration to version 1.");
 
@@ -75,7 +75,7 @@ public class Config {
 
         Logger log = BigDoorsOpener.logger();
         if (timedDoors != null) {
-            log.info("Trying to convert " + timedDoors.size() + " timed doors.");
+            log.info("Trying to convert " + timedDoors.size() + " timed door(s).");
             List<ConditionalDoor> conditionalDoors = new ArrayList<>();
 
 
@@ -143,7 +143,7 @@ public class Config {
     }
 
     /**
-     * Discards any internal changes to the config and reloads it.
+     * Discards any internal changes to the config and loads it.
      * Ensures config consistency.
      */
     @SuppressWarnings("unchecked")
@@ -160,6 +160,11 @@ public class Config {
         } else {
             BigDoorsOpener.logger().info("No doors defined.");
         }
+
+        refreshRate = config.getInt("refreshRate", 20);
+        enableMetrics = config.getBoolean("enableMetrics", true);
+        language = config.getString("language", "en_US");
+        checkUpdates = config.getBoolean("checkUpdates", true);
 
         BigDoorsOpener.logger().info("Config loaded!");
     }
