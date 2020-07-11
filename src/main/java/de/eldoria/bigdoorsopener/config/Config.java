@@ -85,7 +85,7 @@ public class Config {
 
                 ConditionChain conditionChain = cD.getConditionChain();
 
-                if (tD.getPermission() != null || tD.getPermission().isEmpty()) {
+                if (tD.getPermission() != null && !tD.getPermission().isEmpty()) {
                     conditionChain.setPermission(new Permission(tD.getPermission()));
                     log.info("Adding permission condition.");
                 }
