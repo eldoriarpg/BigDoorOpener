@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 @Getter
 public class Config {
@@ -68,20 +69,26 @@ public class Config {
         // Convert TimedDoor to ConditionDoor
         List<TimedDoor> timedDoors = (List<TimedDoor>) config.getList("doors");
 
+        Logger log = BigDoorsOpener.logger();
         if (timedDoors != null) {
+            log.info("Trying to convert " + timedDoors.size() + " timed doors.");
             List<ConditionalDoor> conditionalDoors = new ArrayList<>();
 
+
             for (TimedDoor tD : timedDoors) {
+                log.info("Converting door " + tD.getDoorUID());
                 ConditionalDoor cD = new ConditionalDoor(tD.getDoorUID(), tD.getWorld(), tD.getPosition());
 
                 ConditionChain conditionChain = cD.getConditionChain();
 
                 if (tD.getPermission() != null || tD.getPermission().isEmpty()) {
                     conditionChain.setPermission(new Permission(tD.getPermission()));
+                    log.info("Adding permission condition.");
                 }
 
                 if (!tD.isPermanentlyClosed()) {
                     conditionChain.setTime(new Time(tD.getTicksOpen(), tD.getTicksClose(), false));
+                    log.info("Adding time condition.");
                 }
 
                 if (tD.getOpenRange() > 0) {
@@ -89,9 +96,14 @@ public class Config {
                             new Proximity(
                                     new Vector(tD.getOpenRange(), tD.getOpenRange(), tD.getOpenRange()),
                                     Proximity.ProximityForm.ELIPSOID));
+                    log.info("Adding proximity condition.");
                 }
+                log.info("Door " + tD.getDoorUID() + " successfully converted.");
+                conditionalDoors.add(cD);
             }
             config.set("doors", conditionalDoors);
+        } else {
+            log.info("No doors defined. skipping doors conversation.");
         }
 
         // set added keys
