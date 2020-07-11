@@ -2,6 +2,9 @@ package de.eldoria.bigdoorsopener.listener.registration;
 
 import org.bukkit.event.player.PlayerInteractEvent;
 
+/**
+ * Interface which can be passed to {@link RegisterInteraction} for object calls.
+ */
 public interface InteractionRegistrationObject {
     /**
      * This method is called every time a player interacts with anything.

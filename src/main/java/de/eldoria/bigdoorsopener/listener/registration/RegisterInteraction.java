@@ -9,6 +9,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * This listener allows to execute a call on a object which tries further actions though player interactions.
+ */
 public class RegisterInteraction implements Listener {
     private final Map<UUID, InteractionRegistrationObject> registerObjects = new HashMap<>();
 
