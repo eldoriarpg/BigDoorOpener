@@ -11,12 +11,17 @@ import de.eldoria.eldoutilities.serialization.TypeResolvingMap;
 import de.eldoria.eldoutilities.utils.EnumUtil;
 import net.kyori.text.TextComponent;
 import org.bukkit.World;
+import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 
+/**
+ * A condition which opens the door when the player is within a specific range of defined by geometric form
+ */
+@SerializableAs("proximityCondition")
 public class Proximity implements Location {
     private final Vector dimensions;
     private final ProximityForm proximityForm;

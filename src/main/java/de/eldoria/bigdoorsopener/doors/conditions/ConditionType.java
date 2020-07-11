@@ -28,6 +28,11 @@ public enum ConditionType {
         this.conditionName = name().replace("_", "").toLowerCase();
     }
 
+    /**
+     * Get the type from a string
+     * @param keyType string as type
+     * @return
+     */
     public static ConditionType getType(String keyType) {
         for (ConditionType value : values()) {
             if (value.conditionName.equalsIgnoreCase(keyType)) {

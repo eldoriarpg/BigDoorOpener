@@ -11,6 +11,7 @@ import de.eldoria.eldoutilities.serialization.TypeResolvingMap;
 import de.eldoria.eldoutilities.utils.Parser;
 import net.kyori.text.TextComponent;
 import org.bukkit.World;
+import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -20,6 +21,7 @@ import java.util.Map;
 /**
  * A key which defines the door state by current world time.
  */
+@SerializableAs("timeCondition")
 public class Time implements DoorCondition {
     /**
      * The ticks from when to door should be closed

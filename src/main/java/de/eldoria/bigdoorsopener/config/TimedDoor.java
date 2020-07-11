@@ -11,6 +11,9 @@ import org.bukkit.util.Vector;
 
 import java.util.Map;
 
+/**
+ * @deprecated Only exists for config migration. will be removed later.
+ */
 @Getter
 @Setter
 @Deprecated

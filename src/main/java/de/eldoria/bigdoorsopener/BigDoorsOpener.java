@@ -45,7 +45,7 @@ import java.util.regex.Pattern;
 
 public class BigDoorsOpener extends JavaPlugin {
 
-    private static @NotNull Logger logger;
+    private static Logger logger;
     private final BukkitScheduler scheduler = Bukkit.getScheduler();
     private Config config;
     private boolean initialized;
@@ -100,19 +100,17 @@ public class BigDoorsOpener extends JavaPlugin {
                     "messages", Locale.US, "de_DE", "en_US");
 
             //enable metrics
-            if (config.isEnableMetrics()) {
-                enableMetrics();
-            }
+            enableMetrics();
 
             registerListener();
 
 
             MessageSender.create(this, "§6[BDO] ", '2', 'c');
-        }
 
-        doorChecker = new DoorChecker(config, doors, localizer);
+            // start door checker
+            doorChecker = new DoorChecker(config, doors, localizer);
+            scheduler.scheduleSyncRepeatingTask(this, doorChecker, 100, 1);
 
-        if (!initialized) {
             getCommand("bigdoorsopener")
                     .setExecutor(new BigDoorsOpenerCommand(this, commander, config, localizer, doorChecker, registerInteraction));
         }
@@ -120,10 +118,8 @@ public class BigDoorsOpener extends JavaPlugin {
         if (initialized) {
             localizer.setLocale(config.getLanguage());
             scheduler.cancelTasks(this);
+            doorChecker.reload();
         }
-
-        scheduler.scheduleSyncRepeatingTask(this, doorChecker, 100, 1);
-
         initialized = true;
     }
 
@@ -149,27 +145,43 @@ public class BigDoorsOpener extends JavaPlugin {
         }
     }
 
+    /**
+     * Register the serializer classes.
+     * When a provided alias should be used the class needs the {@link org.bukkit.configuration.serialization.SerializableAs}
+     * annotation.
+     * Its hightly recommended to set a alias otherwise moving a class would break serialization.
+     */
     private void buildSerializer() {
         ConfigurationSerialization.registerClass(TimedDoor.class, "timedDoor");
         ConfigurationSerialization.registerClass(ConditionChain.class, "conditionChain");
         ConfigurationSerialization.registerClass(ConditionalDoor.class, "conditionalDoor");
-        ConfigurationSerialization.registerClass(ItemBlock.class, "itemBlock");
-        ConfigurationSerialization.registerClass(ItemClick.class, "itemClick");
-        ConfigurationSerialization.registerClass(ItemHolding.class, "itemHolding");
-        ConfigurationSerialization.registerClass(ItemOwning.class, "itemOwning");
-        ConfigurationSerialization.registerClass(Proximity.class, "proximity");
-        ConfigurationSerialization.registerClass(Region.class, "region");
-        ConfigurationSerialization.registerClass(Permission.class, "permission");
-        ConfigurationSerialization.registerClass(Time.class, "time");
-        ConfigurationSerialization.registerClass(Weather.class, "weather");
+        ConfigurationSerialization.registerClass(ItemBlock.class, "itemBlockCondition");
+        ConfigurationSerialization.registerClass(ItemClick.class, "itemClickCondition");
+        ConfigurationSerialization.registerClass(ItemHolding.class, "itemHoldingCondition");
+        ConfigurationSerialization.registerClass(ItemOwning.class, "itemOwningCondition");
+        ConfigurationSerialization.registerClass(Proximity.class, "proximityCondition");
+        ConfigurationSerialization.registerClass(Region.class, "regionCondition");
+        ConfigurationSerialization.registerClass(Permission.class, "permissionCondition");
+        ConfigurationSerialization.registerClass(Time.class, "timeCondition");
+        ConfigurationSerialization.registerClass(Weather.class, "weatherCondition");
     }
 
+    /**
+     * Get the plugin logger instance.
+     *
+     * @return plugin logger instance
+     */
     @NotNull
     public static Logger logger() {
         return logger;
     }
 
+    /**
+     * Enable metrics
+     */
     private void enableMetrics() {
+        if (!config.isEnableMetrics()) return;
+
         Pattern version = Pattern.compile("([0-9]\\.(?:[0-9]\\.?)+)");
         Pattern build = Pattern.compile("\\((b[0-9]+)\\)");
 

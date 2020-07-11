@@ -9,6 +9,7 @@ import de.eldoria.eldoutilities.utils.EnumUtil;
 import lombok.Getter;
 import org.bukkit.World;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
+import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
@@ -25,6 +26,7 @@ import static java.time.temporal.ChronoUnit.SECONDS;
  * Hint: Thats why its called conditional door.
  */
 @Getter
+@SerializableAs("conditionalDoor")
 public class ConditionalDoor implements ConfigurationSerializable {
     /**
      * UID of the door from {@link nl.pim16aap2.bigDoors.Door}.
@@ -42,6 +44,10 @@ public class ConditionalDoor implements ConfigurationSerializable {
     private final Vector position;
 
     private Instant openTill;
+
+    /**
+     * JS evaluator as string
+     */
     private String evaluator = "";
 
     /**

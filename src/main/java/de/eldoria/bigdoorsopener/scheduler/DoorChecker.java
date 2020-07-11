@@ -9,8 +9,10 @@ import org.bukkit.Server;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
@@ -30,12 +32,31 @@ public class DoorChecker extends BigDoorsAdapter implements Runnable {
         this.config = config;
     }
 
+    /**
+     * Registers a new door at the door checker.
+     * Only registered doors will do anything.
+     * The door will only be registered if its not yet registered.
+     *
+     * @param door door to register.
+     */
     public void register(ConditionalDoor door) {
         if (!doors.contains(door)) {
             doors.add(door);
         }
     }
 
+    /**
+     * Unregister a door.
+     * @param door door to unregister.
+     */
+    public void unregister(ConditionalDoor door) {
+        doors.remove(door);
+    }
+
+    /**
+     * Clears all registered doors and load them from the condfiguration.
+     * Therefore it should be executed AFTER {@link Config#reloadConfig()}
+     */
     public void reload() {
         synchronized (doors) {
             doors.clear();
@@ -53,6 +74,8 @@ public class DoorChecker extends BigDoorsAdapter implements Runnable {
         close.clear();
         evaluated.clear();
 
+        Map<Long, Player> openedBy = new HashMap<>();
+
         for (int i = 0; i < count; i++) {
             // poll from queue and append door again.
             ConditionalDoor door = doors.poll();
@@ -69,6 +92,7 @@ public class DoorChecker extends BigDoorsAdapter implements Runnable {
 
             boolean open = isOpen(door);
 
+
             //Check if the door really needs a per player evaluation
             if (door.requiresPlayerEvaluation()) {
                 boolean opened = false;
@@ -79,7 +103,7 @@ public class DoorChecker extends BigDoorsAdapter implements Runnable {
                         // only open the door if its not yet open. because why open it then.
                         if (!open) {
                             this.open.add(door);
-                            door.opened(player);
+                            openedBy.put(door.getDoorUID(), player);
                         }
                         break;
                     }
@@ -103,7 +127,9 @@ public class DoorChecker extends BigDoorsAdapter implements Runnable {
 
         // Open doors
         for (ConditionalDoor conditionalDoor : open) {
-            setDoorState(true, conditionalDoor);
+            if (setDoorState(true, conditionalDoor)) {
+                conditionalDoor.opened(openedBy.get(conditionalDoor.getDoorUID()));
+            }
         }
 
         // Close doors
@@ -115,9 +141,5 @@ public class DoorChecker extends BigDoorsAdapter implements Runnable {
         for (ConditionalDoor conditionalDoor : evaluated) {
             conditionalDoor.evaluated();
         }
-    }
-
-    public void unregister(ConditionalDoor first) {
-        doors.remove(first);
     }
 }

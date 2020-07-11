@@ -7,6 +7,9 @@ import org.bukkit.World;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.entity.Player;
 
+/**
+ * A interface which represents a condition which opens a door under specific circumstances.
+ */
 public interface DoorCondition extends ConfigurationSerializable {
     /**
      * Indicates if the key would open the door under the current circumstances.
@@ -19,5 +22,10 @@ public interface DoorCondition extends ConfigurationSerializable {
      */
     Boolean isOpen(Player player, World world, ConditionalDoor door, boolean currentState);
 
+    /**
+     * Get the description of the door condition.
+     * @param localizer localizer instance for translation
+     * @return text component with description.
+     */
     TextComponent getDescription(Localizer localizer);
 }

@@ -10,6 +10,7 @@ import de.eldoria.eldoutilities.serialization.TypeResolvingMap;
 import lombok.Setter;
 import net.kyori.text.TextComponent;
 import org.bukkit.World;
+import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -22,6 +23,7 @@ import java.util.Map;
 /**
  * A key which opens a door, when the player is clicking at a specific block
  */
+@SerializableAs("itemBlockCondition")
 public class ItemBlock extends ItemInteraction {
 
     @Setter

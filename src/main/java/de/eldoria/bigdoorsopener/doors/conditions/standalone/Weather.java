@@ -1,6 +1,5 @@
 package de.eldoria.bigdoorsopener.doors.conditions.standalone;
 
-import com.sun.tools.javac.code.Attribute;
 import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
 import de.eldoria.bigdoorsopener.doors.conditions.ConditionType;
 import de.eldoria.bigdoorsopener.doors.conditions.DoorCondition;
@@ -14,6 +13,7 @@ import de.eldoria.eldoutilities.utils.EnumUtil;
 import net.kyori.text.TextComponent;
 import org.bukkit.WeatherType;
 import org.bukkit.World;
+import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
@@ -21,6 +21,10 @@ import org.jetbrains.annotations.NotNull;
 import javax.annotation.Nullable;
 import java.util.Map;
 
+/**
+ * A condition which opens the door based on the current weather in the world.
+ */
+@SerializableAs("weatherCondition")
 public class Weather implements DoorCondition {
     private final WeatherType weatherType;
 

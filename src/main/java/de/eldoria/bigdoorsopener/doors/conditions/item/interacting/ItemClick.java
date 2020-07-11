@@ -9,6 +9,7 @@ import de.eldoria.eldoutilities.serialization.SerializationUtil;
 import de.eldoria.eldoutilities.serialization.TypeResolvingMap;
 import net.kyori.text.TextComponent;
 import org.bukkit.World;
+import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -17,6 +18,7 @@ import java.util.Map;
 /**
  * A key which open the door, when right clicked.
  */
+@SerializableAs("itemClickCondition")
 public class ItemClick extends ItemInteraction {
     public ItemClick(ItemStack item, boolean consumed) {
         super(item, consumed);

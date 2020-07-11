@@ -1,6 +1,11 @@
 package de.eldoria.bigdoorsopener.util;
 
-public class Permissions {
+/**
+ * Class to store permission values.
+ * We dont like to store permissions where we need it. Otheriwse changing them would be a real pain.
+ */
+public final class Permissions {
+    private Permissions() {}
     // permission to use all commands except reload
     public static final String USE = "bdo.command.use";
     // permission to reload the plugin

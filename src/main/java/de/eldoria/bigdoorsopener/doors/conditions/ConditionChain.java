@@ -14,6 +14,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.World;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
+import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
@@ -21,10 +22,11 @@ import java.util.Arrays;
 import java.util.Map;
 
 /**
- * A key chain represents a set of multiple keys.
+ * A condition chain represents a set of multiple conditions.
  */
 @Setter
 @Getter
+@SerializableAs("conditionChain")
 public class ConditionChain implements ConfigurationSerializable {
     private Item item = null;
     private Location location = null;

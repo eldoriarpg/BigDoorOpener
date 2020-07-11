@@ -10,6 +10,7 @@ import de.eldoria.eldoutilities.serialization.SerializationUtil;
 import de.eldoria.eldoutilities.serialization.TypeResolvingMap;
 import net.kyori.text.TextComponent;
 import org.bukkit.World;
+import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -18,6 +19,7 @@ import java.util.Map;
 /**
  * A key which opens a doow, when the player has it in his inventory.
  */
+@SerializableAs("itemOwningCondition")
 public class ItemOwning extends Item {
     public ItemOwning(ItemStack item, boolean consumed) {
         super(item, consumed);

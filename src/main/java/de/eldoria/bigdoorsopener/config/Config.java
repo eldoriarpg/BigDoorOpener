@@ -34,10 +34,8 @@ public class Config {
         loadConfig();
     }
 
-    @SuppressWarnings("unchecked")
     public void loadConfig() {
         updateConfig();
-        forceConfigConsitency();
         reloadConfig();
     }
 
@@ -53,6 +51,7 @@ public class Config {
 
             updateVersion0();
         }
+
         int version = config.getInt("version");
         switch (version) {
             case 1:
@@ -61,6 +60,11 @@ public class Config {
         }
     }
 
+    /**
+     * Updates the config from version 0 to version 1.
+     * Version 0 is identified by a missing version key.
+     */
+    @SuppressWarnings("unchecked")
     private void updateVersion0() {
         FileConfiguration config = plugin.getConfig();
         // set new config version
@@ -134,15 +138,19 @@ public class Config {
         setIfAbsent(config, "enableMetrics", true);
         setIfAbsent(config, "language", "en_US");
         setIfAbsent(config, "checkUpdates", true);
+
+        // never set the version here.
     }
 
+    /**
+     * Discards any internal changes to the config and reloads it.
+     * Ensures config consistency.
+     */
     @SuppressWarnings("unchecked")
     public void reloadConfig() {
-        plugin.saveDefaultConfig();
-        plugin.reloadConfig();
+        forceConfigConsitency();
         FileConfiguration config = plugin.getConfig();
 
-        setIfAbsent(config, "doors", new ArrayList<ConditionalDoor>());
         List<ConditionalDoor> configDoors = (List<ConditionalDoor>) config.getList("doors");
         if (configDoors != null) {
             doors.clear();
@@ -153,14 +161,12 @@ public class Config {
             BigDoorsOpener.logger().info("No doors defined.");
         }
 
-        refreshRate = config.getInt("refreshRate");
-        enableMetrics = config.getBoolean("enableMetrics");
-        checkUpdates = config.getBoolean("checkUpdates");
-        language = config.getString("language");
-
         BigDoorsOpener.logger().info("Config loaded!");
     }
 
+    /**
+     * Save the currently defined doors with current state to config.
+     */
     public void safeConfig() {
         FileConfiguration config = plugin.getConfig();
         config.set("doors", new ArrayList<>(doors.values()));

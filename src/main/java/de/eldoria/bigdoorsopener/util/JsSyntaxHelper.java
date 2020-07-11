@@ -20,6 +20,12 @@ public final class JsSyntaxHelper {
     private JsSyntaxHelper() {
     }
 
+    /**
+     * Translates the alternative easier syntax to the true javascript syntax.
+     *
+     * @param evaluator evaluator to translate
+     * @return the translated evaluator string.
+     */
     public static String translateEvaluator(String evaluator) {
         String result = evaluator;
 

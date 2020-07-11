@@ -233,7 +233,7 @@ public class BigDoorsOpenerCommand implements TabExecutor {
             return true;
         }
 
-        ConditionType type = ConditionType.getType(args[1]);
+        ConditionType type = EnumUtil.parse(args[1], ConditionType.class);
 
         if (type == null) {
             messageSender.sendError(player, localizer.getMessage("error.invalidConditionType"));
@@ -482,7 +482,7 @@ public class BigDoorsOpenerCommand implements TabExecutor {
             return true;
         }
 
-        ConditionType type = ConditionType.getType(arguments[1]);
+        ConditionType type = EnumUtil.parse(arguments[1], ConditionType.class);
         if (type == null) {
             messageSender.sendError(player, localizer.getMessage("error.invalidConditionType"));
             return true;
@@ -970,9 +970,9 @@ public class BigDoorsOpenerCommand implements TabExecutor {
                 return ArrayUtil.startingWithInArray(conditionType, CONDITION_TYPES).collect(Collectors.toList());
             }
 
-            ConditionType type = ConditionType.getType(args[1]);
+            ConditionType type = EnumUtil.parse(args[1], ConditionType.class);
             if (type == null) {
-                return Collections.emptyList();
+                return Collections.singletonList(localizer.getMessage("error.invalidConditionType"));
             }
 
             if (!sender.hasPermission(type.permission)) {

@@ -10,11 +10,16 @@ import de.eldoria.eldoutilities.serialization.SerializationUtil;
 import de.eldoria.eldoutilities.serialization.TypeResolvingMap;
 import net.kyori.text.TextComponent;
 import org.bukkit.World;
+import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 
+/**
+ * A condition which opens the door, when a player has a specifid permission.
+ */
+@SerializableAs("permissionCondition")
 public class Permission implements DoorCondition {
     private final String permission;
 

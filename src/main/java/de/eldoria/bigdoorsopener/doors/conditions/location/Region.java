@@ -13,14 +13,16 @@ import de.eldoria.eldoutilities.serialization.TypeResolvingMap;
 import net.kyori.text.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
+import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 
 /**
- * A key which opens the door, when a player is inside a world guard region.
+ * A condition which opens the door, when a player is inside a world guard region.
  */
+@SerializableAs("regionCondition")
 public class Region implements Location {
     private final ProtectedRegion region;
     private final World world;
@@ -34,7 +36,7 @@ public class Region implements Location {
         this.regionId = region.getId();
     }
 
-    public Region(World world, ProtectedRegion region, String regionId, String worldName) {
+    private Region(World world, ProtectedRegion region, String regionId, String worldName) {
         this.world = world;
         this.region = region;
         this.worldName = worldName;

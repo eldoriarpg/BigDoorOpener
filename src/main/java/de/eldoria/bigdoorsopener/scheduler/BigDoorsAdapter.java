@@ -1,7 +1,6 @@
 package de.eldoria.bigdoorsopener.scheduler;
 
 import de.eldoria.bigdoorsopener.BigDoorsOpener;
-import de.eldoria.bigdoorsopener.config.TimedDoor;
 import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
 import de.eldoria.eldoutilities.localization.Localizer;
 import de.eldoria.eldoutilities.localization.Replacement;
@@ -12,6 +11,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.Server;
 import org.bukkit.World;
 
+/**
+ * Adapter to interact with big doors internally.
+ */
 @Getter
 public abstract class BigDoorsAdapter {
     private final Commander commander;
@@ -25,18 +27,27 @@ public abstract class BigDoorsAdapter {
         this.localizer = localizer;
     }
 
-    protected void setDoorState(boolean open, ConditionalDoor door) {
+    /**
+     * Set the state of the door.
+     *  @param open true if the door should be open.
+     * @param door door to set the state
+     * @return true if the door state was changed succesfully which is indicated by {@link BigDoors#toggleDoor(long)}
+     */
+    protected boolean setDoorState(boolean open, ConditionalDoor door) {
         if (commander.isDoorBusy(door.getDoorUID())) {
-            return;
+            return false;
         }
-        if (isOpen(door) == open) return;
-        bigDoors.toggleDoor(door.getDoorUID());
+        if (isOpen(door) == open) return false;
+        return bigDoors.toggleDoor(door.getDoorUID());
     }
 
-    @Deprecated
-    protected boolean isOpen(TimedDoor door) {
-        return door.openInverted(bigDoors.isOpen(door.getDoorUID()));
-    }
+    /**
+     * Check if a door is currently considered as open.
+     * Will use the {@link ConditionalDoor#openInverted(boolean)} method.
+     *
+     * @param door door to check.
+     * @return true when the door is open.
+     */
     protected boolean isOpen(ConditionalDoor door) {
         return door.openInverted(bigDoors.isOpen(door.getDoorUID()));
     }
@@ -44,10 +55,10 @@ public abstract class BigDoorsAdapter {
     /**
      * Checks if the world of a door exists and is present in the plugin.
      *
-     * @param door door to check;
+     * @param door door to check
      * @return true if the door exits
      */
-    protected boolean doorExists(TimedDoor door) {
+    protected boolean doorExists(ConditionalDoor door) {
         World world = server.getWorld(door.getWorld());
         if (world == null) {
             BigDoorsOpener.logger().info(localizer.getMessage("error.worldIsNull",

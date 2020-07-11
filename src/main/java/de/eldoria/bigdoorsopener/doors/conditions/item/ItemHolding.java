@@ -10,6 +10,7 @@ import de.eldoria.eldoutilities.serialization.SerializationUtil;
 import de.eldoria.eldoutilities.serialization.TypeResolvingMap;
 import net.kyori.text.TextComponent;
 import org.bukkit.World;
+import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -18,6 +19,7 @@ import java.util.Map;
 /**
  * A key which will be open when the player is holding a key in his hand.
  */
+@SerializableAs("itemHoldingCondition")
 public class ItemHolding extends Item {
     public ItemHolding(ItemStack item, boolean consumed) {
         super(item, consumed);
