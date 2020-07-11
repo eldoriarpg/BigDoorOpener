@@ -6,6 +6,17 @@ import de.eldoria.bigdoorsopener.commands.BigDoorsOpenerCommand;
 import de.eldoria.bigdoorsopener.config.Config;
 import de.eldoria.bigdoorsopener.config.TimedDoor;
 import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
+import de.eldoria.bigdoorsopener.doors.conditions.ConditionChain;
+import de.eldoria.bigdoorsopener.doors.conditions.item.ItemHolding;
+import de.eldoria.bigdoorsopener.doors.conditions.item.ItemOwning;
+import de.eldoria.bigdoorsopener.doors.conditions.item.interacting.ItemBlock;
+import de.eldoria.bigdoorsopener.doors.conditions.item.interacting.ItemClick;
+import de.eldoria.bigdoorsopener.doors.conditions.location.Proximity;
+import de.eldoria.bigdoorsopener.doors.conditions.location.Region;
+import de.eldoria.bigdoorsopener.doors.conditions.standalone.Permission;
+import de.eldoria.bigdoorsopener.doors.conditions.standalone.Time;
+import de.eldoria.bigdoorsopener.doors.conditions.standalone.Weather;
+import de.eldoria.bigdoorsopener.listener.ItemConditionListener;
 import de.eldoria.bigdoorsopener.listener.WeatherListener;
 import de.eldoria.bigdoorsopener.listener.registration.RegisterInteraction;
 import de.eldoria.bigdoorsopener.scheduler.DoorChecker;
@@ -24,6 +35,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -65,6 +77,12 @@ public class BigDoorsOpener extends JavaPlugin {
 
             buildSerializer();
 
+            if (!pm.isPluginEnabled("BigDoors")) {
+                logger().warning("Big Doors is disabled.");
+                pm.disablePlugin(this);
+                return;
+            }
+
             // Load external resources before world guard.
             loadExternalSources();
 
@@ -90,7 +108,6 @@ public class BigDoorsOpener extends JavaPlugin {
 
 
             MessageSender.create(this, "§6[BDO] ", '2', 'c');
-
         }
 
         doorChecker = new DoorChecker(config, doors, localizer);
@@ -112,9 +129,11 @@ public class BigDoorsOpener extends JavaPlugin {
 
     private void registerListener() {
         weatherListener = new WeatherListener();
-        Bukkit.getPluginManager().registerEvents(weatherListener, this);
+        PluginManager pm = Bukkit.getPluginManager();
+        pm.registerEvents(weatherListener, this);
         registerInteraction = new RegisterInteraction();
-        Bukkit.getPluginManager().registerEvents(registerInteraction, this);
+        pm.registerEvents(registerInteraction, this);
+        pm.registerEvents(new ItemConditionListener(config), this);
     }
 
     private void loadExternalSources() {
@@ -132,10 +151,18 @@ public class BigDoorsOpener extends JavaPlugin {
 
     private void buildSerializer() {
         ConfigurationSerialization.registerClass(TimedDoor.class, "timedDoor");
+        ConfigurationSerialization.registerClass(ConditionChain.class, "conditionChain");
         ConfigurationSerialization.registerClass(ConditionalDoor.class, "conditionalDoor");
-
+        ConfigurationSerialization.registerClass(ItemBlock.class, "itemBlock");
+        ConfigurationSerialization.registerClass(ItemClick.class, "itemClick");
+        ConfigurationSerialization.registerClass(ItemHolding.class, "itemHolding");
+        ConfigurationSerialization.registerClass(ItemOwning.class, "itemOwning");
+        ConfigurationSerialization.registerClass(Proximity.class, "proximity");
+        ConfigurationSerialization.registerClass(Region.class, "region");
+        ConfigurationSerialization.registerClass(Permission.class, "permission");
+        ConfigurationSerialization.registerClass(Time.class, "time");
+        ConfigurationSerialization.registerClass(Weather.class, "weather");
     }
-
 
     @NotNull
     public static Logger logger() {
@@ -161,6 +188,17 @@ public class BigDoorsOpener extends JavaPlugin {
                 map.put(versionMatcher.group(1), versionMap);
             }
             return map;
+        }));
+
+        metrics.addCustomChart(new Metrics.AdvancedPie("condition_types", () -> {
+            Map<String, Integer> counts = new HashMap<>();
+            Collection<ConditionalDoor> values = config.getDoors().values();
+            counts.put("item", (int) values.parallelStream().filter(d -> d.getConditionChain().getItem() != null).count());
+            counts.put("location", (int) values.parallelStream().filter(d -> d.getConditionChain().getLocation() != null).count());
+            counts.put("permission", (int) values.parallelStream().filter(d -> d.getConditionChain().getPermission() != null).count());
+            counts.put("time", (int) values.parallelStream().filter(d -> d.getConditionChain().getTime() != null).count());
+            counts.put("weather", (int) values.parallelStream().filter(d -> d.getConditionChain().getWeather() != null).count());
+            return counts;
         }));
     }
 }
