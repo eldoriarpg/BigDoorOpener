@@ -1,5 +1,10 @@
-# The refresh rate of approach detection in ticks. 1 sec = 20 ticks
-approachRefreshRate: 20
+# dont touch it or at least dont complain when everything burns.
+version: 1
+# Get a simple notify, when a new build is available. Keeping this enabled is highly recommended
+checkUpdates: true
+# The refresh rate of the door state
+refreshRate: 20
+language: de_DE
 # The refresh rate of time changes in ticks. 1 sec = 20 ticks
 timedRefreshRate: 20
 # Help us improving this plugin by sending some anonymized metrics.
