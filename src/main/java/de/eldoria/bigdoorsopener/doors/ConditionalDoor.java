@@ -5,6 +5,7 @@ import de.eldoria.bigdoorsopener.doors.conditions.ConditionChain;
 import de.eldoria.bigdoorsopener.util.CachingJSEngine;
 import de.eldoria.eldoutilities.serialization.SerializationUtil;
 import de.eldoria.eldoutilities.serialization.TypeResolvingMap;
+import de.eldoria.eldoutilities.utils.EnumUtil;
 import lombok.Getter;
 import org.bukkit.World;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
@@ -18,6 +19,11 @@ import java.util.Map;
 
 import static java.time.temporal.ChronoUnit.SECONDS;
 
+/**
+ * A conditional door consists of some basic settings and a condition chain.
+ * A conditional door can be open or closed. This dependes on several conditions.
+ * Hint: Thats why its called conditional door.
+ */
 @Getter
 public class ConditionalDoor implements ConfigurationSerializable {
     /**
@@ -38,12 +44,18 @@ public class ConditionalDoor implements ConfigurationSerializable {
     private Instant openTill;
     private String evaluator = "";
 
+    /**
+     * the type the condition chain uses to evaluate the conditions
+     */
     private EvaluationType evaluationType = EvaluationType.AND;
 
     @Getter
     @Nonnull
     private final ConditionChain conditionChain;
 
+    /**
+     * Amount of time in seconds a door will stay open when opened.
+     */
     private int stayOpen = 0;
 
 
@@ -143,19 +155,19 @@ public class ConditionalDoor implements ConfigurationSerializable {
                 .add("invertOpen", invertOpen)
                 .add("evaluator", evaluator)
                 .add("evaluationType", evaluationType)
-                .add("conditionChain", conditionChain)
                 .add("stayOpen", stayOpen)
+                .add("conditionChain", conditionChain)
                 .build();
     }
 
     public static ConditionalDoor deserialize(Map<String, Object> map) {
         TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
-        long doorUID = resolvingMap.getValue("doorUID");
+        int doorUID = resolvingMap.getValue("doorUID");
         String world = resolvingMap.getValue("world");
         Vector position = resolvingMap.getValue("position");
         boolean invertOpen = resolvingMap.getValue("invertOpen");
         String evaluator = resolvingMap.getValue("evaluator");
-        EvaluationType evaluationType = resolvingMap.getValue("evaluationType");
+        EvaluationType evaluationType = EnumUtil.parse(resolvingMap.getValue("evaluationType"), EvaluationType.class);
         ConditionChain conditionChain = resolvingMap.getValue("conditionChain");
         int stayOpen = resolvingMap.getValue("stayOpen");
         return new ConditionalDoor(doorUID, world, position, invertOpen, evaluator, evaluationType, conditionChain, stayOpen);

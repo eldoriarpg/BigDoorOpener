@@ -3,10 +3,12 @@ package de.eldoria.bigdoorsopener.doors.conditions.location;
 import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
 import de.eldoria.bigdoorsopener.doors.conditions.ConditionType;
 import de.eldoria.bigdoorsopener.util.C;
+import de.eldoria.eldoutilities.functions.TriFunction;
 import de.eldoria.eldoutilities.localization.Localizer;
 import de.eldoria.eldoutilities.localization.Replacement;
 import de.eldoria.eldoutilities.serialization.SerializationUtil;
 import de.eldoria.eldoutilities.serialization.TypeResolvingMap;
+import de.eldoria.eldoutilities.utils.EnumUtil;
 import net.kyori.text.TextComponent;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -55,7 +57,7 @@ public class Proximity implements Location {
     public static Proximity deserialize(Map<String, Object> map) {
         TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
         Vector vector = resolvingMap.getValue("dimensions");
-        ProximityForm proximityForm = resolvingMap.getValue("proximityForm");
+        ProximityForm proximityForm = EnumUtil.parse(resolvingMap.getValue("proximityForm"), ProximityForm.class);
         return new Proximity(vector, proximityForm);
     }
 

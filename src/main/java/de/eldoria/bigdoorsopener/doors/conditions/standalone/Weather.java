@@ -1,5 +1,6 @@
 package de.eldoria.bigdoorsopener.doors.conditions.standalone;
 
+import com.sun.tools.javac.code.Attribute;
 import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
 import de.eldoria.bigdoorsopener.doors.conditions.ConditionType;
 import de.eldoria.bigdoorsopener.doors.conditions.DoorCondition;
@@ -9,6 +10,7 @@ import de.eldoria.eldoutilities.localization.Localizer;
 import de.eldoria.eldoutilities.localization.Replacement;
 import de.eldoria.eldoutilities.serialization.SerializationUtil;
 import de.eldoria.eldoutilities.serialization.TypeResolvingMap;
+import de.eldoria.eldoutilities.utils.EnumUtil;
 import net.kyori.text.TextComponent;
 import org.bukkit.WeatherType;
 import org.bukkit.World;
@@ -70,7 +72,7 @@ public class Weather implements DoorCondition {
 
     public static Weather deserialize(Map<String, Object> map) {
         TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
-        WeatherType type = resolvingMap.getValue("weatherType");
+        WeatherType type = EnumUtil.parse(resolvingMap.getValue("weatherType"), WeatherType.class);
         return new Weather(type);
     }
 }
