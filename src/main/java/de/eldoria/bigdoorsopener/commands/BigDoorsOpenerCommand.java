@@ -970,7 +970,7 @@ public class BigDoorsOpenerCommand implements TabExecutor {
                     .append(TextComponent.builder("[" + localizer.getMessage("info.edit") + "]")
                             .style(Style.builder().decoration(TextDecoration.UNDERLINED, true)
                                     .color(TextColors.GREEN).build())
-                            .clickEvent(ClickEvent.suggestCommand("/bdo setEvaluator custom " + cDoor.getEvaluator())));
+                            .clickEvent(ClickEvent.suggestCommand("/bdo setEvaluator " + cDoor.getDoorUID() + " custom " + cDoor.getEvaluator())));
         } else {
             builder.append(TextComponent.builder(cDoor.getEvaluationType().name()).color(C.highlightColor));
         }
@@ -978,11 +978,11 @@ public class BigDoorsOpenerCommand implements TabExecutor {
 
         // append open time
         builder.append(TextComponent.builder(localizer.getMessage("info.stayOpen") + " ").color(C.baseColor))
-                .append(TextComponent.builder(String.valueOf(cDoor.getStayOpen())).color(C.highlightColor))
+                .append(TextComponent.builder(cDoor.getStayOpen() + " ").color(C.highlightColor))
                 .append(TextComponent.builder("[" + localizer.getMessage("info.edit") + "]")
                         .style(Style.builder().decoration(TextDecoration.UNDERLINED, true)
                                 .color(TextColors.GREEN).build())
-                        .clickEvent(ClickEvent.suggestCommand("/bdo stayOpen " + cDoor.getStayOpen())))
+                        .clickEvent(ClickEvent.suggestCommand("/bdo stayOpen " + cDoor.getDoorUID() + " " + cDoor.getStayOpen())))
                 .append(TextComponent.newline());
 
         // start of key list
@@ -995,8 +995,14 @@ public class BigDoorsOpenerCommand implements TabExecutor {
             builder.append(conditionChain.getItem().getDescription(localizer))
                     .append(TextComponent.newline())
                     .append(TextComponent.builder("[" + localizer.getMessage("info.remove") + "]")
-                            .color(TextColors.DARK_RED)
-                            .clickEvent(ClickEvent.runCommand("/bdo removeCondition " + cDoor.getDoorUID() + " item")));
+                            .style(Style.builder().color(TextColors.DARK_RED)
+                                    .decoration(TextDecoration.UNDERLINED, true).build())
+                            .clickEvent(ClickEvent.runCommand("/bdo removeCondition " + cDoor.getDoorUID() + " item")))
+                    .append(TextComponent.builder(" "))
+                    .append(TextComponent.builder("[" + localizer.getMessage("info.edit") + "]")
+                            .style(Style.builder().color(TextColors.GREEN)
+                                    .decoration(TextDecoration.UNDERLINED, true).build())
+                            .clickEvent(ClickEvent.suggestCommand(conditionChain.getItem().getCreationCommand(cDoor))));
         } else {
             builder.append(TextComponent.builder(localizer.getMessage("info.itemCondition") + " ").color(TextColors.AQUA))
                     .append(TextComponent.newline())
@@ -1010,8 +1016,14 @@ public class BigDoorsOpenerCommand implements TabExecutor {
             builder.append(conditionChain.getLocation().getDescription(localizer))
                     .append(TextComponent.newline())
                     .append(TextComponent.builder("[" + localizer.getMessage("info.remove") + "]")
-                            .color(TextColors.DARK_RED)
-                            .clickEvent(ClickEvent.runCommand("/bdo removeCondition " + cDoor.getDoorUID() + " location ")));
+                            .style(Style.builder().color(TextColors.DARK_RED)
+                                    .decoration(TextDecoration.UNDERLINED, true).build())
+                            .clickEvent(ClickEvent.runCommand("/bdo removeCondition " + cDoor.getDoorUID() + " location ")))
+                    .append(TextComponent.builder(" "))
+                    .append(TextComponent.builder("[" + localizer.getMessage("info.edit") + "]")
+                            .style(Style.builder().color(TextColors.GREEN)
+                                    .decoration(TextDecoration.UNDERLINED, true).build())
+                            .clickEvent(ClickEvent.suggestCommand(conditionChain.getLocation().getCreationCommand(cDoor))));
         } else {
             builder.append(TextComponent.builder(localizer.getMessage("info.location") + " ").color(TextColors.AQUA))
                     .append(TextComponent.newline())
@@ -1025,8 +1037,14 @@ public class BigDoorsOpenerCommand implements TabExecutor {
             builder.append(conditionChain.getPermission().getDescription(localizer))
                     .append(TextComponent.newline())
                     .append(TextComponent.builder("[" + localizer.getMessage("info.remove") + "]")
-                            .color(TextColors.DARK_RED)
-                            .clickEvent(ClickEvent.runCommand("/bdo removeCondition " + cDoor.getDoorUID() + " permission")));
+                            .style(Style.builder().color(TextColors.DARK_RED)
+                                    .decoration(TextDecoration.UNDERLINED, true).build())
+                            .clickEvent(ClickEvent.runCommand("/bdo removeCondition " + cDoor.getDoorUID() + " permission")))
+                    .append(TextComponent.builder(" "))
+                    .append(TextComponent.builder("[" + localizer.getMessage("info.edit") + "]")
+                            .style(Style.builder().color(TextColors.GREEN)
+                                    .decoration(TextDecoration.UNDERLINED, true).build())
+                            .clickEvent(ClickEvent.suggestCommand(conditionChain.getPermission().getCreationCommand(cDoor))));
         } else {
             builder.append(TextComponent.builder(localizer.getMessage("info.permission") + " ").color(TextColors.AQUA))
                     .append(TextComponent.newline())
@@ -1040,13 +1058,19 @@ public class BigDoorsOpenerCommand implements TabExecutor {
             builder.append(conditionChain.getTime().getDescription(localizer))
                     .append(TextComponent.newline())
                     .append(TextComponent.builder("[" + localizer.getMessage("info.remove") + "]")
-                            .color(TextColors.DARK_RED)
-                            .clickEvent(ClickEvent.runCommand("/bdo removeCondition " + cDoor.getDoorUID() + " time")));
+                            .style(Style.builder().color(TextColors.DARK_RED)
+                                    .decoration(TextDecoration.UNDERLINED, true).build())
+                            .clickEvent(ClickEvent.runCommand("/bdo removeCondition " + cDoor.getDoorUID() + " time"))).append(TextComponent.builder(" "))
+                    .append(TextComponent.builder("[" + localizer.getMessage("info.edit") + "]")
+                            .style(Style.builder().color(TextColors.GREEN)
+                                    .decoration(TextDecoration.UNDERLINED, true).build())
+                            .clickEvent(ClickEvent.suggestCommand(conditionChain.getTime().getCreationCommand(cDoor))));
         } else {
             builder.append(TextComponent.builder(localizer.getMessage("info.time") + " ").color(TextColors.AQUA))
                     .append(TextComponent.newline())
                     .append(TextComponent.builder("[" + localizer.getMessage("info.add") + "]")
-                            .color(TextColors.GREEN)
+                            .style(Style.builder().color(TextColors.DARK_RED)
+                                    .decoration(TextDecoration.UNDERLINED, true).build())
                             .clickEvent(ClickEvent.suggestCommand("/bdo setCondition " + cDoor.getDoorUID() + " time ")));
         }
         builder.append(TextComponent.newline());
@@ -1055,8 +1079,13 @@ public class BigDoorsOpenerCommand implements TabExecutor {
             builder.append(conditionChain.getWeather().getDescription(localizer))
                     .append(TextComponent.newline())
                     .append(TextComponent.builder("[" + localizer.getMessage("info.remove") + "]")
-                            .color(TextColors.DARK_RED)
-                            .clickEvent(ClickEvent.runCommand("/bdo removeCondition " + cDoor.getDoorUID() + " weather")));
+                            .style(Style.builder().color(TextColors.DARK_RED)
+                                    .decoration(TextDecoration.UNDERLINED, true).build())
+                            .clickEvent(ClickEvent.runCommand("/bdo removeCondition " + cDoor.getDoorUID() + " weather"))).append(TextComponent.builder(" "))
+                    .append(TextComponent.builder("[" + localizer.getMessage("info.edit") + "]")
+                            .style(Style.builder().color(TextColors.GREEN)
+                                    .decoration(TextDecoration.UNDERLINED, true).build())
+                            .clickEvent(ClickEvent.suggestCommand(conditionChain.getWeather().getCreationCommand(cDoor))));
         } else {
             builder.append(TextComponent.builder(localizer.getMessage("info.weather") + " ").color(TextColors.AQUA))
                     .append(TextComponent.newline())
@@ -1237,8 +1266,8 @@ public class BigDoorsOpenerCommand implements TabExecutor {
             for (ConditionalDoor value : doors.values()) {
                 Door door = commander.getDoor(String.valueOf(value.getDoorUID()), null);
                 builder.append(value.getDoorUID()).append(" | ")
-                        .append(door.getName())
-                        .append("(").append(door.getWorld().getName()).append(")\n");
+                        .append("§6").append(door.getName()).append("§r")
+                        .append(" (").append(door.getWorld().getName()).append(")\n");
             }
         } else {
             List<Door> registeredDoors = commander.getDoors(player.getUniqueId().toString(), null)
@@ -1247,8 +1276,8 @@ public class BigDoorsOpenerCommand implements TabExecutor {
                     .collect(Collectors.toList());
             for (Door value : registeredDoors) {
                 builder.append(value.getDoorUID()).append(" | ")
-                        .append(value.getName())
-                        .append("(").append(value.getWorld().getName()).append(")\n");
+                        .append("§6").append(value.getName()).append("§r")
+                        .append(" (").append(value.getWorld().getName()).append(")\n");
             }
         }
 
@@ -1428,8 +1457,10 @@ public class BigDoorsOpenerCommand implements TabExecutor {
 
         if (args.length == 1) {
             return ArrayUtil.startingWithInArray(cmd,
-                    new String[] {"help", "about", "setCondition", "removeCondition", "copyCondition", "info",
-                            "giveKey", "unregister", "invertOpen", "setEvaluator", "stayOpen", "list", "reload"})
+                    new String[] {"help", "about",
+                            "setCondition", "removeCondition", "copyCondition", "cloneDoor",
+                            "info", "giveKey", "unregister", "invertOpen", "setEvaluator",
+                            "stayOpen", "list", "reload"})
                     .collect(Collectors.toList());
         }
 
@@ -1467,7 +1498,7 @@ public class BigDoorsOpenerCommand implements TabExecutor {
                     break;
                 case PROXIMITY:
                     if (args.length == 4) {
-                        return Arrays.asList(localizer.getMessage("tabcomplete.dimensions"), "<x,y,z>");
+                        return Arrays.asList("<" +localizer.getMessage("tabcomplete.dimensions")+ ">", "<x,y,z>");
                     }
                     if (args.length == 5) {
                         return ArrayUtil.startingWithInArray(args[4], PROXIMITY_FORM).collect(Collectors.toList());
@@ -1504,7 +1535,7 @@ public class BigDoorsOpenerCommand implements TabExecutor {
 
         if ("removeCondition".equalsIgnoreCase(cmd)) {
             if (args.length == 2) {
-                return Collections.singletonList(localizer.getMessage("syntax.doorId"));
+                return Collections.singletonList("<" +localizer.getMessage("syntax.doorId")+ ">");
             }
             if (args.length == 3) {
                 return ArrayUtil.startingWithInArray(args[2], CONDITION_GROUPS).collect(Collectors.toList());
@@ -1513,37 +1544,46 @@ public class BigDoorsOpenerCommand implements TabExecutor {
 
         if ("copyCondition".equalsIgnoreCase(cmd)) {
             if (args.length == 2) {
-                return Collections.singletonList(localizer.getMessage("syntax.sourceDoor"));
+                return Collections.singletonList("<" +localizer.getMessage("syntax.sourceDoor")+ ">");
             }
             if (args.length == 3) {
-                return Collections.singletonList(localizer.getMessage("syntax.targetDoor"));
+                return Collections.singletonList("<" +localizer.getMessage("syntax.targetDoor")+ ">");
             }
             if (args.length == 4) {
                 return ArrayUtil.startingWithInArray(args[3], CONDITION_GROUPS).collect(Collectors.toList());
             }
         }
 
+        if ("cloneDoor".equalsIgnoreCase(cmd)) {
+            if (args.length == 2) {
+                return Collections.singletonList("<" +localizer.getMessage("syntax.sourceDoor")+ ">");
+            }
+            if (args.length == 3) {
+                return Collections.singletonList("<" +localizer.getMessage("syntax.targetDoor")+ ">");
+            }
+        }
+
         if ("info".equalsIgnoreCase(cmd)) {
             if (args.length == 2) {
-                return Collections.singletonList(localizer.getMessage("syntax.doorId"));
+                return Collections.singletonList("<" +localizer.getMessage("syntax.doorId")+ ">");
             }
         }
 
         if ("unregister".equalsIgnoreCase(cmd)) {
             if (args.length == 2) {
-                return Collections.singletonList(localizer.getMessage("syntax.doorId"));
+                return Collections.singletonList("<" +localizer.getMessage("syntax.doorId")+ ">");
             }
         }
 
         if ("invertOpen".equalsIgnoreCase(cmd)) {
             if (args.length == 2) {
-                return Collections.singletonList(localizer.getMessage("syntax.doorId"));
+                return Collections.singletonList("<" +localizer.getMessage("syntax.doorId")+ ">");
             }
         }
 
         if ("setEvaluator".equalsIgnoreCase(cmd)) {
             if (args.length == 2) {
-                return Collections.singletonList(localizer.getMessage("syntax.doorId"));
+                return Collections.singletonList("<" +localizer.getMessage("syntax.doorId")+ ">");
             }
             if (args.length == 3) {
                 return ArrayUtil.startingWithInArray(args[2], EVALUATOR_TYPES).collect(Collectors.toList());
@@ -1569,11 +1609,11 @@ public class BigDoorsOpenerCommand implements TabExecutor {
 
         if ("giveKey".equalsIgnoreCase(cmd)) {
             if (args.length == 2) {
-                return Collections.singletonList(localizer.getMessage("syntax.doorId"));
+                return Collections.singletonList("<" +localizer.getMessage("syntax.doorId")+ ">");
             }
 
             if (args.length == 3) {
-                return Collections.singletonList(localizer.getMessage("syntax.amount"));
+                return Collections.singletonList("<" +localizer.getMessage("syntax.amount")+ ">");
             }
 
             if (args.length == 4) {
@@ -1586,10 +1626,10 @@ public class BigDoorsOpenerCommand implements TabExecutor {
 
         if ("stayOpen".equalsIgnoreCase(cmd)) {
             if (args.length == 2) {
-                return Collections.singletonList(localizer.getMessage("syntax.doorId"));
+                return Collections.singletonList("<" +localizer.getMessage("syntax.doorId")+ ">");
             }
             if (args.length == 3) {
-                return Collections.singletonList(localizer.getMessage("syntax.amount"));
+                return Collections.singletonList("<" +localizer.getMessage("syntax.amount")+ ">");
             }
         }
         return Collections.emptyList();
