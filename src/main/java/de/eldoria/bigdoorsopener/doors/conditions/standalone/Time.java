@@ -4,12 +4,13 @@ import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
 import de.eldoria.bigdoorsopener.doors.conditions.ConditionType;
 import de.eldoria.bigdoorsopener.doors.conditions.DoorCondition;
 import de.eldoria.bigdoorsopener.util.C;
+import de.eldoria.bigdoorsopener.util.TextColors;
 import de.eldoria.eldoutilities.localization.Localizer;
 import de.eldoria.eldoutilities.localization.Replacement;
 import de.eldoria.eldoutilities.serialization.SerializationUtil;
 import de.eldoria.eldoutilities.serialization.TypeResolvingMap;
 import de.eldoria.eldoutilities.utils.Parser;
-import net.kyori.text.TextComponent;
+import net.kyori.adventure.text.TextComponent;
 import org.bukkit.World;
 import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.entity.Player;
@@ -26,13 +27,13 @@ public class Time implements DoorCondition {
     /**
      * The ticks from when to door should be closed
      */
-    private int openTick;
+    private final int openTick;
     /**
      * The ticks from when the door should be open.
      */
-    private int closeTick;
+    private final int closeTick;
 
-    private boolean forceState;
+    private final boolean forceState;
 
     private State state = null;
 
@@ -60,7 +61,7 @@ public class Time implements DoorCondition {
     public TextComponent getDescription(Localizer localizer) {
         return TextComponent.builder(
                 localizer.getMessage("conditionDesc.type.time",
-                        Replacement.create("NAME", ConditionType.TIME.conditionName))).color(C.highlightColor)
+                        Replacement.create("NAME", ConditionType.TIME.conditionName))).color(TextColors.AQUA)
                 .append(TextComponent.newline())
                 .append(TextComponent.builder(localizer.getMessage("conditionDesc.open") + " ").color(C.baseColor))
                 .append(TextComponent.builder(Parser.parseTicksToTime(openTick)).color(C.highlightColor))
@@ -83,6 +84,7 @@ public class Time implements DoorCondition {
                 state = State.OPEN;
                 return true;
             } else if (forceState) {
+                state = State.OPEN;
                 return true;
             }
         } else {
@@ -91,6 +93,7 @@ public class Time implements DoorCondition {
                 state = State.CLOSED;
                 return false;
             } else if (forceState) {
+                state = State.CLOSED;
                 return false;
             }
         }

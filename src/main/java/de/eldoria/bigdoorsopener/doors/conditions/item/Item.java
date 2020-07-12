@@ -3,14 +3,17 @@ package de.eldoria.bigdoorsopener.doors.conditions.item;
 import com.google.gson.Gson;
 import de.eldoria.bigdoorsopener.doors.conditions.DoorCondition;
 import de.eldoria.bigdoorsopener.util.C;
+import de.eldoria.bigdoorsopener.util.TextColors;
 import de.eldoria.eldoutilities.localization.Localizer;
 import de.eldoria.eldoutilities.serialization.SerializationUtil;
 import lombok.Getter;
-import net.kyori.text.TextComponent;
-import net.kyori.text.event.HoverEvent;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.event.HoverEvent;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
@@ -47,64 +50,59 @@ public abstract class Item implements DoorCondition {
      * Checks if a player has a item in the off or main hand.
      *
      * @param player player to check
-     * @param stack  item stack to check
      * @return true if the player has the item in one of his hands.
      */
-    protected boolean hasPlayerItemInHand(Player player, ItemStack stack) {
-        return hasPlayerItemInMainHand(player, stack) || hasPlayerItemInOffHand(player, stack);
+    protected boolean hasPlayerItemInHand(Player player) {
+        return hasPlayerItemInMainHand(player) || hasPlayerItemInOffHand(player);
     }
 
     /**
      * Checks if a player has a item in the main hand.
      *
      * @param player player to check
-     * @param stack  item stack to check
      * @return true if the player has the item in his main hand.
      */
-    protected boolean hasPlayerItemInMainHand(Player player, ItemStack stack) {
+    protected boolean hasPlayerItemInMainHand(Player player) {
         ItemStack item = player.getInventory().getItemInMainHand();
-        if (item.getAmount() < stack.getAmount()) {
+        if (item.getAmount() < getItem().getAmount()) {
             return false;
         }
-        return item.isSimilar(stack);
+        return item.isSimilar(getItem());
     }
 
     /**
      * Checks if a player has a item in the off hand.
      *
      * @param player player to check
-     * @param stack  item stack to check
      * @return true if the player has the item in his main hands.
      */
-    protected boolean hasPlayerItemInOffHand(Player player, ItemStack stack) {
+    protected boolean hasPlayerItemInOffHand(Player player) {
         ItemStack item = player.getInventory().getItemInOffHand();
-        if (item.getAmount() < stack.getAmount()) {
+        if (item.getAmount() < getItem().getAmount()) {
             return false;
         }
-        return item.isSimilar(stack);
+        return item.isSimilar(getItem());
     }
 
     /**
      * Checks if a player has a item in his inventory.
      *
      * @param player player to check
-     * @param stack  item stack to check
      * @return true if the player has the item in his inventory.
      */
-    protected boolean hasPlayerItemInInventory(Player player, ItemStack stack) {
+    protected boolean hasPlayerItemInInventory(Player player) {
         PlayerInventory inventory = player.getInventory();
-        return inventory.containsAtLeast(stack, stack.getAmount());
+        return inventory.containsAtLeast(getItem(), getItem().getAmount());
     }
 
     /**
      * Takes the item from the off hand.
      *
-     * @param player    player to take items from
-     * @param itemStack item stack to remove
+     * @param player player to take items from
      */
-    protected void takeFromOffHand(Player player, ItemStack itemStack) {
+    protected void takeFromOffHand(Player player) {
         ItemStack item = player.getInventory().getItemInMainHand();
-        item.setAmount(item.getAmount() - itemStack.getAmount());
+        item.setAmount(item.getAmount() - getItem().getAmount());
         player.getInventory().setItemInMainHand(item);
         player.updateInventory();
     }
@@ -112,12 +110,11 @@ public abstract class Item implements DoorCondition {
     /**
      * Takes the item from the main hand.
      *
-     * @param player    player to take items from
-     * @param itemStack item stack to remove
+     * @param player player to take items from
      */
-    protected void takeFromMainHand(Player player, ItemStack itemStack) {
+    protected void takeFromMainHand(Player player) {
         ItemStack item = player.getInventory().getItemInMainHand();
-        item.setAmount(item.getAmount() - itemStack.getAmount());
+        item.setAmount(item.getAmount() - getItem().getAmount());
         player.getInventory().setItemInMainHand(item);
         player.updateInventory();
     }
@@ -125,11 +122,10 @@ public abstract class Item implements DoorCondition {
     /**
      * Takes the item from the inventory.
      *
-     * @param player    player to take items from
-     * @param itemStack item stack to remove
+     * @param player player to take items from
      */
-    protected void takeFromInventory(Player player, ItemStack itemStack) {
-        player.getInventory().removeItem(itemStack);
+    protected void takeFromInventory(Player player) {
+        player.getInventory().removeItem(getItem());
         player.updateInventory();
     }
 
@@ -139,11 +135,11 @@ public abstract class Item implements DoorCondition {
      * @param player player to take items from
      */
     protected boolean tryTakeFromHands(Player player) {
-        if (hasPlayerItemInMainHand(player, getItem())) {
-            takeFromMainHand(player, getItem());
+        if (hasPlayerItemInMainHand(player)) {
+            takeFromMainHand(player);
             return true;
-        } else if (hasPlayerItemInOffHand(player, getItem())) {
-            takeFromOffHand(player, getItem());
+        } else if (hasPlayerItemInOffHand(player)) {
+            takeFromOffHand(player);
             return true;
         }
         return false;
@@ -166,12 +162,30 @@ public abstract class Item implements DoorCondition {
 
     @Override
     public TextComponent getDescription(Localizer localizer) {
-        return TextComponent.builder()
-                .content(localizer.getMessage("conditionDesc.item") + " ")
+        ItemMeta meta = item.getItemMeta();
+        TextComponent.Builder builder = TextComponent.builder();
+        if (meta != null) {
+            builder.content(meta.getDisplayName()).color(TextColors.AQUA);
+            if (meta.getLore() != null) {
+                for (String s : meta.getLore()) {
+                    builder.append(TextComponent.newline())
+                            .append(TextComponent.builder(s).color(TextColors.LIGHT_PURPLE));
+                }
+            }
+            for (Map.Entry<Enchantment, Integer> entry : meta.getEnchants().entrySet()) {
+                builder.append(TextComponent.newline())
+                        .append(TextComponent.builder(entry.getKey().getKey().getKey() + " "
+                                + entry.getValue().toString())
+                                .color(TextColors.GRAY));
+            }
+        }
+
+        return TextComponent.builder().color(C.baseColor)
+                .append(TextComponent.builder(localizer.getMessage("conditionDesc.item") + " ").color(C.baseColor).build())
                 .append(TextComponent.builder("[" + item.getType().name().toLowerCase() + "] x" + item.getAmount())
-                        .hoverEvent(HoverEvent.showItem(TextComponent.of(GSON.toJson(item)))).color(C.highlightColor))
+                        .hoverEvent(HoverEvent.showText(builder.build()))).color(C.highlightColor)
                 .append(TextComponent.newline())
-                .append(TextComponent.builder(localizer.getMessage("conditionDesc.consumed") + " ").color(C.highlightColor))
-                .append(TextComponent.builder(Boolean.toString(isConsumed()))).build();
+                .append(TextComponent.builder(localizer.getMessage("conditionDesc.consumed") + " ").color(C.baseColor))
+                .append(TextComponent.builder(Boolean.toString(isConsumed()))).color(C.highlightColor).build();
     }
 }

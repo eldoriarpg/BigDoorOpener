@@ -78,6 +78,10 @@
             <id>sk89q-repo</id>
             <url>https://maven.enginehub.org/repo/</url>
         </repository>
+        <repository>
+            <id>sonatype</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -89,7 +93,7 @@
         </dependency>
         <dependency>
             <groupId>org.spigotmc</groupId>
-            <artifactId>spigot-api</artifactId>
+            <artifactId>spigot</artifactId>
             <version>1.15.2-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
@@ -121,7 +125,7 @@
         <dependency>
             <groupId>de.eldoria</groupId>
             <artifactId>EldoUtilities</artifactId>
-            <version>v1.0.9</version>
+            <version>v1.0.11</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -138,15 +142,82 @@
         </dependency>
         <dependency>
             <groupId>net.kyori</groupId>
+            <artifactId>adventure-text-minimessage</artifactId>
+            <version>3.0.0-SNAPSHOT</version>
+            <scope>compile</scope>
+<!--
+            <exclusions>
+&lt;!&ndash;
+                <exclusion>
+                    <groupId>net.kyori</groupId>
+                    <artifactId>examination-api</artifactId>
+                </exclusion>
+&ndash;&gt;
+                <exclusion>
+                    <groupId>net.kyori</groupId>
+                    <artifactId>examination-string</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.checkerframework</groupId>
+                    <artifactId>checker-qual</artifactId>
+                </exclusion>
+            </exclusions>
+-->
+        </dependency>
+        <dependency>
+            <groupId>net.kyori</groupId>
+            <artifactId>adventure-platform-bukkit</artifactId>
+            <version>4.0.0-SNAPSHOT</version>
+            <scope>compile</scope>
+<!--
+            <exclusions>
+                <exclusion>
+                    <groupId>net.kyori</groupId>
+                    <artifactId>adventure-text-serializer-gson</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>net.kyori</groupId>
+                    <artifactId>adventure-text-serializer-legacy</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>net.kyori</groupId>
+                    <artifactId>adventure-text-serializer-bungeecord</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>net.kyori</groupId>
+                    <artifactId>adventure-nbt</artifactId>
+                </exclusion>
+&lt;!&ndash;
+                <exclusion>
+                    <groupId>net.kyori</groupId>
+                    <artifactId>adventure-platform-common</artifactId>
+                </exclusion>
+&ndash;&gt;
+&lt;!&ndash;
+                <exclusion>
+                    <groupId>net.kyori</groupId>
+                    <artifactId>adventure-platform-viaversion</artifactId>
+                </exclusion>
+&ndash;&gt;
+                <exclusion>
+                    <groupId>org.checkerframework</groupId>
+                    <artifactId>checker-qual</artifactId>
+                </exclusion>
+            </exclusions>
+-->
+        </dependency>
+<!--
+        <dependency>
+            <groupId>net.kyori</groupId>
             <artifactId>text-api</artifactId>
             <version>3.0.3</version>
             <scope>compile</scope>
             <exclusions>
-                <exclusion>  <!-- declare the exclusion here -->
+                <exclusion>  &lt;!&ndash; declare the exclusion here &ndash;&gt;
                     <groupId>com.google.code.gson</groupId>
                     <artifactId>gson</artifactId>
                 </exclusion>
-                <exclusion>  <!-- declare the exclusion here -->
+                <exclusion>  &lt;!&ndash; declare the exclusion here &ndash;&gt;
                     <groupId>org.checkerframework</groupId>
                     <artifactId>checker-qual</artifactId>
                 </exclusion>
@@ -158,15 +229,16 @@
             <version>3.0.5</version>
             <scope>compile</scope>
             <exclusions>
-                <exclusion>  <!-- declare the exclusion here -->
+                <exclusion>  &lt;!&ndash; declare the exclusion here &ndash;&gt;
                     <groupId>com.google.code.gson</groupId>
                     <artifactId>gson</artifactId>
                 </exclusion>
-                <exclusion>  <!-- declare the exclusion here -->
+                <exclusion>  &lt;!&ndash; declare the exclusion here &ndash;&gt;
                     <groupId>org.checkerframework</groupId>
                     <artifactId>checker-qual</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
+-->
     </dependencies>
 </project>

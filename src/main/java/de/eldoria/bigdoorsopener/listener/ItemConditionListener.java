@@ -2,6 +2,7 @@ package de.eldoria.bigdoorsopener.listener;
 
 import de.eldoria.bigdoorsopener.config.Config;
 import de.eldoria.bigdoorsopener.doors.conditions.item.interacting.ItemInteraction;
+import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEvent;
 
@@ -15,6 +16,7 @@ public class ItemConditionListener implements Listener {
         this.config = config;
     }
 
+    @EventHandler
     public void onItemInteract(PlayerInteractEvent event) {
         config.getDoors().values().forEach(d -> {
             if (d.getConditionChain().getItem() == null) return;

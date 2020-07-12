@@ -141,7 +141,15 @@ public class BigDoorsOpener extends JavaPlugin {
 
         // check if world guard is loaded
         if (Bukkit.getPluginManager().isPluginEnabled("WorldGuard")) {
+            logger().info("World Guard found. Trying to get a hook.");
             regionContainer = WorldGuard.getInstance().getPlatform().getRegionContainer();
+            if (regionContainer != null) {
+                logger().info("Hooked into world guard successfully.");
+            } else {
+                logger().warning("Failed to hook into world guard.");
+            }
+        } else {
+            logger().info("World guard not found. Region conditions cant be used.");
         }
     }
 

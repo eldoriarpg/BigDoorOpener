@@ -4,11 +4,12 @@ import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
 import de.eldoria.bigdoorsopener.doors.conditions.ConditionType;
 import de.eldoria.bigdoorsopener.doors.conditions.item.interacting.ItemClick;
 import de.eldoria.bigdoorsopener.util.C;
+import de.eldoria.bigdoorsopener.util.TextColors;
 import de.eldoria.eldoutilities.localization.Localizer;
 import de.eldoria.eldoutilities.localization.Replacement;
 import de.eldoria.eldoutilities.serialization.SerializationUtil;
 import de.eldoria.eldoutilities.serialization.TypeResolvingMap;
-import net.kyori.text.TextComponent;
+import net.kyori.adventure.text.TextComponent;
 import org.bukkit.World;
 import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.entity.Player;
@@ -28,12 +29,12 @@ public class ItemOwning extends Item {
     @Override
     public void used(Player player) {
         if(!isConsumed()) return;
-        takeFromInventory(player, getItem());
+        takeFromInventory(player);
     }
 
     @Override
     public Boolean isOpen(Player player, World world, ConditionalDoor door, boolean currentState) {
-        return hasPlayerItemInInventory(player, getItem());
+        return hasPlayerItemInInventory(player);
     }
 
     public static ItemClick deserialize(Map<String, Object> map) {
@@ -47,7 +48,7 @@ public class ItemOwning extends Item {
     public TextComponent getDescription(Localizer localizer) {
         return TextComponent.builder(
                 localizer.getMessage("conditionDesc.type.itemOwning",
-                        Replacement.create("NAME", ConditionType.ITEM_OWNING.conditionName))).color(C.highlightColor)
+                        Replacement.create("NAME", ConditionType.ITEM_OWNING.conditionName))).color(TextColors.AQUA)
                 .append(TextComponent.newline())
                 .append(super.getDescription(localizer))
                 .build();

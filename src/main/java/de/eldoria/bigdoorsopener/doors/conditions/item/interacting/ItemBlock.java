@@ -3,12 +3,13 @@ package de.eldoria.bigdoorsopener.doors.conditions.item.interacting;
 import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
 import de.eldoria.bigdoorsopener.doors.conditions.ConditionType;
 import de.eldoria.bigdoorsopener.util.C;
+import de.eldoria.bigdoorsopener.util.TextColors;
 import de.eldoria.eldoutilities.localization.Localizer;
 import de.eldoria.eldoutilities.localization.Replacement;
 import de.eldoria.eldoutilities.serialization.SerializationUtil;
 import de.eldoria.eldoutilities.serialization.TypeResolvingMap;
 import lombok.Setter;
-import net.kyori.text.TextComponent;
+import net.kyori.adventure.text.TextComponent;
 import org.bukkit.World;
 import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.entity.Player;
@@ -44,7 +45,7 @@ public class ItemBlock extends ItemInteraction {
      * Constructor used for serialization.
      *
      * @param position position of block
-     * @param stack item stack of block
+     * @param stack    item stack of block
      * @param consumed true if item should be consumed.
      */
     private ItemBlock(BlockVector position, ItemStack stack, boolean consumed) {
@@ -55,12 +56,12 @@ public class ItemBlock extends ItemInteraction {
     @Override
     public void used(Player player) {
         if (!isConsumed()) return;
-        tryTakeFromHands(player);
+        takeFromInventory(player);
     }
 
     @Override
     public Boolean isOpen(Player player, World world, ConditionalDoor door, boolean currentState) {
-        if (hasPlayerItemInHand(player, getItem()) || hasPlayerItemInOffHand(player, getItem())) {
+        if (hasPlayerItemInHand(player)) {
             return super.isOpen(player, world, door, currentState);
         }
         return false;
@@ -68,8 +69,9 @@ public class ItemBlock extends ItemInteraction {
 
     @Override
     public void clicked(PlayerInteractEvent event) {
-        if(event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
+        if (event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
         if (event.getClickedBlock().getLocation().toVector().toBlockVector().equals(position)) {
+            event.setCancelled(true);
             super.clicked(event);
         }
     }
@@ -77,7 +79,7 @@ public class ItemBlock extends ItemInteraction {
     @Override
     public @NotNull Map<String, Object> serialize() {
         return SerializationUtil.newBuilder(super.serialize())
-                .add("postition", position)
+                .add("position", position)
                 .build();
     }
 
@@ -93,7 +95,7 @@ public class ItemBlock extends ItemInteraction {
     public TextComponent getDescription(Localizer localizer) {
         return TextComponent.builder(
                 localizer.getMessage("conditionDesc.type.itemBlock",
-                        Replacement.create("NAME", ConditionType.ITEM_BLOCK.conditionName))).color(C.highlightColor)
+                        Replacement.create("NAME", ConditionType.ITEM_BLOCK.conditionName))).color(TextColors.AQUA)
                 .append(TextComponent.newline())
                 .append(TextComponent.builder(localizer.getMessage("conditionDesc.keyhole") + " ").color(C.baseColor))
                 .append(TextComponent.builder(position.toString()).color(C.highlightColor))

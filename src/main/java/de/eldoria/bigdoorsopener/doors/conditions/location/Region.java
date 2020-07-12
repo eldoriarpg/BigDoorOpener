@@ -6,11 +6,12 @@ import de.eldoria.bigdoorsopener.BigDoorsOpener;
 import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
 import de.eldoria.bigdoorsopener.doors.conditions.ConditionType;
 import de.eldoria.bigdoorsopener.util.C;
+import de.eldoria.bigdoorsopener.util.TextColors;
 import de.eldoria.eldoutilities.localization.Localizer;
 import de.eldoria.eldoutilities.localization.Replacement;
 import de.eldoria.eldoutilities.serialization.SerializationUtil;
 import de.eldoria.eldoutilities.serialization.TypeResolvingMap;
-import net.kyori.text.TextComponent;
+import net.kyori.adventure.text.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.configuration.serialization.SerializableAs;
@@ -53,7 +54,7 @@ public class Region implements Location {
     public TextComponent getDescription(Localizer localizer) {
         return TextComponent.builder(
                 localizer.getMessage("conditionDesc.type.region",
-                        Replacement.create("NAME", ConditionType.REGION.conditionName))).color(C.highlightColor)
+                        Replacement.create("NAME", ConditionType.REGION.conditionName))).color(TextColors.AQUA)
                 .append(TextComponent.newline())
                 .append(TextComponent.builder(localizer.getMessage("conditionDesc.region") + " ").color(C.baseColor))
                 .append(TextComponent.builder(regionId)).color(C.highlightColor)

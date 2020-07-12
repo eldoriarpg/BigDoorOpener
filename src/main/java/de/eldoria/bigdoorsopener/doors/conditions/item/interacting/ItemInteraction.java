@@ -7,6 +7,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
@@ -15,7 +16,7 @@ public abstract class ItemInteraction extends Item {
     /**
      * A set of user which has clicked since the last check.
      */
-    private Set<UUID> playersClicked;
+    private final Set<UUID> playersClicked = new HashSet<>();
 
     /**
      * Creates a new item key

@@ -5,12 +5,13 @@ import de.eldoria.bigdoorsopener.doors.conditions.ConditionType;
 import de.eldoria.bigdoorsopener.doors.conditions.DoorCondition;
 import de.eldoria.bigdoorsopener.listener.WeatherListener;
 import de.eldoria.bigdoorsopener.util.C;
+import de.eldoria.bigdoorsopener.util.TextColors;
 import de.eldoria.eldoutilities.localization.Localizer;
 import de.eldoria.eldoutilities.localization.Replacement;
 import de.eldoria.eldoutilities.serialization.SerializationUtil;
 import de.eldoria.eldoutilities.serialization.TypeResolvingMap;
 import de.eldoria.eldoutilities.utils.EnumUtil;
-import net.kyori.text.TextComponent;
+import net.kyori.adventure.text.TextComponent;
 import org.bukkit.WeatherType;
 import org.bukkit.World;
 import org.bukkit.configuration.serialization.SerializableAs;
@@ -41,7 +42,7 @@ public class Weather implements DoorCondition {
 
         // check if it can rain at door based on temperature.
         if (raining) {
-            raining = getTemperature(world, pos) <= 95;
+            raining = getTemperature(world, pos) <= 0.95;
         }
 
         return raining ? weatherType == WeatherType.DOWNFALL : weatherType == WeatherType.CLEAR;
@@ -51,9 +52,9 @@ public class Weather implements DoorCondition {
     public TextComponent getDescription(Localizer localizer) {
         return TextComponent.builder(
                 localizer.getMessage("conditionDesc.type.weather",
-                        Replacement.create("NAME", ConditionType.WEATHER.conditionName))).color(C.highlightColor)
+                        Replacement.create("NAME", ConditionType.WEATHER.conditionName))).color(TextColors.AQUA)
                 .append(TextComponent.newline())
-                .append(TextComponent.builder(localizer.getMessage("conditionDesc.open") + " ").color(C.baseColor))
+                .append(TextComponent.builder(localizer.getMessage("conditionDesc.openWhen") + " ").color(C.baseColor))
                 .append(TextComponent.builder(weatherType == WeatherType.CLEAR
                         ? localizer.getMessage("conditionDesc.clear")
                         : localizer.getMessage("conditionDesc.downfall")).color(C.highlightColor))
