@@ -6,6 +6,8 @@ main: de.eldoria.bigdoorsopener.BigDoorsOpener
 website: www.spigotmc.org/resources/80805/
 api-version: 1.15
 depend: [BigDoors]
+softdepend:
+  - WorldGuard
 
 commands:
   bigdoorsopener:
