@@ -62,6 +62,11 @@ public class Region implements Location {
     }
 
     @Override
+    public String getCreationCommand(ConditionalDoor door) {
+        return COMMAND + door.getDoorUID() + " region " + regionId;
+    }
+
+    @Override
     public @NotNull Map<String, Object> serialize() {
         return SerializationUtil.newBuilder()
                 .add("world", worldName)

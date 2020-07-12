@@ -45,6 +45,11 @@ public class Permission implements DoorCondition {
     }
 
     @Override
+    public String getCreationCommand(ConditionalDoor door) {
+        return COMMAND + door.getDoorUID() + " permission " + permission;
+    }
+
+    @Override
     public @NotNull Map<String, Object> serialize() {
         return SerializationUtil.newBuilder()
                 .add("permission", permission)

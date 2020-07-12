@@ -1,4 +1,3 @@
 package de.eldoria.bigdoorsopener.doors.conditions;
 
-public class DoorState {
-}
+public enum DoorState {OPEN, CLOSED}

@@ -4,7 +4,7 @@ version: 1
 checkUpdates: true
 # The refresh rate of the door state
 refreshRate: 20
-language: de_DE
+language: en_US
 # The refresh rate of time changes in ticks. 1 sec = 20 ticks
 timedRefreshRate: 20
 # Help us improving this plugin by sending some anonymized metrics.

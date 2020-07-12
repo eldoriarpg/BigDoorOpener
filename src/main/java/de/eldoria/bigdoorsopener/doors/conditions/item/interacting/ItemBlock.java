@@ -68,11 +68,12 @@ public class ItemBlock extends ItemInteraction {
     }
 
     @Override
-    public void clicked(PlayerInteractEvent event) {
+    public void clicked(PlayerInteractEvent event, boolean available) {
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
         if (event.getClickedBlock().getLocation().toVector().toBlockVector().equals(position)) {
             event.setCancelled(true);
-            super.clicked(event);
+
+            super.clicked(event, available);
         }
     }
 
@@ -102,5 +103,11 @@ public class ItemBlock extends ItemInteraction {
                 .append(TextComponent.newline())
                 .append(super.getDescription(localizer))
                 .build();
+    }
+
+    @Override
+    public String getCreationCommand(ConditionalDoor door) {
+        return COMMAND + door.getDoorUID() + " itemBlock " + getItem().getAmount() + " " + isConsumed();
+
     }
 }

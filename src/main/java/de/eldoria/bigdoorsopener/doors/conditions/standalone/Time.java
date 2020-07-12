@@ -3,6 +3,7 @@ package de.eldoria.bigdoorsopener.doors.conditions.standalone;
 import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
 import de.eldoria.bigdoorsopener.doors.conditions.ConditionType;
 import de.eldoria.bigdoorsopener.doors.conditions.DoorCondition;
+import de.eldoria.bigdoorsopener.doors.conditions.DoorState;
 import de.eldoria.bigdoorsopener.util.C;
 import de.eldoria.bigdoorsopener.util.TextColors;
 import de.eldoria.eldoutilities.localization.Localizer;
@@ -35,7 +36,7 @@ public class Time implements DoorCondition {
 
     private final boolean forceState;
 
-    private State state = null;
+    private DoorState state = null;
 
     /**
      * Creates a time key which opens and closes the door based on time.
@@ -74,26 +75,31 @@ public class Time implements DoorCondition {
                 .build();
     }
 
+    @Override
+    public String getCreationCommand(ConditionalDoor door) {
+        return COMMAND + door.getDoorUID() + " time " + openTick + " " + closeTick + " " + forceState;
+    }
+
     public Boolean shouldBeOpen(long fulltime) {
         long openInTicks = getDiff(fulltime, openTick);
         long closedInTicks = getDiff(fulltime, closeTick);
         // check if door should be open
         if (openInTicks > closedInTicks) {
             // attemt to open door
-            if (state == null || state == State.CLOSED) {
-                state = State.OPEN;
+            if (state == null || state == DoorState.CLOSED) {
+                state = DoorState.OPEN;
                 return true;
             } else if (forceState) {
-                state = State.OPEN;
+                state = DoorState.OPEN;
                 return true;
             }
         } else {
             // attemt to close door
-            if (state == null || state == State.OPEN) {
-                state = State.CLOSED;
+            if (state == null || state == DoorState.OPEN) {
+                state = DoorState.CLOSED;
                 return false;
             } else if (forceState) {
-                state = State.CLOSED;
+                state = DoorState.CLOSED;
                 return false;
             }
         }
@@ -122,5 +128,4 @@ public class Time implements DoorCondition {
         return new Time(openTick, closeTick, forceState);
     }
 
-    private enum State {OPEN, CLOSED}
 }

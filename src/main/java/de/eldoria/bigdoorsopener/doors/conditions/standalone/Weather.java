@@ -3,6 +3,7 @@ package de.eldoria.bigdoorsopener.doors.conditions.standalone;
 import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
 import de.eldoria.bigdoorsopener.doors.conditions.ConditionType;
 import de.eldoria.bigdoorsopener.doors.conditions.DoorCondition;
+import de.eldoria.bigdoorsopener.doors.conditions.DoorState;
 import de.eldoria.bigdoorsopener.listener.WeatherListener;
 import de.eldoria.bigdoorsopener.util.C;
 import de.eldoria.bigdoorsopener.util.TextColors;
@@ -29,6 +30,7 @@ import java.util.Map;
 public class Weather implements DoorCondition {
     private final WeatherType weatherType;
     private boolean forceState;
+    private DoorState state;
 
     public Weather(WeatherType weatherType, boolean forceState) {
         this.weatherType = weatherType;
@@ -45,7 +47,41 @@ public class Weather implements DoorCondition {
             raining = getTemperature(world, pos) <= 0.95;
         }
 
-        return raining ? weatherType == WeatherType.DOWNFALL : weatherType == WeatherType.CLEAR;
+
+        if (raining) {
+            // attemt to open
+            if (weatherType == WeatherType.DOWNFALL) {
+                if (state == null || state == DoorState.CLOSED || forceState) {
+                    state = DoorState.OPEN;
+                    return true;
+                }
+            }
+
+            // attemt to close
+            if (weatherType == WeatherType.CLEAR) {
+                if (state == null || state == DoorState.OPEN || forceState) {
+                    state = DoorState.CLOSED;
+                    return false;
+                }
+            }
+        } else {
+            // attemt to open
+            if (weatherType == WeatherType.CLEAR) {
+                if (state == null || state == DoorState.CLOSED || forceState) {
+                    state = DoorState.OPEN;
+                    return true;
+                }
+            }
+
+            // attemt to close
+            if (weatherType == WeatherType.DOWNFALL) {
+                if (state == null || state == DoorState.OPEN || forceState) {
+                    state = DoorState.CLOSED;
+                    return false;
+                }
+            }
+        }
+        return null;
     }
 
     @Override
@@ -59,6 +95,11 @@ public class Weather implements DoorCondition {
                         ? localizer.getMessage("conditionDesc.clear")
                         : localizer.getMessage("conditionDesc.downfall")).color(C.highlightColor))
                 .build();
+    }
+
+    @Override
+    public String getCreationCommand(ConditionalDoor door) {
+        return COMMAND + door.getDoorUID() + " weather " + weatherType.toString().toLowerCase();
     }
 
     private double getTemperature(World world, Vector pos) {

@@ -3,7 +3,6 @@ package de.eldoria.bigdoorsopener.doors.conditions.item;
 import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
 import de.eldoria.bigdoorsopener.doors.conditions.ConditionType;
 import de.eldoria.bigdoorsopener.doors.conditions.item.interacting.ItemClick;
-import de.eldoria.bigdoorsopener.util.C;
 import de.eldoria.bigdoorsopener.util.TextColors;
 import de.eldoria.eldoutilities.localization.Localizer;
 import de.eldoria.eldoutilities.localization.Replacement;
@@ -28,7 +27,7 @@ public class ItemOwning extends Item {
 
     @Override
     public void used(Player player) {
-        if(!isConsumed()) return;
+        if (!isConsumed()) return;
         takeFromInventory(player);
     }
 
@@ -52,5 +51,10 @@ public class ItemOwning extends Item {
                 .append(TextComponent.newline())
                 .append(super.getDescription(localizer))
                 .build();
+    }
+
+    @Override
+    public String getCreationCommand(ConditionalDoor door) {
+        return COMMAND + door.getDoorUID() + " itemOwning " + getItem().getAmount() + " " + isConsumed();
     }
 }

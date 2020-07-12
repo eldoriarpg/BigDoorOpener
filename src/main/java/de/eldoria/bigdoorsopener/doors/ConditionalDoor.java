@@ -71,6 +71,8 @@ public class ConditionalDoor implements ConfigurationSerializable {
     /**
      * True if the door was registered in open state.
      */
+    @Setter
+    @Getter
     private boolean invertOpen = false;
 
     private static final CachingJSEngine JS;

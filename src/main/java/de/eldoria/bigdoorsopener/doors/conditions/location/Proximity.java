@@ -53,6 +53,13 @@ public class Proximity implements Location {
     }
 
     @Override
+    public String getCreationCommand(ConditionalDoor door) {
+        return COMMAND + door.getDoorUID() + " proximity "
+                + dimensions.getX() + "," + dimensions.getY() + "," + dimensions.getZ()
+                + " " + proximityForm.name().toLowerCase();
+    }
+
+    @Override
     public @NotNull Map<String, Object> serialize() {
         return SerializationUtil.newBuilder()
                 .add("dimensions", dimensions)

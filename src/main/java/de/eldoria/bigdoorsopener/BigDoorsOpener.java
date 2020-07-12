@@ -36,7 +36,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.jetbrains.annotations.NotNull;
 
-import javax.script.ScriptEngine;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Locale;
@@ -134,7 +133,7 @@ public class BigDoorsOpener extends JavaPlugin {
         pm.registerEvents(weatherListener, this);
         registerInteraction = new RegisterInteraction();
         pm.registerEvents(registerInteraction, this);
-        pm.registerEvents(new ItemConditionListener(config), this);
+        pm.registerEvents(new ItemConditionListener(doors, localizer, config), this);
     }
 
     private void loadExternalSources() {

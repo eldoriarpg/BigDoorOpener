@@ -69,4 +69,18 @@ public abstract class BigDoorsAdapter {
         // Make sure that this door still exists on the doors plugin.
         return commander.getDoor(null, door.getDoorUID()) != null;
     }
+
+    /**
+     * Checks if a door is availbale.
+     * A door is considered available if its not open and not busy
+     * @param door door to check
+     * @return true if the door is available
+     */
+    protected boolean isAvailableToOpen(ConditionalDoor door){
+        return !isOpen(door) && !isBusy(door);
+    }
+
+    protected boolean isBusy(ConditionalDoor door){
+        return getCommander().isDoorBusy(door.getDoorUID());
+    }
 }

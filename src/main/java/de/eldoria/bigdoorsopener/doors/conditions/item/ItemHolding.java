@@ -46,6 +46,11 @@ public class ItemHolding extends Item {
                 .build();
     }
 
+    @Override
+    public String getCreationCommand(ConditionalDoor door) {
+        return COMMAND + door.getDoorUID() + " itemHolding " + getItem().getAmount() + " " + isConsumed();
+    }
+
     public static ItemClick deserialize(Map<String, Object> map) {
         TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
         ItemStack stack = resolvingMap.getValue("item");

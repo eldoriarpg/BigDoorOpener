@@ -45,10 +45,13 @@ public abstract class ItemInteraction extends Item {
      * This method is called when player interact event is fired.
      * This method ideally adds the player to {@link #playersClicked} when the player can open the door with this key.
      *
-     * @param event interact event to check.
+     * @param event     interact event to check.
+     * @param available
      */
-    public void clicked(PlayerInteractEvent event) {
-        playersClicked.add(event.getPlayer().getUniqueId());
+    public void clicked(PlayerInteractEvent event, boolean available) {
+        if (available) {
+            playersClicked.add(event.getPlayer().getUniqueId());
+        }
     }
 
     @Override

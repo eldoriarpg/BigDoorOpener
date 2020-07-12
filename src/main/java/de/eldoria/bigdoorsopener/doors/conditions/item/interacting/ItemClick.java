@@ -48,10 +48,17 @@ public class ItemClick extends ItemInteraction {
                 .build();
     }
 
+    @Override
+    public String getCreationCommand(ConditionalDoor door) {
+        return COMMAND + door.getDoorUID() + " itemOwning " + getItem().getAmount() + " " + isConsumed();
+    }
+
     public static ItemClick deserialize(Map<String, Object> map) {
         TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
         ItemStack stack = resolvingMap.getValue("item");
         boolean consumed = resolvingMap.getValue("consumed");
         return new ItemClick(stack, consumed);
     }
+
+
 }
