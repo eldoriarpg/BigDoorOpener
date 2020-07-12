@@ -1,6 +1,7 @@
 package de.eldoria.bigdoorsopener.doors;
 
 import com.google.common.base.Objects;
+import de.eldoria.bigdoorsopener.BigDoorsOpener;
 import de.eldoria.bigdoorsopener.doors.conditions.ConditionChain;
 import de.eldoria.bigdoorsopener.util.CachingJSEngine;
 import de.eldoria.eldoutilities.serialization.SerializationUtil;
@@ -75,7 +76,7 @@ public class ConditionalDoor implements ConfigurationSerializable {
     private static final CachingJSEngine JS;
 
     static {
-        JS = new CachingJSEngine(200);
+        JS = BigDoorsOpener.JS();
     }
 
     public ConditionalDoor(long doorUID, String world, Vector position, ConditionChain conditionChain) {

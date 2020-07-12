@@ -3,19 +3,17 @@ package de.eldoria.bigdoorsopener.util;
 import de.eldoria.eldoutilities.container.Pair;
 import de.eldoria.eldoutilities.utils.TextUtil;
 
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
+import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public final class JsSyntaxHelper {
 
-    private static final ScriptEngine ENGINE = new ScriptEngineManager().getEngineByExtension("nashorn");
     private static final Pattern VARIABLE = Pattern.compile("[a-zA-Z]+");
     private static final Pattern ALLOWED_OPERATORS = Pattern.compile("&&|\\|\\||!=|==|!");
     private static final Pattern UNALLOWED_OPERATORS = Pattern.compile("&|\\||=");
-    private static final Pattern SYNTAX = Pattern.compile("\\||&|!|=|\\(|\\)|\\s\\{\\};");
+    private static final Pattern SYNTAX = Pattern.compile("(\\||&|!|=|\\(|\\)|\\s|\\{|}|;)*");
 
     private JsSyntaxHelper() {
     }
@@ -37,7 +35,7 @@ public final class JsSyntaxHelper {
         result = result.replaceAll("(?i)\\snot\\s", "!=");
 
         // remove whitespaces.
-        result = result.replace("\\s", "");
+        result = result.replaceAll("\\s", "");
         return result;
     }
 
@@ -48,15 +46,15 @@ public final class JsSyntaxHelper {
      * @param evaluator string to evaluate
      * @return pair which returns the result and a optinal string which contains different valued based on the result
      */
-    public static Pair<ValidatorResult, String> validateEvaluator(String evaluator) {
+    public static Pair<ValidatorResult, String> validateEvaluator(String evaluator, CachingJSEngine engine) {
         evaluator = translateEvaluator(evaluator);
 
         // check for unbalanced parenthesis
-        if (TextUtil.countChars(evaluator, '(') == TextUtil.countChars(evaluator, ')')) {
+        if (TextUtil.countChars(evaluator, '(') != TextUtil.countChars(evaluator, ')')) {
             return new Pair<>(ValidatorResult.UNBALANCED_PARENTHESIS, "");
         }
 
-        String cleaned = evaluator.replaceAll("(?i)if|item|location|permission|time|weather|currentState", "");
+        String cleaned = evaluator.replaceAll("(?i)if|item|location|permission|time|weather|currentState|null|else", "");
         Matcher matcher = VARIABLE.matcher(cleaned);
         if (matcher.find()) {
             return new Pair<>(ValidatorResult.INVALID_VARIABLE, matcher.group());
@@ -76,8 +74,8 @@ public final class JsSyntaxHelper {
 
 
         try {
-            boolean aTrue = (boolean) ENGINE.eval(evaluator.replaceAll("(?i)item|location|permission|time|weather|currentState", "true"));
-        } catch (ScriptException e) {
+            boolean aTrue = engine.evalUnsafe(evaluator.replaceAll("(?i)item|location|permission|time|weather|currentState", "true"), null);
+        } catch (ScriptException | ExecutionException e) {
             return new Pair<>(ValidatorResult.EXECUTION_FAILED, evaluator);
         } catch (ClassCastException e) {
             return new Pair<>(ValidatorResult.NON_BOOLEAN_RESULT, evaluator);

@@ -97,7 +97,7 @@ public class ConditionChain implements ConfigurationSerializable, Cloneable {
                 continue;
             }
             evaluationString = evaluationString.replaceAll("(?i)" + condition.conditionParameter,
-                    String.valueOf(item.isOpen(player, world, door, currentState)));
+                    String.valueOf(doorCondition.isOpen(player, world, door, currentState)));
         }
 
         evaluationString = evaluationString.replaceAll("(?i)currentState",

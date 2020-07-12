@@ -20,6 +20,7 @@ import de.eldoria.bigdoorsopener.listener.ItemConditionListener;
 import de.eldoria.bigdoorsopener.listener.WeatherListener;
 import de.eldoria.bigdoorsopener.listener.registration.RegisterInteraction;
 import de.eldoria.bigdoorsopener.scheduler.DoorChecker;
+import de.eldoria.bigdoorsopener.util.CachingJSEngine;
 import de.eldoria.eldoutilities.localization.Localizer;
 import de.eldoria.eldoutilities.messages.MessageSender;
 import de.eldoria.eldoutilities.updater.UpdateChecker;
@@ -35,6 +36,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.jetbrains.annotations.NotNull;
 
+import javax.script.ScriptEngine;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Locale;
@@ -50,6 +52,8 @@ public class BigDoorsOpener extends JavaPlugin {
     private Config config;
     private boolean initialized;
     private Localizer localizer;
+    private static CachingJSEngine JS;
+
 
     // External instances.
     private BigDoors doors;
@@ -74,6 +78,7 @@ public class BigDoorsOpener extends JavaPlugin {
         PluginManager pm = Bukkit.getPluginManager();
         if (!initialized) {
             logger = this.getLogger();
+            JS = new CachingJSEngine(200);
 
             buildSerializer();
 
@@ -220,5 +225,9 @@ public class BigDoorsOpener extends JavaPlugin {
             counts.put("weather", (int) values.parallelStream().filter(d -> d.getConditionChain().getWeather() != null).count());
             return counts;
         }));
+    }
+
+    public static CachingJSEngine JS() {
+        return JS;
     }
 }

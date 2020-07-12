@@ -21,6 +21,7 @@ import de.eldoria.bigdoorsopener.doors.conditions.standalone.Weather;
 import de.eldoria.bigdoorsopener.listener.registration.RegisterInteraction;
 import de.eldoria.bigdoorsopener.scheduler.DoorChecker;
 import de.eldoria.bigdoorsopener.util.C;
+import de.eldoria.bigdoorsopener.util.CachingJSEngine;
 import de.eldoria.bigdoorsopener.util.JsSyntaxHelper;
 import de.eldoria.bigdoorsopener.util.Permissions;
 import de.eldoria.bigdoorsopener.util.TextColors;
@@ -77,7 +78,9 @@ public class BigDoorsOpenerCommand implements TabExecutor {
 
     private final BukkitAudiences bukkitAudiences;
 
+    private static final CachingJSEngine ENGINE;
 
+    // Tabcomplete utils
     private static final String[] CONDITION_TYPES;
     private static final String[] CONDITION_GROUPS;
     private static final String[] PROXIMITY_FORM;
@@ -85,6 +88,7 @@ public class BigDoorsOpenerCommand implements TabExecutor {
     private static final String[] EVALUATOR_TYPES;
 
     static {
+        ENGINE = BigDoorsOpener.JS();
         CONDITION_TYPES = Arrays.stream(ConditionType.values())
                 .map(v -> v.conditionName)
                 .toArray(String[]::new);
@@ -984,12 +988,12 @@ public class BigDoorsOpenerCommand implements TabExecutor {
             return true;
         }
         String evaluator = String.join(" ", Arrays.copyOfRange(arguments, 2, arguments.length));
-        Pair<JsSyntaxHelper.ValidatorResult, String> result = JsSyntaxHelper.validateEvaluator(evaluator);
+        Pair<JsSyntaxHelper.ValidatorResult, String> result = JsSyntaxHelper.validateEvaluator(evaluator, ENGINE);
 
         switch (result.first) {
             case UNBALANCED_PARENTHESIS:
                 messageSender.sendError(player, localizer.getMessage("error.unbalancedParenthesis"));
-                break;
+                return true;
             case INVALID_VARIABLE:
                 messageSender.sendError(player, localizer.getMessage("error.invalidVariable",
                         Replacement.create("ERROR", result.second).addFormatting('6')));
@@ -1016,7 +1020,7 @@ public class BigDoorsOpenerCommand implements TabExecutor {
         }
         config.safeConfig();
         messageSender.sendMessage(player, localizer.getMessage("setEvaluator.custom",
-                Replacement.create("EVALUATOR", JsSyntaxHelper.translateEvaluator(evaluator))));
+                Replacement.create("EVALUATOR", door.first.getEvaluator()).addFormatting('6')));
         return true;
     }
 
@@ -1387,8 +1391,8 @@ public class BigDoorsOpenerCommand implements TabExecutor {
                             Replacement.create("PERMISSION", Permissions.CUSTOM_EVALUATOR)));
                 }
                 ArrayList<String> list = new ArrayList<>(Arrays.asList(CONDITION_GROUPS));
+                list.add("<" + localizer.getMessage("tabcomplete.validValues") + ">");
                 list.add("currentState");
-                list.add(localizer.getMessage("tabcomplete.validValues"));
                 return list;
             }
         }
