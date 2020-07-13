@@ -1069,7 +1069,7 @@ public class BigDoorsOpenerCommand implements TabExecutor {
             builder.append(TextComponent.builder(localizer.getMessage("info.time") + " ").color(TextColors.AQUA))
                     .append(TextComponent.newline())
                     .append(TextComponent.builder("[" + localizer.getMessage("info.add") + "]")
-                            .style(Style.builder().color(TextColors.DARK_RED)
+                            .style(Style.builder().color(TextColors.GREEN)
                                     .decoration(TextDecoration.UNDERLINED, true).build())
                             .clickEvent(ClickEvent.suggestCommand("/bdo setCondition " + cDoor.getDoorUID() + " time ")));
         }
