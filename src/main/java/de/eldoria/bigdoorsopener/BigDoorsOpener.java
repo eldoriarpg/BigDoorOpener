@@ -21,6 +21,7 @@ import de.eldoria.bigdoorsopener.listener.WeatherListener;
 import de.eldoria.bigdoorsopener.listener.registration.RegisterInteraction;
 import de.eldoria.bigdoorsopener.scheduler.DoorChecker;
 import de.eldoria.bigdoorsopener.util.CachingJSEngine;
+import de.eldoria.eldoutilities.container.Pair;
 import de.eldoria.eldoutilities.localization.Localizer;
 import de.eldoria.eldoutilities.messages.MessageSender;
 import de.eldoria.eldoutilities.updater.UpdateChecker;
@@ -201,19 +202,23 @@ public class BigDoorsOpener extends JavaPlugin {
 
         logger().info(localizer.getMessage("general.metrics"));
 
-        metrics.addCustomChart(new Metrics.DrilldownPie("big_doors_version", () -> {
+        // old version. will be removed when enough ppl are on version 2.0
+        metrics.addCustomChart(new Metrics.SimplePie("big_doors_version",
+                () -> doors.getDescription().getVersion()));
+
+        // new hopefully more detailed version information.
+        metrics.addCustomChart(new Metrics.DrilldownPie("big_doors_version_new", () -> {
             String ver = doors.getDescription().getVersion();
             Map<String, Map<String, Integer>> map = new HashMap<>();
-            Matcher versionMatcher = version.matcher(ver);
-            Matcher buildMatcher = build.matcher(ver);
-            if (versionMatcher.find() || buildMatcher.find()) {
-                Map<String, Integer> versionMap = new HashMap<>();
-                versionMap.put(buildMatcher.group(1), 1);
-                map.put(versionMatcher.group(1), versionMap);
-            }
+            Pair<String, String> doorsVersion = getDoorsVersion(ver);
+            Map<String, Integer> versionMap = new HashMap<>();
+            versionMap.put(doorsVersion.first, 1);
+            map.put(doorsVersion.second, versionMap);
             return map;
         }));
 
+        // Get some insights in the conditions type.
+        // This will probably help to decide which should be developed further.
         metrics.addCustomChart(new Metrics.AdvancedPie("condition_types", () -> {
             Map<String, Integer> counts = new HashMap<>();
             Collection<ConditionalDoor> values = config.getDoors().values();
@@ -228,5 +233,29 @@ public class BigDoorsOpener extends JavaPlugin {
 
     public static CachingJSEngine JS() {
         return JS;
+    }
+
+    private Pair<String, String> getDoorsVersion(String ver) {
+        Pattern version = Pattern.compile("([0-9]\\.(?:[0-9]\\.?)+)");
+        Pattern build = Pattern.compile("\\((b[0-9]+)\\)");
+
+        Matcher versionMatcher = version.matcher(ver);
+        Matcher buildMatcher = build.matcher(ver);
+
+        String versionString;
+        String buildString;
+
+        if (versionMatcher.find()) {
+            versionString = versionMatcher.group(1);
+        } else {
+            versionString = "undefined";
+        }
+
+        if (buildMatcher.find()) {
+            buildString = buildMatcher.group(1);
+        } else {
+            buildString = "release";
+        }
+        return new Pair<>(versionString, buildString);
     }
 }
