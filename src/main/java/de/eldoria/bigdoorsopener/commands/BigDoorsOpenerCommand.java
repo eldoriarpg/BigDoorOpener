@@ -356,7 +356,7 @@ public class BigDoorsOpenerCommand implements TabExecutor {
             return true;
         }
 
-        if (argumentsInvalid(player, args, 2,
+        if (argumentsInvalid(player, args, 3,
                 "<" + localizer.getMessage("syntax.doorId") + "> <"
                         + localizer.getMessage("syntax.condition") + "> <"
                         + localizer.getMessage("syntax.conditionValues") + ">")) {
@@ -407,6 +407,14 @@ public class BigDoorsOpenerCommand implements TabExecutor {
             case ITEM_OWNING:
                 if (player == null) {
                     messageSender.sendError(null, localizer.getMessage("error.notAllowedFromConsole"));
+                    return true;
+                }
+
+                if (argumentsInvalid(player, conditionArgs, 2,
+                        "<" + localizer.getMessage("syntax.doorId") + "> <"
+                                + localizer.getMessage("syntax.condition") + "> <"
+                                + localizer.getMessage("syntax.amount") + "> <"
+                                + localizer.getMessage("tabcomplete.consumed") + ">")) {
                     return true;
                 }
 
@@ -461,6 +469,14 @@ public class BigDoorsOpenerCommand implements TabExecutor {
                 break;
             // <dimensions> <form>
             case PROXIMITY:
+                if (argumentsInvalid(player, conditionArgs, 1,
+                        "<" + localizer.getMessage("syntax.doorId") + "> <"
+                                + localizer.getMessage("syntax.condition") + "> <"
+                                + localizer.getMessage("tabcomplete.dimensions") + "> ["
+                                + localizer.getMessage("syntax.proximityForm") + "]")) {
+                    return true;
+                }
+
                 Vector vector;
                 String[] coords = conditionArgs[0].split(",");
 
@@ -497,13 +513,13 @@ public class BigDoorsOpenerCommand implements TabExecutor {
                     return true;
                 }
 
-                // check proximity form
-                Proximity.ProximityForm form = EnumUtil.parse(conditionArgs[1], Proximity.ProximityForm.class);
+                Proximity.ProximityForm form = ArgumentUtils.getOptionalParameter(conditionArgs, 1, Proximity.ProximityForm.CUBOID, (s) -> EnumUtil.parse(s, Proximity.ProximityForm.class));
 
                 if (form == null) {
                     messageSender.sendError(player, localizer.getMessage("error.invalidForm"));
                     return true;
                 }
+
                 conditionChain.setLocation(new Proximity(vector, form));
                 messageSender.sendMessage(player, localizer.getMessage("setCondition.proximity"));
                 break;
@@ -513,6 +529,14 @@ public class BigDoorsOpenerCommand implements TabExecutor {
                     messageSender.sendError(player, localizer.getMessage("error.wgNotEnabled"));
                     return true;
                 }
+
+                if (argumentsInvalid(player, conditionArgs, 1,
+                        "<" + localizer.getMessage("syntax.doorId") + "> <"
+                                + localizer.getMessage("syntax.condition") + "> <"
+                                + localizer.getMessage("tabcomplete.regionName") + ">")) {
+                    return true;
+                }
+
                 if (player == null) {
                     messageSender.sendError(null, localizer.getMessage("error.notAllowedFromConsole"));
                     return true;
@@ -532,10 +556,26 @@ public class BigDoorsOpenerCommand implements TabExecutor {
                 break;
             // permission
             case PERMISSION:
+                if (argumentsInvalid(player, conditionArgs, 1,
+                        "<" + localizer.getMessage("syntax.doorId") + "> <"
+                                + localizer.getMessage("syntax.condition") + "> <"
+                                + localizer.getMessage("tabcomplete.permission") + ">")) {
+                    return true;
+                }
+
                 conditionChain.setPermission(new Permission(conditionArgs[0]));
                 messageSender.sendMessage(player, localizer.getMessage("setCondition.permission"));
                 break;
             case TIME:
+                if (argumentsInvalid(player, conditionArgs, 2,
+                        "<" + localizer.getMessage("syntax.doorId") + "> <"
+                                + localizer.getMessage("syntax.condition") + "> <"
+                                + localizer.getMessage("syntax.openTime") + "> <"
+                                + localizer.getMessage("syntax.closeTime") + "> ["
+                                + localizer.getMessage("tabcomplete.forceState") + "]")) {
+                    return true;
+                }
+
                 // parse time
                 OptionalInt open = Parser.parseInt(conditionArgs[0]);
                 if (!open.isPresent()) {
@@ -576,6 +616,13 @@ public class BigDoorsOpenerCommand implements TabExecutor {
                         Replacement.create("CLOSE", Parser.parseTicksToTime(close.getAsInt()))));
                 break;
             case WEATHER:
+                if (argumentsInvalid(player, conditionArgs, 1,
+                        "<" + localizer.getMessage("syntax.doorId") + "> <"
+                                + localizer.getMessage("syntax.condition") + "> <"
+                                + localizer.getMessage("syntax.weatherType") + ">")) {
+                    return true;
+                }
+
                 WeatherType weatherType = null;
                 for (WeatherType value : WeatherType.values()) {
                     if (value.name().equalsIgnoreCase(conditionArgs[0])) {
@@ -1498,7 +1545,7 @@ public class BigDoorsOpenerCommand implements TabExecutor {
                     break;
                 case PROXIMITY:
                     if (args.length == 4) {
-                        return Arrays.asList("<" +localizer.getMessage("tabcomplete.dimensions")+ ">", "<x,y,z>");
+                        return Arrays.asList("<" + localizer.getMessage("tabcomplete.dimensions") + ">", "<x,y,z>");
                     }
                     if (args.length == 5) {
                         return ArrayUtil.startingWithInArray(args[4], PROXIMITY_FORM).collect(Collectors.toList());
@@ -1535,7 +1582,7 @@ public class BigDoorsOpenerCommand implements TabExecutor {
 
         if ("removeCondition".equalsIgnoreCase(cmd)) {
             if (args.length == 2) {
-                return Collections.singletonList("<" +localizer.getMessage("syntax.doorId")+ ">");
+                return Collections.singletonList("<" + localizer.getMessage("syntax.doorId") + ">");
             }
             if (args.length == 3) {
                 return ArrayUtil.startingWithInArray(args[2], CONDITION_GROUPS).collect(Collectors.toList());
@@ -1544,10 +1591,10 @@ public class BigDoorsOpenerCommand implements TabExecutor {
 
         if ("copyCondition".equalsIgnoreCase(cmd)) {
             if (args.length == 2) {
-                return Collections.singletonList("<" +localizer.getMessage("syntax.sourceDoor")+ ">");
+                return Collections.singletonList("<" + localizer.getMessage("syntax.sourceDoor") + ">");
             }
             if (args.length == 3) {
-                return Collections.singletonList("<" +localizer.getMessage("syntax.targetDoor")+ ">");
+                return Collections.singletonList("<" + localizer.getMessage("syntax.targetDoor") + ">");
             }
             if (args.length == 4) {
                 return ArrayUtil.startingWithInArray(args[3], CONDITION_GROUPS).collect(Collectors.toList());
@@ -1556,34 +1603,34 @@ public class BigDoorsOpenerCommand implements TabExecutor {
 
         if ("cloneDoor".equalsIgnoreCase(cmd)) {
             if (args.length == 2) {
-                return Collections.singletonList("<" +localizer.getMessage("syntax.sourceDoor")+ ">");
+                return Collections.singletonList("<" + localizer.getMessage("syntax.sourceDoor") + ">");
             }
             if (args.length == 3) {
-                return Collections.singletonList("<" +localizer.getMessage("syntax.targetDoor")+ ">");
+                return Collections.singletonList("<" + localizer.getMessage("syntax.targetDoor") + ">");
             }
         }
 
         if ("info".equalsIgnoreCase(cmd)) {
             if (args.length == 2) {
-                return Collections.singletonList("<" +localizer.getMessage("syntax.doorId")+ ">");
+                return Collections.singletonList("<" + localizer.getMessage("syntax.doorId") + ">");
             }
         }
 
         if ("unregister".equalsIgnoreCase(cmd)) {
             if (args.length == 2) {
-                return Collections.singletonList("<" +localizer.getMessage("syntax.doorId")+ ">");
+                return Collections.singletonList("<" + localizer.getMessage("syntax.doorId") + ">");
             }
         }
 
         if ("invertOpen".equalsIgnoreCase(cmd)) {
             if (args.length == 2) {
-                return Collections.singletonList("<" +localizer.getMessage("syntax.doorId")+ ">");
+                return Collections.singletonList("<" + localizer.getMessage("syntax.doorId") + ">");
             }
         }
 
         if ("setEvaluator".equalsIgnoreCase(cmd)) {
             if (args.length == 2) {
-                return Collections.singletonList("<" +localizer.getMessage("syntax.doorId")+ ">");
+                return Collections.singletonList("<" + localizer.getMessage("syntax.doorId") + ">");
             }
             if (args.length == 3) {
                 return ArrayUtil.startingWithInArray(args[2], EVALUATOR_TYPES).collect(Collectors.toList());
@@ -1609,11 +1656,11 @@ public class BigDoorsOpenerCommand implements TabExecutor {
 
         if ("giveKey".equalsIgnoreCase(cmd)) {
             if (args.length == 2) {
-                return Collections.singletonList("<" +localizer.getMessage("syntax.doorId")+ ">");
+                return Collections.singletonList("<" + localizer.getMessage("syntax.doorId") + ">");
             }
 
             if (args.length == 3) {
-                return Collections.singletonList("<" +localizer.getMessage("syntax.amount")+ ">");
+                return Collections.singletonList("<" + localizer.getMessage("syntax.amount") + ">");
             }
 
             if (args.length == 4) {
@@ -1626,10 +1673,10 @@ public class BigDoorsOpenerCommand implements TabExecutor {
 
         if ("stayOpen".equalsIgnoreCase(cmd)) {
             if (args.length == 2) {
-                return Collections.singletonList("<" +localizer.getMessage("syntax.doorId")+ ">");
+                return Collections.singletonList("<" + localizer.getMessage("syntax.doorId") + ">");
             }
             if (args.length == 3) {
-                return Collections.singletonList("<" +localizer.getMessage("syntax.amount")+ ">");
+                return Collections.singletonList("<" + localizer.getMessage("syntax.amount") + ">");
             }
         }
         return Collections.emptyList();
