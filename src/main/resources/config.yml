@@ -1,8 +1,19 @@
-# The refresh rate of approach detection in ticks. 1 sec = 20 ticks
-approachRefreshRate: 20
-# The refresh rate of time changes in ticks. 1 sec = 20 ticks
-timedRefreshRate: 20
-# Help us improving this plugin by sending some anonymized metrics.
+# Dont touch it or at least dont complain when everything burns.
+# No version = 1.x
+# version 1 = 2.x
+version: 1
+# Get a simple notify, when a new build is available. Keeping this enabled is highly recommended.
+checkUpdates: true
+# The refresh rate of the door state. 1 sec = 20 ticks.
+# This means a refresh rate of 20 would result in a state update every second.
+# That should be perfectly fine, unless you have thousands of doors.
+# The amount of doors updated every tick will be  doorAmount / refresh rate or at least one.
+refreshRate: 20
+# Your desired language.
+language: en_US
+# Send anonymized metrics to bStats.
+# With enabling this you allow me to see which features are used. It also motivated me to develop this plugin further.
+# It also helps me to decide which feature should get an update.
 enableMetrics: true
-# We save your doors. If it is empty you should change this :P
+# We save your doors here. If it is empty you should change this :P
 doors:
