@@ -70,7 +70,9 @@ public class Proximity implements Location {
     public static Proximity deserialize(Map<String, Object> map) {
         TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
         Vector vector = resolvingMap.getValue("dimensions");
-        ProximityForm proximityForm = EnumUtil.parse(resolvingMap.getValue("proximityForm"), ProximityForm.class);
+        String formString = resolvingMap.getValue("proximityForm");
+        formString = formString.replaceAll("(?i)elipsoid", "ellipsoid");
+        ProximityForm proximityForm = EnumUtil.parse(formString, ProximityForm.class);
         return new Proximity(vector, proximityForm);
     }
 
@@ -82,7 +84,7 @@ public class Proximity implements Location {
                     if (Math.abs(point.getZ() - target.getZ()) > dimensions.getZ()) return false;
                     return true;
                 }),
-        ELIPSOID("conditionDesc.proximityForm.elipsoid",
+        ELLIPSOID("conditionDesc.proximityForm.ellipsoid",
                 (point, target, dimensions) ->
                         Math.pow((target.getX() - point.getX()) / dimensions.getX(), 2)
                                 + Math.pow((target.getY() - point.getY()) / dimensions.getY(), 2)
