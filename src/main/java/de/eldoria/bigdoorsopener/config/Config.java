@@ -99,7 +99,7 @@ public class Config {
                     conditionChain.setLocation(
                             new Proximity(
                                     new Vector(tD.getOpenRange(), tD.getOpenRange(), tD.getOpenRange()),
-                                    Proximity.ProximityForm.ELIPSOID));
+                                    Proximity.ProximityForm.ELLIPSOID));
                     log.info("Adding proximity condition.");
                 }
                 log.info("Door " + tD.getDoorUID() + " successfully converted.");

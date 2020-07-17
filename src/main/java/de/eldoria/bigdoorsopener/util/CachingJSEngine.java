@@ -23,8 +23,14 @@ public class CachingJSEngine {
 
     public CachingJSEngine(int cacheSize) {
         try {
-            engine = new NashornScriptEngineFactory().getScriptEngine("--no-deprecation-warning");
-            engine.eval("print('[BigDoorsOpener] nashorn script engine started.')");
+            String[] versionString = System.getProperty("java.specification.version").split("\\.");
+            String version = versionString[versionString.length - 1];
+            if (Integer.parseInt(version) < 11) {
+                this.engine = (new NashornScriptEngineFactory()).getScriptEngine();
+            } else {
+                this.engine = (new NashornScriptEngineFactory()).getScriptEngine("--no-deprecation-warning");
+            }
+            this.engine.eval("print('[BigDoorsOpener] nashorn script engine started.')");
         } catch (ScriptException e) {
             BigDoorsOpener.logger().info("No nashorn script engine found. Trying to use JavaScript fallback.");
             engine = new ScriptEngineManager(null).getEngineByName("JavaScript");
