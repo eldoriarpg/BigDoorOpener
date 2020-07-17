@@ -217,7 +217,7 @@ public class BigDoorsOpener extends JavaPlugin {
             return map;
         }));
 
-        // Get some insights in the conditions type.
+        // Get some insights in the condition types.
         // This will probably help to decide which should be developed further.
         metrics.addCustomChart(new Metrics.AdvancedPie("condition_types", () -> {
             Map<String, Integer> counts = new HashMap<>();
