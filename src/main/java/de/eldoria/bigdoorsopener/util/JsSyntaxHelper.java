@@ -1,7 +1,10 @@
 package de.eldoria.bigdoorsopener.util;
 
+import de.eldoria.bigdoorsopener.BigDoorsOpener;
 import de.eldoria.eldoutilities.container.Pair;
 import de.eldoria.eldoutilities.utils.TextUtil;
+import me.clip.placeholderapi.PlaceholderAPI;
+import org.bukkit.entity.Player;
 
 import javax.script.ScriptException;
 import java.util.concurrent.ExecutionException;
@@ -72,12 +75,23 @@ public final class JsSyntaxHelper {
             return new Pair<>(ValidatorResult.INVALID_SYNTAX, cleaned.replaceAll(SYNTAX.pattern(), ""));
         }
 
+        return checkExecution(evaluator, engine, null);
+    }
+
+    public static Pair<ValidatorResult, String> checkExecution(String evaluator, CachingJSEngine engine, Player player) {
+        evaluator = translateEvaluator(evaluator);
+
+        evaluator = evaluator.replaceAll("(?i)currentState", "true");
+
+        if (BigDoorsOpener.isPlaceholderEnabled() && player != null) {
+            evaluator = PlaceholderAPI.setPlaceholders(player, evaluator);
+        }
 
         try {
-            boolean aTrue = engine.evalUnsafe(evaluator.replaceAll("(?i)item|location|permission|time|weather|currentState", "true"), null);
+            boolean aTrue = engine.evalUnsafe(evaluator, null);
         } catch (ScriptException | ExecutionException e) {
             return new Pair<>(ValidatorResult.EXECUTION_FAILED, evaluator);
-        } catch (ClassCastException e) {
+        } catch (ClassCastException | NullPointerException e) {
             return new Pair<>(ValidatorResult.NON_BOOLEAN_RESULT, evaluator);
         }
 
