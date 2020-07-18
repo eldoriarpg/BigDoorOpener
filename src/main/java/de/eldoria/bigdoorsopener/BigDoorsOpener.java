@@ -92,6 +92,7 @@ public class BigDoorsOpener extends JavaPlugin {
             // create config
             config = new Config(this);
 
+            JS = new CachingJSEngine(config.getJsCacheSize());
 
             // Check for updates
             if (config.isCheckUpdates()) {

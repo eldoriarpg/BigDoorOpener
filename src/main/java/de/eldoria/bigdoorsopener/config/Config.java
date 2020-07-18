@@ -28,6 +28,7 @@ public class Config {
     private String language;
     private int refreshRate;
     private boolean checkUpdates;
+    private int jsCacheSize;
 
     public Config(Plugin plugin) {
         this.plugin = plugin;
@@ -126,7 +127,7 @@ public class Config {
      * Forces the current actual config values.
      * Must be always executed after {@link #updateConfig()}
      */
-    private void forceConfigConsitency() {
+    private void forceConfigConsistency() {
         plugin.saveDefaultConfig();
         plugin.reloadConfig();
 
@@ -138,6 +139,7 @@ public class Config {
         setIfAbsent(config, "enableMetrics", true);
         setIfAbsent(config, "language", "en_US");
         setIfAbsent(config, "checkUpdates", true);
+        setIfAbsent(config, "jsCacheSize", 400);
 
         // never set the version here.
     }
@@ -148,7 +150,7 @@ public class Config {
      */
     @SuppressWarnings("unchecked")
     public void reloadConfig() {
-        forceConfigConsitency();
+        forceConfigConsistency();
         FileConfiguration config = plugin.getConfig();
 
         List<ConditionalDoor> configDoors = (List<ConditionalDoor>) config.getList("doors");
@@ -165,6 +167,12 @@ public class Config {
         enableMetrics = config.getBoolean("enableMetrics", true);
         language = config.getString("language", "en_US");
         checkUpdates = config.getBoolean("checkUpdates", true);
+        jsCacheSize = config.getInt("jsCacheSize", 400);
+
+        if (jsCacheSize < 10) {
+            BigDoorsOpener.logger().warning("Js cache is small. This may cause performance issues. We recommend at least a size of 200");
+            jsCacheSize = 10;
+        }
 
         BigDoorsOpener.logger().info("Config loaded!");
     }
