@@ -99,7 +99,12 @@ public class Weather implements DoorCondition {
 
     @Override
     public String getCreationCommand(ConditionalDoor door) {
-        return COMMAND + door.getDoorUID() + " weather " + weatherType.toString().toLowerCase();
+        return SET_COMMAND + door.getDoorUID() + " weather " + weatherType.toString().toLowerCase();
+    }
+
+    @Override
+    public String getRemoveCommand(ConditionalDoor door) {
+        return REMOVE_COMMAND + door.getDoorUID() + " weather";
     }
 
     private double getTemperature(World world, Vector pos) {

@@ -1,6 +1,7 @@
 package de.eldoria.bigdoorsopener.util;
 
 import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
+import de.eldoria.bigdoorsopener.doors.conditions.ConditionChain;
 import de.eldoria.bigdoorsopener.doors.conditions.DoorCondition;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -85,9 +86,9 @@ public class ConditionChainEvaluator {
      * @param conditions   conditions to evaluate
      * @return the result of the chain evaluator
      */
-    public static boolean or(Player player, World world, ConditionalDoor door, boolean currentState, DoorCondition... conditions) {
+    public static boolean or(Player player, World world, ConditionalDoor door, boolean currentState, ConditionChain conditions) {
         ConditionChainEvaluator evaluator = new ConditionChainEvaluator();
-        for (DoorCondition doorCondition : conditions) {
+        for (DoorCondition doorCondition : conditions.getConditions()) {
             evaluator.or(doorCondition, player, world, door, currentState);
         }
 
@@ -104,9 +105,9 @@ public class ConditionChainEvaluator {
      * @param conditions   conditions to evaluate
      * @return the result of the chain evaluator
      */
-    public static boolean and(Player player, World world, ConditionalDoor door, boolean currentState, DoorCondition... conditions) {
+    public static boolean and(Player player, World world, ConditionalDoor door, boolean currentState, ConditionChain conditions) {
         ConditionChainEvaluator evaluator = new ConditionChainEvaluator();
-        for (DoorCondition doorCondition : conditions) {
+        for (DoorCondition doorCondition : conditions.getConditions()) {
             evaluator.and(doorCondition, player, world, door, currentState);
         }
 

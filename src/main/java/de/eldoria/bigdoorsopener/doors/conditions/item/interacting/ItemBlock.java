@@ -107,7 +107,7 @@ public class ItemBlock extends ItemInteraction {
 
     @Override
     public String getCreationCommand(ConditionalDoor door) {
-        return COMMAND + door.getDoorUID() + " itemBlock " + getItem().getAmount() + " " + isConsumed();
+        return SET_COMMAND + door.getDoorUID() + " itemBlock " + getItem().getAmount() + " " + isConsumed();
 
     }
 }

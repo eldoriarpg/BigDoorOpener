@@ -5,9 +5,11 @@ import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
 import de.eldoria.bigdoorsopener.doors.conditions.item.Item;
 import de.eldoria.bigdoorsopener.doors.conditions.location.Location;
 import de.eldoria.bigdoorsopener.doors.conditions.standalone.Permission;
+import de.eldoria.bigdoorsopener.doors.conditions.standalone.Placeholder;
 import de.eldoria.bigdoorsopener.doors.conditions.standalone.Time;
 import de.eldoria.bigdoorsopener.doors.conditions.standalone.Weather;
 import de.eldoria.bigdoorsopener.util.ConditionChainEvaluator;
+import de.eldoria.eldoutilities.container.Pair;
 import de.eldoria.eldoutilities.serialization.SerializationUtil;
 import de.eldoria.eldoutilities.serialization.TypeResolvingMap;
 import lombok.Getter;
@@ -17,8 +19,10 @@ import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -33,11 +37,12 @@ public class ConditionChain implements ConfigurationSerializable, Cloneable {
     private Permission permission = null;
     private Time time = null;
     private Weather weather = null;
+    private Placeholder placeholder = null;
 
     public ConditionChain() {
     }
 
-    private ConditionChain(Item item, Location location, Permission permission, Time time, Weather weather) {
+    private ConditionChain(Item item, Location location, Permission permission, Time time, Weather weather, Placeholder placeholder) {
         this.item = item;
         this.location = location;
         this.permission = permission;
@@ -55,8 +60,9 @@ public class ConditionChain implements ConfigurationSerializable, Cloneable {
      * @return result of the conditions.
      */
     public boolean or(Player player, World world, ConditionalDoor door, boolean currentState) {
+        // the conditions should be evaluated from the simpelest to the most expensive computation.
         return ConditionChainEvaluator.or(player, world, door, currentState,
-                item, permission, location, time, weather);
+                this);
     }
 
     /**
@@ -69,8 +75,9 @@ public class ConditionChain implements ConfigurationSerializable, Cloneable {
      * @return result of the conditions.
      */
     public boolean and(Player player, World world, ConditionalDoor door, boolean currentState) {
+        // the conditions should be evaluated from the simpelest to the most expensive computation.
         return ConditionChainEvaluator.and(player, world, door, currentState,
-                item, permission, location, time, weather);
+                this);
     }
 
     /**
@@ -86,7 +93,7 @@ public class ConditionChain implements ConfigurationSerializable, Cloneable {
     public String custom(String string, Player player, World world, ConditionalDoor door, boolean currentState) {
         String evaluationString = string;
 
-        for (DoorCondition doorCondition : Arrays.asList(item, permission, location, time, weather)) {
+        for (DoorCondition doorCondition : getConditions()) {
             if (doorCondition == null) {
                 continue;
             }
@@ -118,7 +125,7 @@ public class ConditionChain implements ConfigurationSerializable, Cloneable {
      * @return true if a player key is present.
      */
     public boolean requiresPlayerEvaluation() {
-        return item != null || permission != null || location != null;
+        return item != null || permission != null || location != null || placeholder != null;
     }
 
     /**
@@ -149,6 +156,7 @@ public class ConditionChain implements ConfigurationSerializable, Cloneable {
                 .add("location", location)
                 .add("time", time)
                 .add("weather", weather)
+                .add("placeholder", placeholder)
                 .build();
 
     }
@@ -160,7 +168,8 @@ public class ConditionChain implements ConfigurationSerializable, Cloneable {
         Permission permission = resolvingMap.getValue("permission");
         Time time = resolvingMap.getValue("time");
         Weather weather = resolvingMap.getValue("weather");
-        return new ConditionChain(item, location, permission, time, weather);
+        Placeholder placeholder = resolvingMap.getValueOrDefault("placeholder", null);
+        return new ConditionChain(item, location, permission, time, weather, placeholder);
     }
 
     /**
@@ -178,6 +187,121 @@ public class ConditionChain implements ConfigurationSerializable, Cloneable {
      * @return new condition chain.
      */
     public ConditionChain copy() {
-        return new ConditionChain(item, location, permission, time, weather);
+        return new ConditionChain(item, location, permission, time, weather, placeholder);
+    }
+
+    /**
+     * Get the conditions in a order from the less expensive to the most expensive computation time
+     *
+     * @return array of conditions. May contain null values.
+     */
+    public DoorCondition[] getConditions() {
+        return new DoorCondition[] {location, permission, time, weather, item, placeholder};
+    }
+
+    /**
+     * Get the conditions wrapped to identify them.
+     *
+     * @return List of wrappet conditions. conditions may be null.
+     */
+    public List<Pair<DoorCondition, ConditionType.ConditionGroup>> getConditionsWrapped() {
+        return Arrays.asList(
+                new Pair<>(location, ConditionType.ConditionGroup.LOCATION),
+                new Pair<>(permission, ConditionType.ConditionGroup.PERMISSION),
+                new Pair<>(time, ConditionType.ConditionGroup.TIME),
+                new Pair<>(weather, ConditionType.ConditionGroup.WEATHER),
+                new Pair<>(item, ConditionType.ConditionGroup.ITEM),
+                new Pair<>(placeholder, ConditionType.ConditionGroup.PLACEHOLDER));
+    }
+
+    /**
+     * Get a condition via enum value
+     *
+     * @param group group to get
+     * @return condition
+     */
+    public DoorCondition getCondition(ConditionType.ConditionGroup group) {
+        switch (group) {
+            case ITEM:
+                return item;
+            case LOCATION:
+                return location;
+            case PERMISSION:
+                return permission;
+            case TIME:
+                return time;
+            case WEATHER:
+                return weather;
+            case PLACEHOLDER:
+                return placeholder;
+            default:
+                throw new IllegalStateException("Unexpected value: " + group);
+        }
+    }
+
+    /**
+     * Set a condition via enum value.
+     *
+     * @param group     group to set
+     * @param condition condition to set
+     */
+    public void setCondition(ConditionType.ConditionGroup group, @Nullable DoorCondition condition) {
+        if (condition == null) {
+            removeCondition(group);
+            return;
+        }
+
+        switch (group) {
+            case ITEM:
+                item = (Item) condition;
+                break;
+            case LOCATION:
+                location = (Location) condition;
+                break;
+            case PERMISSION:
+                permission = (Permission) condition;
+                break;
+            case TIME:
+                time = (Time) condition;
+                break;
+            case WEATHER:
+                weather = (Weather) condition;
+                break;
+            case PLACEHOLDER:
+                placeholder = (Placeholder) condition;
+                break;
+            default:
+                throw new IllegalStateException("Unexpected value: " + group);
+        }
+    }
+
+    /**
+     * Remove a condition by enum value.
+     *
+     * @param group condition group to remove
+     */
+    public void removeCondition(ConditionType.ConditionGroup group) {
+        switch (group) {
+            case ITEM:
+                item = null;
+                break;
+            case LOCATION:
+                location = null;
+                break;
+            case PERMISSION:
+                permission = null;
+                break;
+            case TIME:
+                time = null;
+                break;
+            case WEATHER:
+                weather = null;
+                break;
+            case PLACEHOLDER:
+                placeholder = null;
+                break;
+            default:
+                throw new IllegalStateException("Unexpected value: " + group);
+        }
     }
 }

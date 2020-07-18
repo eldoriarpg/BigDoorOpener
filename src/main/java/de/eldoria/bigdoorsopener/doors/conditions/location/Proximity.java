@@ -54,7 +54,7 @@ public class Proximity implements Location {
 
     @Override
     public String getCreationCommand(ConditionalDoor door) {
-        return COMMAND + door.getDoorUID() + " proximity "
+        return SET_COMMAND + door.getDoorUID() + " proximity "
                 + dimensions.getX() + "," + dimensions.getY() + "," + dimensions.getZ()
                 + " " + proximityForm.name().toLowerCase();
     }

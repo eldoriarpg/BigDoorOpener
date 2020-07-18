@@ -63,7 +63,7 @@ public class Region implements Location {
 
     @Override
     public String getCreationCommand(ConditionalDoor door) {
-        return COMMAND + door.getDoorUID() + " region " + regionId;
+        return SET_COMMAND + door.getDoorUID() + " region " + regionId;
     }
 
     @Override
