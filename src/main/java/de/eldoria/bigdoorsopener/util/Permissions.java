@@ -5,6 +5,7 @@ package de.eldoria.bigdoorsopener.util;
  * We dont like to store permissions where we need it. Otheriwse changing them would be a real pain.
  */
 public final class Permissions {
+
     private Permissions() {
     }
 
@@ -26,6 +27,8 @@ public final class Permissions {
     public static final String TIME_CONDITION = "bdo.condition.time";
     // permission to access the weather condition
     public static final String WEATHER_CONDITION = "bdo.condition.weather";
+    // permission to access the placeholder condition
+    public static final String PLACEHOLDER_CONDITION = "bdo.condition.placeholder";
     // permission to access all conditions
     public static final String ALL_CONDITION = "bdo.condition.all";
 }
