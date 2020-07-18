@@ -88,7 +88,7 @@ public class BigDoorsOpener extends JavaPlugin {
 
             buildSerializer();
 
-            // Load external resources before world guard.
+            // Load external resources.
             loadExternalSources();
 
             // create config
@@ -100,7 +100,6 @@ public class BigDoorsOpener extends JavaPlugin {
             if (config.isCheckUpdates()) {
                 UpdateChecker.performAndNotifyUpdateCheck(this, 80805, true);
             }
-
 
             localizer = new Localizer(this, config.getLanguage(), "messages",
                     "messages", Locale.US, "de_DE", "en_US");
