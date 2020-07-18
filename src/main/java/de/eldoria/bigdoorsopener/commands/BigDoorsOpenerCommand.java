@@ -1229,7 +1229,7 @@ public class BigDoorsOpenerCommand implements TabExecutor {
             return true;
         }
         door.first.setStayOpen(optionalInt.getAsInt());
-        messageSender.sendError(player, localizer.getMessage("stayOpen.message",
+        messageSender.sendMessage(player, localizer.getMessage("stayOpen.message",
                 Replacement.create("SECONDS", optionalInt.getAsInt())));
         config.safeConfig();
         return true;
