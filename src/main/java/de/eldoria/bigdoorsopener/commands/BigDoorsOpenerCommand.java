@@ -669,7 +669,7 @@ public class BigDoorsOpenerCommand implements TabExecutor {
 
                 String evaluator = String.join(" ", conditionArgs);
 
-                Pair<JsSyntaxHelper.ValidatorResult, String> result = JsSyntaxHelper.checkExecution(evaluator, BigDoorsOpener.JS(), player);
+                Pair<JsSyntaxHelper.ValidatorResult, String> result = JsSyntaxHelper.checkExecution(evaluator, BigDoorsOpener.JS(), player, false);
 
                 switch (result.first) {
                     case UNBALANCED_PARENTHESIS:
