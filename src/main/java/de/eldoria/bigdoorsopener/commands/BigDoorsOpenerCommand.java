@@ -1475,6 +1475,9 @@ public class BigDoorsOpenerCommand implements TabExecutor {
                         return Collections.singletonList("<" + localizer.getMessage("syntax.amount") + ">");
                     }
                     if (args.length == 5) {
+                        if (args[4].isEmpty()) {
+                        return Arrays.asList("true", "false");
+                        }
                         return Arrays.asList("[" + localizer.getMessage("tabcomplete.consumed") + "]", "true", "false");
                     }
                     break;
@@ -1504,7 +1507,10 @@ public class BigDoorsOpenerCommand implements TabExecutor {
                         return Collections.singletonList("<" + localizer.getMessage("tabcomplete.setTimed.close") + ">");
                     }
                     if (args.length == 6) {
-                        return Arrays.asList("<" + localizer.getMessage("tabcomplete.forceState") + ">", "true", "false");
+                        if (args[5].isEmpty()) {
+                            return Arrays.asList("true", "false");
+                        }
+                        return Arrays.asList("[" + localizer.getMessage("tabcomplete.forceState") + "]", "true", "false");
                     }
                     break;
                 case WEATHER:
