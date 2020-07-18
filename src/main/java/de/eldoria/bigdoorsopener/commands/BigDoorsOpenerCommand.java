@@ -700,7 +700,7 @@ public class BigDoorsOpenerCommand implements TabExecutor {
                         break;
                 }
 
-                messageSender.sendMessage(player, localizer.getMessage("setCondition.permission"));
+                messageSender.sendMessage(player, localizer.getMessage("setCondition.placeholder"));
                 break;
             default:
                 messageSender.sendError(player, localizer.getMessage("error.invalidConditionType"));
@@ -755,46 +755,32 @@ public class BigDoorsOpenerCommand implements TabExecutor {
         }
 
         ConditionChain conditionChain = cDoor.getConditionChain();
+
+        if (conditionChain.getCondition(type) == null) {
+            messageSender.sendError(player, localizer.getMessage("error.conditionNotSet"));
+            return true;
+        } else {
+            conditionChain.removeCondition(type);
+        }
+
         switch (type) {
             case ITEM:
-                if (conditionChain.getItem() == null) {
-                    messageSender.sendError(player, localizer.getMessage("error.conditionNotSet"));
-                    return true;
-                }
-                conditionChain.setItem(null);
                 messageSender.sendMessage(player, localizer.getMessage("removeCondition.item"));
                 break;
             case LOCATION:
-                if (conditionChain.getLocation() == null) {
-                    messageSender.sendError(player, localizer.getMessage("error.conditionNotSet"));
-                    return true;
-                }
-                conditionChain.setLocation(null);
                 messageSender.sendMessage(player, localizer.getMessage("removeCondition.location"));
                 break;
             case PERMISSION:
-                if (conditionChain.getPermission() == null) {
-                    messageSender.sendError(player, localizer.getMessage("error.conditionNotSet"));
-                    return true;
-                }
-                conditionChain.setPermission(null);
                 messageSender.sendMessage(player, localizer.getMessage("removeCondition.permission"));
                 break;
             case TIME:
-                if (conditionChain.getTime() == null) {
-                    messageSender.sendError(player, localizer.getMessage("error.conditionNotSet"));
-                    return true;
-                }
-                conditionChain.setTime(null);
                 messageSender.sendMessage(player, localizer.getMessage("removeCondition.time"));
                 break;
             case WEATHER:
-                if (conditionChain.getWeather() == null) {
-                    messageSender.sendError(player, localizer.getMessage("error.conditionNotSet"));
-                    return true;
-                }
-                conditionChain.setWeather(null);
                 messageSender.sendMessage(player, localizer.getMessage("removeCondition.weather"));
+                break;
+            case PLACEHOLDER:
+                messageSender.sendMessage(player, localizer.getMessage("removeCondition.placeholder"));
                 break;
         }
 
