@@ -32,6 +32,8 @@ import nl.pim16aap2.bigDoors.BigDoors;
 import nl.pim16aap2.bigDoors.Commander;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
+import org.bukkit.command.PluginCommand;
+import org.bukkit.command.TabExecutor;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
@@ -76,13 +78,13 @@ public class BigDoorsOpener extends JavaPlugin {
         super.onDisable();
     }
 
+    @SuppressWarnings("AssignmentToStaticFieldFromInstanceMethod")
     @SneakyThrows
     @Override
     public void onEnable() {
         PluginManager pm = Bukkit.getPluginManager();
         if (!initialized) {
             logger = this.getLogger();
-            JS = new CachingJSEngine(200);
 
             buildSerializer();
 
@@ -115,8 +117,8 @@ public class BigDoorsOpener extends JavaPlugin {
             doorChecker = new DoorChecker(config, doors, localizer);
             scheduler.scheduleSyncRepeatingTask(this, doorChecker, 100, 1);
 
-            getCommand("bigdoorsopener")
-                    .setExecutor(new BigDoorsOpenerCommand(this, commander, config, localizer, doorChecker, registerInteraction));
+            registerCommand("bigdoorsopener",
+                    new BigDoorsOpenerCommand(this, commander, config, localizer, doorChecker, registerInteraction));
         }
 
         if (initialized) {
@@ -124,6 +126,15 @@ public class BigDoorsOpener extends JavaPlugin {
             doorChecker.reload();
         }
         initialized = true;
+    }
+
+    private void registerCommand(String command, TabExecutor executor) {
+        PluginCommand cmd = getCommand("bigdoorsopener");
+        if (cmd != null) {
+            cmd.setExecutor(executor);
+            return;
+        }
+        logger().warning("Command " + command + " not found!");
     }
 
     private void registerListener() {
@@ -135,6 +146,7 @@ public class BigDoorsOpener extends JavaPlugin {
         pm.registerEvents(new ItemConditionListener(doors, localizer, config), this);
     }
 
+    @SuppressWarnings( {"AssignmentToStaticFieldFromInstanceMethod", "VariableNotUsedInsideIf"})
     private void loadExternalSources() throws InstantiationException {
         PluginManager pm = Bukkit.getPluginManager();
 
@@ -197,16 +209,6 @@ public class BigDoorsOpener extends JavaPlugin {
         ConfigurationSerialization.registerClass(Time.class, "timeCondition");
         ConfigurationSerialization.registerClass(Weather.class, "weatherCondition");
         ConfigurationSerialization.registerClass(Placeholder.class, "placeholderCondition");
-    }
-
-    /**
-     * Get the plugin logger instance.
-     *
-     * @return plugin logger instance
-     */
-    @NotNull
-    public static Logger logger() {
-        return logger;
     }
 
     /**
@@ -275,6 +277,18 @@ public class BigDoorsOpener extends JavaPlugin {
         return new Pair<>(versionString, buildString);
     }
 
+    /**
+     * Get the plugin logger instance.
+     *
+     * @return plugin logger instance
+     */
+    @SuppressWarnings("StaticVariableUsedBeforeInitialization")
+    @NotNull
+    public static Logger logger() {
+        return logger;
+    }
+
+    @SuppressWarnings("StaticVariableUsedBeforeInitialization")
     public static CachingJSEngine JS() {
         return JS;
     }
