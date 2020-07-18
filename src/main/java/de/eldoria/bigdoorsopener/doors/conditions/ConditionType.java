@@ -60,14 +60,14 @@ public enum ConditionType {
 
         <T extends DoorCondition> ConditionGroup(String conditionParameter, String baseSetCommand, String infoKey, Class<T> keyClass, String permission) {
             this.conditionParameter = conditionParameter;
-            this.baseSetCommand = "/bdo setCondition " + baseSetCommand;
+            this.baseSetCommand = baseSetCommand;
             this.infoKey = infoKey;
             this.keyClass = keyClass;
             this.permission = permission;
         }
 
         public String getBaseSetCommand(ConditionalDoor door) {
-            return baseSetCommand + " " + door.getDoorUID();
+            return "/bdo setCondition " + door.getDoorUID() + " " + baseSetCommand;
         }
     }
 
