@@ -232,8 +232,8 @@ public class BigDoorsOpener extends JavaPlugin {
             Map<String, Map<String, Integer>> map = new HashMap<>();
             Pair<String, String> doorsVersion = getDoorsVersion(ver);
             Map<String, Integer> versionMap = new HashMap<>();
-            versionMap.put(doorsVersion.first, 1);
-            map.put(doorsVersion.second, versionMap);
+            versionMap.put(doorsVersion.second, 1);
+            map.put(doorsVersion.first, versionMap);
             return map;
         }));
 
