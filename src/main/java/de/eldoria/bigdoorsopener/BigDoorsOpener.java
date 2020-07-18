@@ -120,7 +120,6 @@ public class BigDoorsOpener extends JavaPlugin {
 
         if (initialized) {
             localizer.setLocale(config.getLanguage());
-            scheduler.cancelTasks(this);
             doorChecker.reload();
         }
         initialized = true;
