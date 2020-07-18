@@ -30,21 +30,19 @@ public abstract class Item implements DoorCondition {
 
     private final VersionFunction<Player, Boolean> handCheck = VersionFunctionBuilder.functionBuilder(Player.class, Boolean.class)
             .addVersionFunctionBetween(
-                    ServerVersion.MC_1_13, ServerVersion.MC_1_16,
+                    ServerVersion.MC_1_9, ServerVersion.MC_1_16,
                     p -> hasPlayerItemInMainHand(p) || hasPlayerItemInOffHand(p))
-            .addVersionFunctionBetween(
-                    ServerVersion.MC_1_11, ServerVersion.MC_1_12,
-                    p -> {
-                        ItemStack item = p.getItemInHand();
-                        if (item.getAmount() < getItem().getAmount()) {
-                            return false;
-                        }
-                        return item.isSimilar(getItem());
-                    }).build();
+            .addVersionFunction((p) -> {
+                ItemStack item = p.getItemInHand();
+                if (item.getAmount() < getItem().getAmount()) {
+                    return false;
+                }
+                return item.isSimilar(getItem());
+            }, ServerVersion.MC_1_8).build();
 
     private final VersionFunction<Player, Boolean> takeFromHand = VersionFunctionBuilder.functionBuilder(Player.class, Boolean.class)
             .addVersionFunctionBetween(
-                    ServerVersion.MC_1_13, ServerVersion.MC_1_16,
+                    ServerVersion.MC_1_9, ServerVersion.MC_1_16,
                     (p) -> {
                         if (hasPlayerItemInMainHand(p)) {
                             takeFromMainHand(p);
@@ -54,8 +52,7 @@ public abstract class Item implements DoorCondition {
                             return true;
                         }
                         return false;
-                    }).addVersionFunctionBetween(
-                    ServerVersion.MC_1_11, ServerVersion.MC_1_12,
+                    }).addVersionFunction(
                     p -> {
                         if (handCheck.apply(p)) {
                             ItemStack item = p.getItemInHand();
@@ -65,7 +62,7 @@ public abstract class Item implements DoorCondition {
                             return true;
                         }
                         return false;
-                    }).build();
+                    }, ServerVersion.MC_1_8).build();
 
     static {
         GSON = new Gson();
