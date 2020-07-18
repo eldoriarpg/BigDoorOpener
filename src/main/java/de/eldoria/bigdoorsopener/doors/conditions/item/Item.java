@@ -1,6 +1,7 @@
 package de.eldoria.bigdoorsopener.doors.conditions.item;
 
 import com.google.gson.Gson;
+import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
 import de.eldoria.bigdoorsopener.doors.conditions.DoorCondition;
 import de.eldoria.bigdoorsopener.util.C;
 import de.eldoria.bigdoorsopener.util.TextColors;
@@ -187,5 +188,10 @@ public abstract class Item implements DoorCondition {
                 .append(TextComponent.newline())
                 .append(TextComponent.builder(localizer.getMessage("conditionDesc.consumed") + " ").color(C.baseColor))
                 .append(TextComponent.builder(Boolean.toString(isConsumed()))).color(C.highlightColor).build();
+    }
+
+    @Override
+    public String getRemoveCommand(ConditionalDoor door) {
+        return REMOVE_COMMAND + door.getDoorUID() + " item";
     }
 }

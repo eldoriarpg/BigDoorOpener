@@ -50,7 +50,7 @@ public class ItemClick extends ItemInteraction {
 
     @Override
     public String getCreationCommand(ConditionalDoor door) {
-        return COMMAND + door.getDoorUID() + " itemOwning " + getItem().getAmount() + " " + isConsumed();
+        return SET_COMMAND + door.getDoorUID() + " itemClick " + getItem().getAmount() + " " + isConsumed();
     }
 
     public static ItemClick deserialize(Map<String, Object> map) {

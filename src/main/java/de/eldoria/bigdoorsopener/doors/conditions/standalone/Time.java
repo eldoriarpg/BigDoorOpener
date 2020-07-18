@@ -77,7 +77,12 @@ public class Time implements DoorCondition {
 
     @Override
     public String getCreationCommand(ConditionalDoor door) {
-        return COMMAND + door.getDoorUID() + " time " + openTick + " " + closeTick + " " + forceState;
+        return SET_COMMAND + door.getDoorUID() + " time " + openTick + " " + closeTick + " " + forceState;
+    }
+
+    @Override
+    public String getRemoveCommand(ConditionalDoor door) {
+        return REMOVE_COMMAND + door.getDoorUID() + " time";
     }
 
     public Boolean shouldBeOpen(long fulltime) {

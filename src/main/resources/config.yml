@@ -15,5 +15,11 @@ language: en_US
 # With enabling this you allow me to see which features are used. It also motivated me to develop this plugin further.
 # It also helps me to decide which feature should get an update.
 enableMetrics: true
+# This is the size of caches JS operations.
+# If you use custom evaluators I recommend to set this to at least 200
+# If you use placeholder evaluators I recommend to set this at least to 400
+# If you use both I recommend to set this at least to 600
+# If you have many doors with custom or placeholder evaluators you may increase this to reduce operations.
+jsCacheSize: 400
 # We save your doors here. If it is empty you should change this :P
 doors:

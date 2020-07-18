@@ -1,5 +1,6 @@
 package de.eldoria.bigdoorsopener.doors.conditions.standalone;
 
+import de.eldoria.bigdoorsopener.BigDoorsOpener;
 import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
 import de.eldoria.bigdoorsopener.doors.conditions.ConditionType;
 import de.eldoria.bigdoorsopener.doors.conditions.DoorCondition;
@@ -9,6 +10,7 @@ import de.eldoria.eldoutilities.localization.Localizer;
 import de.eldoria.eldoutilities.localization.Replacement;
 import de.eldoria.eldoutilities.serialization.SerializationUtil;
 import de.eldoria.eldoutilities.serialization.TypeResolvingMap;
+import me.clip.placeholderapi.PlaceholderAPI;
 import net.kyori.adventure.text.TextComponent;
 import org.bukkit.World;
 import org.bukkit.configuration.serialization.SerializableAs;
@@ -18,52 +20,57 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Map;
 
 /**
- * A condition which opens the door, when a player has a specifid permission.
+ * A condition which uses the placeholder api.
  */
-@SerializableAs("permissionCondition")
-public class Permission implements DoorCondition {
-    private final String permission;
+@SerializableAs("placeholderCondition")
+public class Placeholder implements DoorCondition {
 
-    public Permission(String permission) {
-        this.permission = permission;
+    private final String evaluator;
+
+    public Placeholder(String evaluator) {
+        this.evaluator = evaluator;
     }
 
     @Override
     public Boolean isOpen(Player player, World world, ConditionalDoor door, boolean currentState) {
-        return player.hasPermission(permission);
+        if (BigDoorsOpener.isPlaceholderEnabled()) {
+            PlaceholderAPI.setPlaceholders(player, evaluator);
+            return BigDoorsOpener.JS().eval(PlaceholderAPI.setPlaceholders(player, evaluator), null);
+        }
+        BigDoorsOpener.logger().warning("A placeholder condition on door " + door.getDoorUID() + " was called but PlaceholderAPI is not active.");
+        return null;
     }
 
     @Override
     public TextComponent getDescription(Localizer localizer) {
         return TextComponent.builder(
-                localizer.getMessage("conditionDesc.type.permission",
-                        Replacement.create("NAME", ConditionType.PERMISSION.conditionName))).color(TextColors.AQUA)
+                localizer.getMessage("conditionDesc.type.placeholder",
+                        Replacement.create("NAME", ConditionType.PLACEHOLDER.conditionName))).color(TextColors.AQUA)
                 .append(TextComponent.newline())
-                .append(TextComponent.builder(localizer.getMessage("conditionDesc.permission") + " ").color(C.baseColor))
-                .append(TextComponent.builder(permission).color(C.highlightColor))
+                .append(TextComponent.builder(localizer.getMessage("conditionDesc.evaluator") + " ").color(C.baseColor))
+                .append(TextComponent.builder(evaluator).color(C.highlightColor))
                 .build();
     }
 
     @Override
     public String getCreationCommand(ConditionalDoor door) {
-        return SET_COMMAND + door.getDoorUID() + " permission " + permission;
+        return SET_COMMAND + door.getDoorUID() + " placeholder " + evaluator;
     }
 
     @Override
     public String getRemoveCommand(ConditionalDoor door) {
-        return REMOVE_COMMAND + door.getDoorUID() + " permission";
+        return REMOVE_COMMAND + door.getDoorUID() + " placeholder";
     }
 
     @Override
     public @NotNull Map<String, Object> serialize() {
         return SerializationUtil.newBuilder()
-                .add("permission", permission)
+                .add("evaluator", evaluator)
                 .build();
     }
 
-    public static Permission deserialize(Map<String, Object> map) {
+    public static Placeholder deserialize(Map<String, Object> map) {
         TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
-        String permission = resolvingMap.getValue("permission");
-        return new Permission(permission);
+        return new Placeholder(resolvingMap.getValue("evaluator"));
     }
 }

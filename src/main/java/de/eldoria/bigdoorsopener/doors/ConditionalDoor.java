@@ -75,12 +75,6 @@ public class ConditionalDoor implements ConfigurationSerializable {
     @Getter
     private boolean invertOpen = false;
 
-    private static final CachingJSEngine JS;
-
-    static {
-        JS = BigDoorsOpener.JS();
-    }
-
     public ConditionalDoor(long doorUID, String world, Vector position, ConditionChain conditionChain) {
         this.doorUID = doorUID;
         this.world = world;
@@ -115,7 +109,7 @@ public class ConditionalDoor implements ConfigurationSerializable {
         switch (evaluationType) {
             case CUSTOM:
                 String custom = conditionChain.custom(evaluator, player, world, this, currentState);
-                return JS.eval(custom, currentState);
+                return BigDoorsOpener.JS().eval(custom, currentState);
             case AND:
                 return conditionChain.and(player, world, this, currentState);
             case OR:
