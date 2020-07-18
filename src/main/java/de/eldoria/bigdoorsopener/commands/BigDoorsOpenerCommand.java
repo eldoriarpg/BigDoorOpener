@@ -434,7 +434,7 @@ public class BigDoorsOpenerCommand implements TabExecutor {
                     return true;
                 }
 
-                Optional<Boolean> consume = Parser.parseBoolean(conditionArgs[1]);
+                Optional<Boolean> consume = ArgumentUtils.getOptionalParameter(conditionArgs, 1, Optional.of(false), Parser::parseBoolean);
                 if (!consume.isPresent()) {
                     messageSender.sendError(player, localizer.getMessage("error.invalidBoolean"));
                     return true;
@@ -1475,7 +1475,7 @@ public class BigDoorsOpenerCommand implements TabExecutor {
                         return Collections.singletonList("<" + localizer.getMessage("syntax.amount") + ">");
                     }
                     if (args.length == 5) {
-                        return Arrays.asList("<" + localizer.getMessage("tabcomplete.consumed") + ">", "true", "false");
+                        return Arrays.asList("[" + localizer.getMessage("tabcomplete.consumed") + "]", "true", "false");
                     }
                     break;
                 case PROXIMITY:
