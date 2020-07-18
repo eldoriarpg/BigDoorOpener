@@ -1378,7 +1378,7 @@ public class BigDoorsOpenerCommand implements TabExecutor {
         }
 
         if (doors.size() != 1) {
-            messageSender.sendMessage(player, localizer.getMessage("error.ambigiousDoorName"));
+            messageSender.sendMessage(player, localizer.getMessage("error.ambiguousDoorName"));
             return null;
         }
 
