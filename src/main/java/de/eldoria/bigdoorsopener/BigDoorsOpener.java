@@ -14,6 +14,7 @@ import de.eldoria.bigdoorsopener.doors.conditions.item.interacting.ItemClick;
 import de.eldoria.bigdoorsopener.doors.conditions.location.Proximity;
 import de.eldoria.bigdoorsopener.doors.conditions.location.Region;
 import de.eldoria.bigdoorsopener.doors.conditions.standalone.Permission;
+import de.eldoria.bigdoorsopener.doors.conditions.standalone.Placeholder;
 import de.eldoria.bigdoorsopener.doors.conditions.standalone.Time;
 import de.eldoria.bigdoorsopener.doors.conditions.standalone.Weather;
 import de.eldoria.bigdoorsopener.listener.ItemConditionListener;
@@ -26,6 +27,7 @@ import de.eldoria.eldoutilities.localization.Localizer;
 import de.eldoria.eldoutilities.messages.MessageSender;
 import de.eldoria.eldoutilities.updater.UpdateChecker;
 import lombok.Getter;
+import lombok.SneakyThrows;
 import nl.pim16aap2.bigDoors.BigDoors;
 import nl.pim16aap2.bigDoors.Commander;
 import org.bstats.bukkit.Metrics;
@@ -53,6 +55,7 @@ public class BigDoorsOpener extends JavaPlugin {
     private boolean initialized;
     private Localizer localizer;
     private static CachingJSEngine JS;
+    private static boolean placeholderEnabled = false;
 
 
     // External instances.
@@ -73,6 +76,7 @@ public class BigDoorsOpener extends JavaPlugin {
         super.onDisable();
     }
 
+    @SneakyThrows
     @Override
     public void onEnable() {
         PluginManager pm = Bukkit.getPluginManager();
@@ -81,12 +85,6 @@ public class BigDoorsOpener extends JavaPlugin {
             JS = new CachingJSEngine(200);
 
             buildSerializer();
-
-            if (!pm.isPluginEnabled("BigDoors")) {
-                logger().warning("Big Doors is disabled.");
-                pm.disablePlugin(this);
-                return;
-            }
 
             // Load external resources before world guard.
             loadExternalSources();
@@ -137,12 +135,25 @@ public class BigDoorsOpener extends JavaPlugin {
         pm.registerEvents(new ItemConditionListener(doors, localizer, config), this);
     }
 
-    private void loadExternalSources() {
+    private void loadExternalSources() throws InstantiationException {
         PluginManager pm = Bukkit.getPluginManager();
+
+        if (!pm.isPluginEnabled("BigDoors")) {
+            logger().warning("Big Doors is disabled.");
+            pm.disablePlugin(this);
+            throw new InstantiationException("Big Doors is not enabled");
+        }
 
         Plugin bigDoorsPlugin = pm.getPlugin("BigDoors");
         doors = (BigDoors) bigDoorsPlugin;
         commander = doors.getCommander();
+
+        if (commander != null) {
+            logger().info("Hooked into Big Doors successfully.");
+        } else {
+            logger().warning("Big Doors is not ready or not loaded properly");
+            throw new InstantiationException("Big Doors is not enabled");
+        }
 
         // check if world guard is loaded
         if (Bukkit.getPluginManager().isPluginEnabled("WorldGuard")) {
@@ -155,6 +166,14 @@ public class BigDoorsOpener extends JavaPlugin {
             }
         } else {
             logger().info("World guard not found. Region conditions cant be used.");
+        }
+
+        // check if placeholder api is present.
+        if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
+            placeholderEnabled = true;
+            logger().info("Placeholder API found. Enabling placeholder usage.");
+        } else {
+            logger().info("Placeholder API not found. Placeholder usage is disabled.");
         }
     }
 
@@ -177,6 +196,7 @@ public class BigDoorsOpener extends JavaPlugin {
         ConfigurationSerialization.registerClass(Permission.class, "permissionCondition");
         ConfigurationSerialization.registerClass(Time.class, "timeCondition");
         ConfigurationSerialization.registerClass(Weather.class, "weatherCondition");
+        ConfigurationSerialization.registerClass(Placeholder.class, "placeholderCondition");
     }
 
     /**
@@ -231,10 +251,6 @@ public class BigDoorsOpener extends JavaPlugin {
         }));
     }
 
-    public static CachingJSEngine JS() {
-        return JS;
-    }
-
     private Pair<String, String> getDoorsVersion(String ver) {
         Pattern version = Pattern.compile("([0-9]\\.(?:[0-9]\\.?)+)");
         Pattern build = Pattern.compile("\\((b[0-9]+)\\)");
@@ -257,5 +273,13 @@ public class BigDoorsOpener extends JavaPlugin {
             buildString = "release";
         }
         return new Pair<>(versionString, buildString);
+    }
+
+    public static CachingJSEngine JS() {
+        return JS;
+    }
+
+    public static boolean isPlaceholderEnabled() {
+        return placeholderEnabled;
     }
 }
