@@ -23,6 +23,7 @@ import de.eldoria.bigdoorsopener.listener.registration.RegisterInteraction;
 import de.eldoria.bigdoorsopener.scheduler.DoorChecker;
 import de.eldoria.bigdoorsopener.util.CachingJSEngine;
 import de.eldoria.eldoutilities.container.Pair;
+import de.eldoria.eldoutilities.crossversion.ServerVersion;
 import de.eldoria.eldoutilities.localization.Localizer;
 import de.eldoria.eldoutilities.messages.MessageSender;
 import de.eldoria.eldoutilities.updater.UpdateChecker;
@@ -82,6 +83,9 @@ public class BigDoorsOpener extends JavaPlugin {
     @SneakyThrows
     @Override
     public void onEnable() {
+
+        ServerVersion.forceVersion(ServerVersion.MC_1_8, ServerVersion.MC_1_16);
+
         PluginManager pm = Bukkit.getPluginManager();
         if (!initialized) {
             logger = this.getLogger();
