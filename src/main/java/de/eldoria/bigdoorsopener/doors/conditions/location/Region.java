@@ -44,8 +44,27 @@ public class Region implements Location {
         this.regionId = regionId;
     }
 
+    public Region(Map<String, Object> map) {
+        TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
+        worldName = resolvingMap.getValue("world");
+        regionId = resolvingMap.getValue("region");
+        if (BigDoorsOpener.getRegionContainer() != null) {
+            world = Bukkit.getWorld(worldName);
+            if (world == null) {
+                region = null;
+                return;
+            }
+            region = BigDoorsOpener.getRegionContainer().get(BukkitAdapter.adapt(world)).getRegion(regionId);
+            return;
+        }
+        world = null;
+        region = null;
+        BigDoorsOpener.logger().warning("A region key is used but world guard was not found.");
+    }
+
     @Override
     public Boolean isOpen(Player player, World world, ConditionalDoor door, boolean currentState) {
+        if (world != this.world) return false;
         if (region == null) return null;
         return region.contains(BukkitAdapter.asBlockVector(player.getLocation()));
     }
@@ -58,6 +77,9 @@ public class Region implements Location {
                 .append(TextComponent.newline())
                 .append(TextComponent.builder(localizer.getMessage("conditionDesc.region") + " ").color(C.baseColor))
                 .append(TextComponent.builder(regionId)).color(C.highlightColor)
+                .append(TextComponent.newline())
+                .append(TextComponent.builder(localizer.getMessage("conditionDesc.world") + " ").color(C.baseColor))
+                .append(TextComponent.builder(worldName)).color(C.highlightColor)
                 .build();
     }
 
@@ -72,21 +94,5 @@ public class Region implements Location {
                 .add("world", worldName)
                 .add("region", regionId)
                 .build();
-    }
-
-    public static Region deserialize(Map<String, Object> map) {
-        TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
-        String worldName = resolvingMap.getValue("world");
-        String regionName = resolvingMap.getValue("region");
-        if (BigDoorsOpener.getRegionContainer() != null) {
-            World world = Bukkit.getWorld(worldName);
-            if (world == null) {
-                return new Region(null, null, regionName, worldName);
-            }
-            ProtectedRegion region = BigDoorsOpener.getRegionContainer().get(BukkitAdapter.adapt(world)).getRegion(regionName);
-            return new Region(world, region, regionName, worldName);
-        }
-        BigDoorsOpener.logger().warning("A region key is used but world guard was not found.");
-        return new Region(null, null, regionName, worldName);
     }
 }

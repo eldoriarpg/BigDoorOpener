@@ -18,8 +18,8 @@ import java.util.logging.Level;
  * As a key the evaluated string is used. This assumes that a result is deterministic, which it should be anyway.
  */
 public class CachingJSEngine {
-    private ScriptEngine engine;
     private final Cache<String, Object> cache;
+    private ScriptEngine engine;
 
     public CachingJSEngine(int cacheSize) {
         try {

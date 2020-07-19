@@ -35,6 +35,26 @@ public class Config {
         loadConfig();
     }
 
+    private static void setIfAbsent(FileConfiguration config, String path, Object value) {
+        if (!config.isSet(path)) {
+            config.set(path, value);
+        }
+    }
+
+    private static void setIfAbsent(ConfigurationSection section, String path, Object value) {
+        if (!section.isSet(path)) {
+            section.set(path, value);
+        }
+    }
+
+    private static ConfigurationSection createSectionIfAbsent(FileConfiguration config, String path) {
+        ConfigurationSection section = config.getConfigurationSection(path);
+        if (section == null) {
+            return config.createSection(path);
+        }
+        return section;
+    }
+
     public void loadConfig() {
         updateConfig();
         reloadConfig();
@@ -184,26 +204,6 @@ public class Config {
         FileConfiguration config = plugin.getConfig();
         config.set("doors", new ArrayList<>(doors.values()));
         plugin.saveConfig();
-    }
-
-    private static void setIfAbsent(FileConfiguration config, String path, Object value) {
-        if (!config.isSet(path)) {
-            config.set(path, value);
-        }
-    }
-
-    private static void setIfAbsent(ConfigurationSection section, String path, Object value) {
-        if (!section.isSet(path)) {
-            section.set(path, value);
-        }
-    }
-
-    private static ConfigurationSection createSectionIfAbsent(FileConfiguration config, String path) {
-        ConfigurationSection section = config.getConfigurationSection(path);
-        if (section == null) {
-            return config.createSection(path);
-        }
-        return section;
     }
 
 }

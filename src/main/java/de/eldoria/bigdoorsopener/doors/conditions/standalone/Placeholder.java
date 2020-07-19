@@ -31,6 +31,11 @@ public class Placeholder implements DoorCondition {
         this.evaluator = evaluator;
     }
 
+    public Placeholder(Map<String, Object> map) {
+        TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
+        evaluator = resolvingMap.getValue("evaluator");
+    }
+
     @Override
     public Boolean isOpen(Player player, World world, ConditionalDoor door, boolean currentState) {
         if (BigDoorsOpener.isPlaceholderEnabled()) {
@@ -67,10 +72,5 @@ public class Placeholder implements DoorCondition {
         return SerializationUtil.newBuilder()
                 .add("evaluator", evaluator)
                 .build();
-    }
-
-    public static Placeholder deserialize(Map<String, Object> map) {
-        TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
-        return new Placeholder(resolvingMap.getValue("evaluator"));
     }
 }

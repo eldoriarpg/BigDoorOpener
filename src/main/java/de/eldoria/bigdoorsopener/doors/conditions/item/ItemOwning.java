@@ -36,7 +36,7 @@ public class ItemOwning extends Item {
         return hasPlayerItemInInventory(player);
     }
 
-    public static ItemClick deserialize(Map<String, Object> map) {
+    public ItemClick deserialize(Map<String, Object> map) {
         TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
         ItemStack stack = resolvingMap.getValue("item");
         boolean consumed = resolvingMap.getValue("consumed");

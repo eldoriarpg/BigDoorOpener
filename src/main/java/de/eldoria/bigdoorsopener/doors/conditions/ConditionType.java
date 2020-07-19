@@ -16,6 +16,7 @@ public enum ConditionType {
     ITEM_OWNING(ConditionGroup.ITEM),
     PROXIMITY(ConditionGroup.LOCATION),
     REGION(ConditionGroup.LOCATION),
+    SIMPLE_REGION(ConditionGroup.LOCATION),
     PERMISSION(ConditionGroup.PERMISSION),
     TIME(ConditionGroup.TIME),
     WEATHER(ConditionGroup.WEATHER),
@@ -44,6 +45,15 @@ public enum ConditionType {
         return null;
     }
 
+    public static <T extends DoorCondition> ConditionGroup getType(Class<T> keyClass) {
+        for (ConditionGroup value : ConditionGroup.values()) {
+            if (value.keyClass.isAssignableFrom(keyClass)) {
+                return value;
+            }
+        }
+        return null;
+    }
+
     public enum ConditionGroup {
         ITEM("item", "item", "info.itemCondition", Item.class, Permissions.ITEM_CONDITION),
         LOCATION("location", "", "info.location", Location.class, Permissions.LOCATION_CONDITION),
@@ -52,11 +62,11 @@ public enum ConditionType {
         WEATHER("weather", "weather", "info.weather", Weather.class, Permissions.WEATHER_CONDITION),
         PLACEHOLDER("placeholder", "placeholder", "info.placeholder", Placeholder.class, Permissions.PLACEHOLDER_CONDITION);
 
-        private final String baseSetCommand;
         public final String conditionParameter;
         public final String infoKey;
         public final Class<? extends DoorCondition> keyClass;
         public final String permission;
+        private final String baseSetCommand;
 
         <T extends DoorCondition> ConditionGroup(String conditionParameter, String baseSetCommand, String infoKey, Class<T> keyClass, String permission) {
             this.conditionParameter = conditionParameter;
@@ -69,14 +79,5 @@ public enum ConditionType {
         public String getBaseSetCommand(ConditionalDoor door) {
             return "/bdo setCondition " + door.getDoorUID() + " " + baseSetCommand;
         }
-    }
-
-    public static <T extends DoorCondition> ConditionGroup getType(Class<T> keyClass) {
-        for (ConditionGroup value : ConditionGroup.values()) {
-            if (value.keyClass.isAssignableFrom(keyClass)) {
-                return value;
-            }
-        }
-        return null;
     }
 }

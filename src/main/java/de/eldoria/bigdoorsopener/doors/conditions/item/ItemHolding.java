@@ -25,6 +25,13 @@ public class ItemHolding extends Item {
         super(item, consumed);
     }
 
+    public static ItemClick deserialize(Map<String, Object> map) {
+        TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
+        ItemStack stack = resolvingMap.getValue("item");
+        boolean consumed = resolvingMap.getValue("consumed");
+        return new ItemClick(stack, consumed);
+    }
+
     @Override
     public void used(Player player) {
         if (!isConsumed()) return;
@@ -49,12 +56,5 @@ public class ItemHolding extends Item {
     @Override
     public String getCreationCommand(ConditionalDoor door) {
         return SET_COMMAND + door.getDoorUID() + " itemHolding " + getItem().getAmount() + " " + isConsumed();
-    }
-
-    public static ItemClick deserialize(Map<String, Object> map) {
-        TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
-        ItemStack stack = resolvingMap.getValue("item");
-        boolean consumed = resolvingMap.getValue("consumed");
-        return new ItemClick(stack, consumed);
     }
 }

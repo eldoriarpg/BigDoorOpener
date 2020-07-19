@@ -13,6 +13,7 @@ import de.eldoria.bigdoorsopener.doors.conditions.item.interacting.ItemBlock;
 import de.eldoria.bigdoorsopener.doors.conditions.item.interacting.ItemClick;
 import de.eldoria.bigdoorsopener.doors.conditions.location.Proximity;
 import de.eldoria.bigdoorsopener.doors.conditions.location.Region;
+import de.eldoria.bigdoorsopener.doors.conditions.location.SimpleRegion;
 import de.eldoria.bigdoorsopener.doors.conditions.standalone.Permission;
 import de.eldoria.bigdoorsopener.doors.conditions.standalone.Placeholder;
 import de.eldoria.bigdoorsopener.doors.conditions.standalone.Time;
@@ -53,18 +54,16 @@ import java.util.regex.Pattern;
 public class BigDoorsOpener extends JavaPlugin {
 
     private static Logger logger;
+    private static CachingJSEngine JS;
+    private static boolean placeholderEnabled = false;
+    @Getter
+    private static RegionContainer regionContainer = null;
     private final BukkitScheduler scheduler = Bukkit.getScheduler();
     private Config config;
     private boolean initialized;
     private Localizer localizer;
-    private static CachingJSEngine JS;
-    private static boolean placeholderEnabled = false;
-
-
     // External instances.
     private BigDoors doors;
-    @Getter
-    private static RegionContainer regionContainer = null;
     private Commander commander;
 
     // scheduler
@@ -73,6 +72,26 @@ public class BigDoorsOpener extends JavaPlugin {
     // listener
     private WeatherListener weatherListener;
     private RegisterInteraction registerInteraction;
+
+    /**
+     * Get the plugin logger instance.
+     *
+     * @return plugin logger instance
+     */
+    @SuppressWarnings("StaticVariableUsedBeforeInitialization")
+    @NotNull
+    public static Logger logger() {
+        return logger;
+    }
+
+    @SuppressWarnings("StaticVariableUsedBeforeInitialization")
+    public static CachingJSEngine JS() {
+        return JS;
+    }
+
+    public static boolean isPlaceholderEnabled() {
+        return placeholderEnabled;
+    }
 
     @Override
     public void onDisable() {
@@ -173,14 +192,20 @@ public class BigDoorsOpener extends JavaPlugin {
         // check if world guard is loaded
         if (Bukkit.getPluginManager().isPluginEnabled("WorldGuard")) {
             logger().info("World Guard found. Trying to get a hook.");
-            regionContainer = WorldGuard.getInstance().getPlatform().getRegionContainer();
-            if (regionContainer != null) {
-                logger().info("Hooked into world guard successfully.");
+
+            String worldGuard = Bukkit.getPluginManager().getPlugin("WorldGuard").getDescription().getVersion();
+            if (worldGuard.startsWith("7")) {
+                regionContainer = WorldGuard.getInstance().getPlatform().getRegionContainer();
+                if (regionContainer != null) {
+                    logger().info("Hooked into world guard successfully.");
+                } else {
+                    logger().warning("Failed to hook into world guard.");
+                }
             } else {
-                logger().warning("Failed to hook into world guard.");
+                logger().info("Found legacy World Guard Version. Region conditions can't be used.");
             }
         } else {
-            logger().info("World guard not found. Region conditions cant be used.");
+            logger().info("World guard not found. Region conditions can't be used.");
         }
 
         // check if placeholder api is present.
@@ -190,6 +215,9 @@ public class BigDoorsOpener extends JavaPlugin {
         } else {
             logger().info("Placeholder API not found. Placeholder usage is disabled.");
         }
+    }
+
+    private void worldGuardHook() throws ClassNotFoundException {
     }
 
     /**
@@ -208,6 +236,7 @@ public class BigDoorsOpener extends JavaPlugin {
         ConfigurationSerialization.registerClass(ItemOwning.class, "itemOwningCondition");
         ConfigurationSerialization.registerClass(Proximity.class, "proximityCondition");
         ConfigurationSerialization.registerClass(Region.class, "regionCondition");
+        ConfigurationSerialization.registerClass(SimpleRegion.class, "simpleRegionCondition");
         ConfigurationSerialization.registerClass(Permission.class, "permissionCondition");
         ConfigurationSerialization.registerClass(Time.class, "timeCondition");
         ConfigurationSerialization.registerClass(Weather.class, "weatherCondition");
@@ -278,25 +307,5 @@ public class BigDoorsOpener extends JavaPlugin {
             buildString = "release";
         }
         return new Pair<>(versionString, buildString);
-    }
-
-    /**
-     * Get the plugin logger instance.
-     *
-     * @return plugin logger instance
-     */
-    @SuppressWarnings("StaticVariableUsedBeforeInitialization")
-    @NotNull
-    public static Logger logger() {
-        return logger;
-    }
-
-    @SuppressWarnings("StaticVariableUsedBeforeInitialization")
-    public static CachingJSEngine JS() {
-        return JS;
-    }
-
-    public static boolean isPlaceholderEnabled() {
-        return placeholderEnabled;
     }
 }

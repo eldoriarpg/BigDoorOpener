@@ -53,6 +53,14 @@ public class ItemBlock extends ItemInteraction {
         this.position = position;
     }
 
+    public static ItemBlock deserialize(Map<String, Object> map) {
+        TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
+        BlockVector position = resolvingMap.getValue("position");
+        ItemStack stack = resolvingMap.getValue("item");
+        boolean consumed = resolvingMap.getValue("consumed");
+        return new ItemBlock(position, stack, consumed);
+    }
+
     @Override
     public void used(Player player) {
         if (!isConsumed()) return;
@@ -82,14 +90,6 @@ public class ItemBlock extends ItemInteraction {
         return SerializationUtil.newBuilder(super.serialize())
                 .add("position", position)
                 .build();
-    }
-
-    public static ItemBlock deserialize(Map<String, Object> map) {
-        TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
-        BlockVector position = resolvingMap.getValue("position");
-        ItemStack stack = resolvingMap.getValue("item");
-        boolean consumed = resolvingMap.getValue("consumed");
-        return new ItemBlock(position, stack, consumed);
     }
 
     @Override

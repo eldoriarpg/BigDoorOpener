@@ -24,6 +24,13 @@ public class ItemClick extends ItemInteraction {
         super(item, consumed);
     }
 
+    public static ItemClick deserialize(Map<String, Object> map) {
+        TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
+        ItemStack stack = resolvingMap.getValue("item");
+        boolean consumed = resolvingMap.getValue("consumed");
+        return new ItemClick(stack, consumed);
+    }
+
     @Override
     public Boolean isOpen(Player player, World world, ConditionalDoor door, boolean currentState) {
         if (hasPlayerItemInHand(player)) {
@@ -51,13 +58,6 @@ public class ItemClick extends ItemInteraction {
     @Override
     public String getCreationCommand(ConditionalDoor door) {
         return SET_COMMAND + door.getDoorUID() + " itemClick " + getItem().getAmount() + " " + isConsumed();
-    }
-
-    public static ItemClick deserialize(Map<String, Object> map) {
-        TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
-        ItemStack stack = resolvingMap.getValue("item");
-        boolean consumed = resolvingMap.getValue("consumed");
-        return new ItemClick(stack, consumed);
     }
 
 

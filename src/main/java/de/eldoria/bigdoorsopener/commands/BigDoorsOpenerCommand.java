@@ -16,10 +16,12 @@ import de.eldoria.bigdoorsopener.doors.conditions.item.interacting.ItemBlock;
 import de.eldoria.bigdoorsopener.doors.conditions.item.interacting.ItemClick;
 import de.eldoria.bigdoorsopener.doors.conditions.location.Proximity;
 import de.eldoria.bigdoorsopener.doors.conditions.location.Region;
+import de.eldoria.bigdoorsopener.doors.conditions.location.SimpleRegion;
 import de.eldoria.bigdoorsopener.doors.conditions.standalone.Permission;
 import de.eldoria.bigdoorsopener.doors.conditions.standalone.Placeholder;
 import de.eldoria.bigdoorsopener.doors.conditions.standalone.Time;
 import de.eldoria.bigdoorsopener.doors.conditions.standalone.Weather;
+import de.eldoria.bigdoorsopener.listener.registration.InteractionRegistrationObject;
 import de.eldoria.bigdoorsopener.listener.registration.RegisterInteraction;
 import de.eldoria.bigdoorsopener.scheduler.DoorChecker;
 import de.eldoria.bigdoorsopener.util.C;
@@ -52,6 +54,7 @@ import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.util.BlockVector;
@@ -69,6 +72,13 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class BigDoorsOpenerCommand implements TabExecutor {
+    private static final CachingJSEngine ENGINE;
+    // Tabcomplete utils
+    private static final String[] CONDITION_TYPES;
+    private static final String[] CONDITION_GROUPS;
+    private static final String[] PROXIMITY_FORM;
+    private static final String[] WEATHER_TYPE;
+    private static final String[] EVALUATOR_TYPES;
     private final BigDoorsOpener plugin;
     private final Commander commander;
     private final Config config;
@@ -77,17 +87,7 @@ public class BigDoorsOpenerCommand implements TabExecutor {
     private final MessageSender messageSender;
     private final RegisterInteraction registerInteraction;
     private final RegionContainer regionContainer;
-
     private final BukkitAudiences bukkitAudiences;
-
-    private static final CachingJSEngine ENGINE;
-
-    // Tabcomplete utils
-    private static final String[] CONDITION_TYPES;
-    private static final String[] CONDITION_GROUPS;
-    private static final String[] PROXIMITY_FORM;
-    private static final String[] WEATHER_TYPE;
-    private static final String[] EVALUATOR_TYPES;
 
     static {
         ENGINE = BigDoorsOpener.JS();
@@ -358,10 +358,10 @@ public class BigDoorsOpenerCommand implements TabExecutor {
             return true;
         }
 
-        if (argumentsInvalid(player, args, 3,
+        if (argumentsInvalid(player, args, 2,
                 "<" + localizer.getMessage("syntax.doorId") + "> <"
-                        + localizer.getMessage("syntax.condition") + "> <"
-                        + localizer.getMessage("syntax.conditionValues") + ">")) {
+                        + localizer.getMessage("syntax.condition") + "> ["
+                        + localizer.getMessage("syntax.conditionValues") + "]")) {
             return true;
         }
 
@@ -395,8 +395,10 @@ public class BigDoorsOpenerCommand implements TabExecutor {
 
         ConditionChain conditionChain = conditionalDoor.getConditionChain();
 
-
-        String[] conditionArgs = Arrays.copyOfRange(args, 2, args.length);
+        String[] conditionArgs = new String[0];
+        if (args.length > 2) {
+            conditionArgs = Arrays.copyOfRange(args, 2, args.length);
+        }
 
         switch (type) {
             // <amount> <consumed>
@@ -555,6 +557,33 @@ public class BigDoorsOpenerCommand implements TabExecutor {
                 }
                 conditionChain.setLocation(new Region(region, player.getWorld()));
                 messageSender.sendMessage(player, localizer.getMessage("setCondition.region"));
+                break;
+            case SIMPLE_REGION:
+                messageSender.sendMessage(player, localizer.getMessage("setCondition.firstPoint"));
+                registerInteraction.register(player, new InteractionRegistrationObject() {
+                    private String world;
+                    private BlockVector first;
+
+                    @Override
+                    public boolean register(PlayerInteractEvent event) {
+                        if (event.getAction() != Action.LEFT_CLICK_BLOCK) {
+                            return false;
+                        }
+                        BlockVector vec = event.getClickedBlock().getLocation().toVector().toBlockVector();
+                        if (first == null) {
+                            world = event.getPlayer().getWorld().getName();
+                            first = vec;
+                            event.setCancelled(true);
+                            messageSender.sendMessage(player, localizer.getMessage("setCondition.secondPoint"));
+                            return false;
+                        }
+                        conditionalDoor.getConditionChain().setLocation(new SimpleRegion(first, vec, world));
+                        config.safeConfig();
+                        event.setCancelled(true);
+                        messageSender.sendMessage(player, localizer.getMessage("setCondition.simpleRegionRegisterd"));
+                        return true;
+                    }
+                });
                 break;
             // permission
             case PERMISSION:
@@ -1437,6 +1466,10 @@ public class BigDoorsOpenerCommand implements TabExecutor {
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         String cmd = args[0];
 
+        if (args.length > 10) {
+            return Collections.singletonList("(╯°□°）╯︵ ┻━┻");
+        }
+
         if (args.length == 1) {
             return ArrayUtil.startingWithInArray(cmd,
                     new String[] {"help", "about",
@@ -1450,7 +1483,7 @@ public class BigDoorsOpenerCommand implements TabExecutor {
 
 
             if (args.length == 2) {
-                return Collections.singletonList(localizer.getMessage("tabcomplete.doorId"));
+                return Collections.singletonList("<" + localizer.getMessage("syntax.doorId") + ">");
             }
             if (args.length == 3) {
                 return ArrayUtil.startingWithInArray(args[2], CONDITION_TYPES).collect(Collectors.toList());
@@ -1476,7 +1509,7 @@ public class BigDoorsOpenerCommand implements TabExecutor {
                     }
                     if (args.length == 5) {
                         if (args[4].isEmpty()) {
-                        return Arrays.asList("true", "false");
+                            return Arrays.asList("true", "false");
                         }
                         return Arrays.asList("[" + localizer.getMessage("tabcomplete.consumed") + "]", "true", "false");
                     }
@@ -1622,6 +1655,7 @@ public class BigDoorsOpenerCommand implements TabExecutor {
                 return Collections.singletonList("<" + localizer.getMessage("syntax.amount") + ">");
             }
         }
+
         return Collections.emptyList();
     }
 }

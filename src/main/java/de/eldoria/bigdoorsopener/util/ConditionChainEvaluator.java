@@ -10,6 +10,44 @@ public class ConditionChainEvaluator {
     private Boolean current;
 
     /**
+     * Evaluates the conditions with an or operator.
+     *
+     * @param player       player to check the condition for
+     * @param world        world the door is in
+     * @param door         the acutal door which is checked
+     * @param currentState the current state of the door
+     * @param conditions   conditions to evaluate
+     * @return the result of the chain evaluator
+     */
+    public static boolean or(Player player, World world, ConditionalDoor door, boolean currentState, ConditionChain conditions) {
+        ConditionChainEvaluator evaluator = new ConditionChainEvaluator();
+        for (DoorCondition doorCondition : conditions.getConditions()) {
+            evaluator.or(doorCondition, player, world, door, currentState);
+        }
+
+        return evaluator.result(currentState);
+    }
+
+    /**
+     * Evaluates the conditions with an AND operator.
+     *
+     * @param player       player to check the condition for
+     * @param world        world the door is in
+     * @param door         the acutal door which is checked
+     * @param currentState the current state of the door
+     * @param conditions   conditions to evaluate
+     * @return the result of the chain evaluator
+     */
+    public static boolean and(Player player, World world, ConditionalDoor door, boolean currentState, ConditionChain conditions) {
+        ConditionChainEvaluator evaluator = new ConditionChainEvaluator();
+        for (DoorCondition doorCondition : conditions.getConditions()) {
+            evaluator.and(doorCondition, player, world, door, currentState);
+        }
+
+        return evaluator.result(currentState);
+    }
+
+    /**
      * Evaluates the condition of a door with an OR operator.
      *
      * @param doorCondition condition to evaluate
@@ -73,43 +111,5 @@ public class ConditionChainEvaluator {
      */
     public boolean result(boolean currentState) {
         return current == null ? currentState : current;
-    }
-
-    /**
-     * Evaluates the conditions with an or operator.
-     *
-     * @param player       player to check the condition for
-     * @param world        world the door is in
-     * @param door         the acutal door which is checked
-     * @param currentState the current state of the door
-     * @param conditions   conditions to evaluate
-     * @return the result of the chain evaluator
-     */
-    public static boolean or(Player player, World world, ConditionalDoor door, boolean currentState, ConditionChain conditions) {
-        ConditionChainEvaluator evaluator = new ConditionChainEvaluator();
-        for (DoorCondition doorCondition : conditions.getConditions()) {
-            evaluator.or(doorCondition, player, world, door, currentState);
-        }
-
-        return evaluator.result(currentState);
-    }
-
-    /**
-     * Evaluates the conditions with an AND operator.
-     *
-     * @param player       player to check the condition for
-     * @param world        world the door is in
-     * @param door         the acutal door which is checked
-     * @param currentState the current state of the door
-     * @param conditions   conditions to evaluate
-     * @return the result of the chain evaluator
-     */
-    public static boolean and(Player player, World world, ConditionalDoor door, boolean currentState, ConditionChain conditions) {
-        ConditionChainEvaluator evaluator = new ConditionChainEvaluator();
-        for (DoorCondition doorCondition : conditions.getConditions()) {
-            evaluator.and(doorCondition, player, world, door, currentState);
-        }
-
-        return evaluator.result(currentState);
     }
 }

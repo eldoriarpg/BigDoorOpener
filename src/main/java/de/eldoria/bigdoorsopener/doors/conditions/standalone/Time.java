@@ -53,6 +53,13 @@ public class Time implements DoorCondition {
         this.forceState = forceState;
     }
 
+    public Time(Map<String, Object> map) {
+        TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
+        openTick = resolvingMap.getValue("openTick");
+        closeTick = resolvingMap.getValue("closeTick");
+        forceState = resolvingMap.getValue("forceState");
+    }
+
     @Override
     public Boolean isOpen(@Nullable Player player, World world, @Nullable ConditionalDoor door, boolean currentState) {
         return shouldBeOpen(world.getFullTime());
@@ -123,14 +130,6 @@ public class Time implements DoorCondition {
                 .add("closeTick", closeTick)
                 .add("forceState", forceState)
                 .build();
-    }
-
-    public static Time deserialize(Map<String, Object> map) {
-        TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
-        int openTick = resolvingMap.getValue("openTick");
-        int closeTick = resolvingMap.getValue("closeTick");
-        boolean forceState = resolvingMap.getValue("forceState");
-        return new Time(openTick, closeTick, forceState);
     }
 
 }

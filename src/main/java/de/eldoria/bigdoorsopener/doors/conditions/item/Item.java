@@ -1,13 +1,12 @@
 package de.eldoria.bigdoorsopener.doors.conditions.item;
 
-import com.google.gson.Gson;
 import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
 import de.eldoria.bigdoorsopener.doors.conditions.DoorCondition;
 import de.eldoria.bigdoorsopener.util.C;
 import de.eldoria.bigdoorsopener.util.TextColors;
 import de.eldoria.eldoutilities.crossversion.ServerVersion;
-import de.eldoria.eldoutilities.crossversion.functionbuilder.VersionFunctionBuilder;
 import de.eldoria.eldoutilities.crossversion.function.VersionFunction;
+import de.eldoria.eldoutilities.crossversion.functionbuilder.VersionFunctionBuilder;
 import de.eldoria.eldoutilities.localization.Localizer;
 import de.eldoria.eldoutilities.serialization.SerializationUtil;
 import lombok.Getter;

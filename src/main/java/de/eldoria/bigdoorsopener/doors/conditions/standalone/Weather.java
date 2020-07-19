@@ -36,6 +36,12 @@ public class Weather implements DoorCondition {
         this.weatherType = weatherType;
     }
 
+    public Weather(Map<String, Object> map) {
+        TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
+        weatherType = EnumUtil.parse(resolvingMap.getValue("weatherType"), WeatherType.class);
+        forceState = resolvingMap.getValueOrDefault("forceState", false);
+    }
+
     @Override
     public Boolean isOpen(@Nullable Player player, World world, ConditionalDoor door, boolean currentState) {
         Vector pos = door.getPosition();
@@ -121,12 +127,5 @@ public class Weather implements DoorCondition {
                 .add("weatherType", weatherType)
                 .add("forceState", forceState)
                 .build();
-    }
-
-    public static Weather deserialize(Map<String, Object> map) {
-        TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
-        WeatherType type = EnumUtil.parse(resolvingMap.getValue("weatherType"), WeatherType.class);
-        boolean forceState = resolvingMap.getValueOrDefault("forceState", false);
-        return new Weather(type, forceState);
     }
 }
