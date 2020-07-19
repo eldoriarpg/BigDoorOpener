@@ -13,6 +13,7 @@ import de.eldoria.bigdoorsopener.doors.conditions.item.interacting.ItemBlock;
 import de.eldoria.bigdoorsopener.doors.conditions.item.interacting.ItemClick;
 import de.eldoria.bigdoorsopener.doors.conditions.location.Proximity;
 import de.eldoria.bigdoorsopener.doors.conditions.location.Region;
+import de.eldoria.bigdoorsopener.doors.conditions.location.SimpleRegion;
 import de.eldoria.bigdoorsopener.doors.conditions.standalone.Permission;
 import de.eldoria.bigdoorsopener.doors.conditions.standalone.Placeholder;
 import de.eldoria.bigdoorsopener.doors.conditions.standalone.Time;
@@ -172,13 +173,21 @@ public class BigDoorsOpener extends JavaPlugin {
 
         // check if world guard is loaded
         if (Bukkit.getPluginManager().isPluginEnabled("WorldGuard")) {
-            try {
-                worldGuardHook();
-            } catch (ClassNotFoundException e) {
-                logger().warning("Failed to hook into world guard. Maybe your version is currently not supported.");
+            logger().info("World Guard found. Trying to get a hook.");
+
+            String worldGuard = Bukkit.getPluginManager().getPlugin("WorldGuard").getDescription().getVersion();
+            if (worldGuard.startsWith("7")) {
+                regionContainer = WorldGuard.getInstance().getPlatform().getRegionContainer();
+                if (regionContainer != null) {
+                    logger().info("Hooked into world guard successfully.");
+                } else {
+                    logger().warning("Failed to hook into world guard.");
+                }
+            }else{
+                logger().info("Found legacy World Guard Version. Region conditions can't be used.");
             }
         } else {
-            logger().info("World guard not found. Region conditions cant be used.");
+            logger().info("World guard not found. Region conditions can't be used.");
         }
 
         // check if placeholder api is present.
@@ -191,13 +200,6 @@ public class BigDoorsOpener extends JavaPlugin {
     }
 
     private void worldGuardHook() throws ClassNotFoundException {
-        logger().info("World Guard found. Trying to get a hook.");
-        regionContainer = WorldGuard.getInstance().getPlatform().getRegionContainer();
-        if (regionContainer != null) {
-            logger().info("Hooked into world guard successfully.");
-        } else {
-            logger().warning("Failed to hook into world guard.");
-        }
     }
 
     /**
@@ -216,6 +218,7 @@ public class BigDoorsOpener extends JavaPlugin {
         ConfigurationSerialization.registerClass(ItemOwning.class, "itemOwningCondition");
         ConfigurationSerialization.registerClass(Proximity.class, "proximityCondition");
         ConfigurationSerialization.registerClass(Region.class, "regionCondition");
+        ConfigurationSerialization.registerClass(SimpleRegion.class, "simpleRegionCondition");
         ConfigurationSerialization.registerClass(Permission.class, "permissionCondition");
         ConfigurationSerialization.registerClass(Time.class, "timeCondition");
         ConfigurationSerialization.registerClass(Weather.class, "weatherCondition");
