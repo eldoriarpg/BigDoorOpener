@@ -18,7 +18,6 @@ public class RegisterInteraction implements Listener {
 
     @EventHandler
     public void onPlayerInteraction(PlayerInteractEvent event) {
-        if (event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
         if (registerObjects.containsKey(event.getPlayer().getUniqueId())) {
             InteractionRegistrationObject registrationObject = registerObjects.get(event.getPlayer().getUniqueId());
             boolean register = registrationObject.register(event);
