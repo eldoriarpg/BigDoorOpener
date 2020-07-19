@@ -6,7 +6,7 @@ import de.eldoria.bigdoorsopener.doors.conditions.DoorCondition;
 import de.eldoria.bigdoorsopener.util.C;
 import de.eldoria.bigdoorsopener.util.TextColors;
 import de.eldoria.eldoutilities.crossversion.ServerVersion;
-import de.eldoria.eldoutilities.crossversion.VersionFunctionBuilder;
+import de.eldoria.eldoutilities.crossversion.functionbuilder.VersionFunctionBuilder;
 import de.eldoria.eldoutilities.crossversion.function.VersionFunction;
 import de.eldoria.eldoutilities.localization.Localizer;
 import de.eldoria.eldoutilities.serialization.SerializationUtil;
@@ -26,7 +26,6 @@ import java.util.Map;
 public abstract class Item implements DoorCondition {
     private final ItemStack item;
     private final boolean consumed;
-    private static final Gson GSON;
 
     private final VersionFunction<Player, Boolean> handCheck = VersionFunctionBuilder.functionBuilder(Player.class, Boolean.class)
             .addVersionFunctionBetween(
@@ -63,10 +62,6 @@ public abstract class Item implements DoorCondition {
                         }
                         return false;
                     }, ServerVersion.MC_1_8).build();
-
-    static {
-        GSON = new Gson();
-    }
 
     /**
      * Creates a new item key
