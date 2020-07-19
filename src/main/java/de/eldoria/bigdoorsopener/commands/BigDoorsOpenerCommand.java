@@ -434,7 +434,7 @@ public class BigDoorsOpenerCommand implements TabExecutor {
                     return true;
                 }
 
-                Optional<Boolean> consume = Parser.parseBoolean(conditionArgs[1]);
+                Optional<Boolean> consume = ArgumentUtils.getOptionalParameter(conditionArgs, 1, Optional.of(false), Parser::parseBoolean);
                 if (!consume.isPresent()) {
                     messageSender.sendError(player, localizer.getMessage("error.invalidBoolean"));
                     return true;
@@ -1229,7 +1229,7 @@ public class BigDoorsOpenerCommand implements TabExecutor {
             return true;
         }
         door.first.setStayOpen(optionalInt.getAsInt());
-        messageSender.sendError(player, localizer.getMessage("stayOpen.message",
+        messageSender.sendMessage(player, localizer.getMessage("stayOpen.message",
                 Replacement.create("SECONDS", optionalInt.getAsInt())));
         config.safeConfig();
         return true;
@@ -1475,7 +1475,10 @@ public class BigDoorsOpenerCommand implements TabExecutor {
                         return Collections.singletonList("<" + localizer.getMessage("syntax.amount") + ">");
                     }
                     if (args.length == 5) {
-                        return Arrays.asList("<" + localizer.getMessage("tabcomplete.consumed") + ">", "true", "false");
+                        if (args[4].isEmpty()) {
+                        return Arrays.asList("true", "false");
+                        }
+                        return Arrays.asList("[" + localizer.getMessage("tabcomplete.consumed") + "]", "true", "false");
                     }
                     break;
                 case PROXIMITY:
@@ -1504,7 +1507,10 @@ public class BigDoorsOpenerCommand implements TabExecutor {
                         return Collections.singletonList("<" + localizer.getMessage("tabcomplete.setTimed.close") + ">");
                     }
                     if (args.length == 6) {
-                        return Arrays.asList("<" + localizer.getMessage("tabcomplete.forceState") + ">", "true", "false");
+                        if (args[5].isEmpty()) {
+                            return Arrays.asList("true", "false");
+                        }
+                        return Arrays.asList("[" + localizer.getMessage("tabcomplete.forceState") + "]", "true", "false");
                     }
                     break;
                 case WEATHER:

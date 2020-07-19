@@ -5,6 +5,9 @@ import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
 import de.eldoria.bigdoorsopener.doors.conditions.DoorCondition;
 import de.eldoria.bigdoorsopener.util.C;
 import de.eldoria.bigdoorsopener.util.TextColors;
+import de.eldoria.eldoutilities.crossversion.ServerVersion;
+import de.eldoria.eldoutilities.crossversion.functionbuilder.VersionFunctionBuilder;
+import de.eldoria.eldoutilities.crossversion.function.VersionFunction;
 import de.eldoria.eldoutilities.localization.Localizer;
 import de.eldoria.eldoutilities.serialization.SerializationUtil;
 import lombok.Getter;
@@ -23,11 +26,42 @@ import java.util.Map;
 public abstract class Item implements DoorCondition {
     private final ItemStack item;
     private final boolean consumed;
-    private static final Gson GSON;
 
-    static {
-        GSON = new Gson();
-    }
+    private final VersionFunction<Player, Boolean> handCheck = VersionFunctionBuilder.functionBuilder(Player.class, Boolean.class)
+            .addVersionFunctionBetween(
+                    ServerVersion.MC_1_9, ServerVersion.MC_1_16,
+                    p -> hasPlayerItemInMainHand(p) || hasPlayerItemInOffHand(p))
+            .addVersionFunction((p) -> {
+                ItemStack item = p.getItemInHand();
+                if (item.getAmount() < getItem().getAmount()) {
+                    return false;
+                }
+                return item.isSimilar(getItem());
+            }, ServerVersion.MC_1_8).build();
+
+    private final VersionFunction<Player, Boolean> takeFromHand = VersionFunctionBuilder.functionBuilder(Player.class, Boolean.class)
+            .addVersionFunctionBetween(
+                    ServerVersion.MC_1_9, ServerVersion.MC_1_16,
+                    (p) -> {
+                        if (hasPlayerItemInMainHand(p)) {
+                            takeFromMainHand(p);
+                            return true;
+                        } else if (hasPlayerItemInOffHand(p)) {
+                            takeFromOffHand(p);
+                            return true;
+                        }
+                        return false;
+                    }).addVersionFunction(
+                    p -> {
+                        if (handCheck.apply(p)) {
+                            ItemStack item = p.getItemInHand();
+                            item.setAmount(item.getAmount() - getItem().getAmount());
+                            p.setItemInHand(item);
+                            p.updateInventory();
+                            return true;
+                        }
+                        return false;
+                    }, ServerVersion.MC_1_8).build();
 
     /**
      * Creates a new item key
@@ -54,7 +88,7 @@ public abstract class Item implements DoorCondition {
      * @return true if the player has the item in one of his hands.
      */
     protected boolean hasPlayerItemInHand(Player player) {
-        return hasPlayerItemInMainHand(player) || hasPlayerItemInOffHand(player);
+        return handCheck.apply(player);
     }
 
     /**
@@ -63,7 +97,7 @@ public abstract class Item implements DoorCondition {
      * @param player player to check
      * @return true if the player has the item in his main hand.
      */
-    protected boolean hasPlayerItemInMainHand(Player player) {
+    private boolean hasPlayerItemInMainHand(Player player) {
         ItemStack item = player.getInventory().getItemInMainHand();
         if (item.getAmount() < getItem().getAmount()) {
             return false;
@@ -77,7 +111,7 @@ public abstract class Item implements DoorCondition {
      * @param player player to check
      * @return true if the player has the item in his main hands.
      */
-    protected boolean hasPlayerItemInOffHand(Player player) {
+    private boolean hasPlayerItemInOffHand(Player player) {
         ItemStack item = player.getInventory().getItemInOffHand();
         if (item.getAmount() < getItem().getAmount()) {
             return false;
@@ -101,7 +135,7 @@ public abstract class Item implements DoorCondition {
      *
      * @param player player to take items from
      */
-    protected void takeFromOffHand(Player player) {
+    private void takeFromOffHand(Player player) {
         ItemStack item = player.getInventory().getItemInMainHand();
         item.setAmount(item.getAmount() - getItem().getAmount());
         player.getInventory().setItemInMainHand(item);
@@ -113,7 +147,7 @@ public abstract class Item implements DoorCondition {
      *
      * @param player player to take items from
      */
-    protected void takeFromMainHand(Player player) {
+    private void takeFromMainHand(Player player) {
         ItemStack item = player.getInventory().getItemInMainHand();
         item.setAmount(item.getAmount() - getItem().getAmount());
         player.getInventory().setItemInMainHand(item);
@@ -136,14 +170,7 @@ public abstract class Item implements DoorCondition {
      * @param player player to take items from
      */
     protected boolean tryTakeFromHands(Player player) {
-        if (hasPlayerItemInMainHand(player)) {
-            takeFromMainHand(player);
-            return true;
-        } else if (hasPlayerItemInOffHand(player)) {
-            takeFromOffHand(player);
-            return true;
-        }
-        return false;
+        return takeFromHand.apply(player);
     }
 
     @Override

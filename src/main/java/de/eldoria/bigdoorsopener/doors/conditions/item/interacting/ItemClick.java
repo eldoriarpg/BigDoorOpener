@@ -26,7 +26,7 @@ public class ItemClick extends ItemInteraction {
 
     @Override
     public Boolean isOpen(Player player, World world, ConditionalDoor door, boolean currentState) {
-        if (hasPlayerItemInHand(player) || hasPlayerItemInOffHand(player)) {
+        if (hasPlayerItemInHand(player)) {
             return super.isOpen(player, world, door, currentState);
         }
         return false;

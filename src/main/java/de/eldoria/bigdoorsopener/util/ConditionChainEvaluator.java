@@ -22,6 +22,8 @@ public class ConditionChainEvaluator {
     public ConditionChainEvaluator or(DoorCondition doorCondition, Player player, World world, ConditionalDoor door, boolean currentState) {
         if (doorCondition == null) return this;
 
+        if (current != null && current) return this;
+
         Boolean open = doorCondition.isOpen(player, world, door, currentState);
         if (open == null) {
             return this;
@@ -51,16 +53,13 @@ public class ConditionChainEvaluator {
     public ConditionChainEvaluator and(DoorCondition doorCondition, Player player, World world, ConditionalDoor door, boolean currentState) {
         if (doorCondition == null) return this;
 
+        if (current != null && !current) return this;
+
         Boolean open = doorCondition.isOpen(player, world, door, currentState);
+
         if (open == null) {
             return this;
         }
-        if (current == null) {
-            current = open;
-            return this;
-        }
-
-        if (!current) return this;
 
         current = open;
         return this;
