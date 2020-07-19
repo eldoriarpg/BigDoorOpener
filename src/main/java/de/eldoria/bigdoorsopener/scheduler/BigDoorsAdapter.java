@@ -29,7 +29,8 @@ public abstract class BigDoorsAdapter {
 
     /**
      * Set the state of the door.
-     *  @param open true if the door should be open.
+     *
+     * @param open true if the door should be open.
      * @param door door to set the state
      * @return true if the door state was changed succesfully which is indicated by {@link BigDoors#toggleDoor(long)}
      */
@@ -73,14 +74,15 @@ public abstract class BigDoorsAdapter {
     /**
      * Checks if a door is availbale.
      * A door is considered available if its not open and not busy
+     *
      * @param door door to check
      * @return true if the door is available
      */
-    protected boolean isAvailableToOpen(ConditionalDoor door){
+    protected boolean isAvailableToOpen(ConditionalDoor door) {
         return !isOpen(door) && !isBusy(door);
     }
 
-    protected boolean isBusy(ConditionalDoor door){
+    protected boolean isBusy(ConditionalDoor door) {
         return getCommander().isDoorBusy(door.getDoorUID());
     }
 }

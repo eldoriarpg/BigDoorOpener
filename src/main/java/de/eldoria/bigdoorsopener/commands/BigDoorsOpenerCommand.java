@@ -72,6 +72,13 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class BigDoorsOpenerCommand implements TabExecutor {
+    private static final CachingJSEngine ENGINE;
+    // Tabcomplete utils
+    private static final String[] CONDITION_TYPES;
+    private static final String[] CONDITION_GROUPS;
+    private static final String[] PROXIMITY_FORM;
+    private static final String[] WEATHER_TYPE;
+    private static final String[] EVALUATOR_TYPES;
     private final BigDoorsOpener plugin;
     private final Commander commander;
     private final Config config;
@@ -80,17 +87,7 @@ public class BigDoorsOpenerCommand implements TabExecutor {
     private final MessageSender messageSender;
     private final RegisterInteraction registerInteraction;
     private final RegionContainer regionContainer;
-
     private final BukkitAudiences bukkitAudiences;
-
-    private static final CachingJSEngine ENGINE;
-
-    // Tabcomplete utils
-    private static final String[] CONDITION_TYPES;
-    private static final String[] CONDITION_GROUPS;
-    private static final String[] PROXIMITY_FORM;
-    private static final String[] WEATHER_TYPE;
-    private static final String[] EVALUATOR_TYPES;
 
     static {
         ENGINE = BigDoorsOpener.JS();

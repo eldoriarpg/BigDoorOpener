@@ -6,9 +6,6 @@ package de.eldoria.bigdoorsopener.util;
  */
 public final class Permissions {
 
-    private Permissions() {
-    }
-
     // permission to use all commands except reload
     public static final String USE = "bdo.command.use";
     // permission to reload the plugin
@@ -31,4 +28,6 @@ public final class Permissions {
     public static final String PLACEHOLDER_CONDITION = "bdo.condition.placeholder";
     // permission to access all conditions
     public static final String ALL_CONDITION = "bdo.condition.all";
+    private Permissions() {
+    }
 }

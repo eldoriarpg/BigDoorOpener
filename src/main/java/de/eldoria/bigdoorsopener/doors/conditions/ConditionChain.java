@@ -50,6 +50,17 @@ public class ConditionChain implements ConfigurationSerializable, Cloneable {
         this.weather = weather;
     }
 
+    public static ConditionChain deserialize(Map<String, Object> map) {
+        TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
+        Item item = resolvingMap.getValue("item");
+        Location location = resolvingMap.getValue("location");
+        Permission permission = resolvingMap.getValue("permission");
+        Time time = resolvingMap.getValue("time");
+        Weather weather = resolvingMap.getValue("weather");
+        Placeholder placeholder = resolvingMap.getValueOrDefault("placeholder", null);
+        return new ConditionChain(item, location, permission, time, weather, placeholder);
+    }
+
     /**
      * Evaluates the conditions with an or operator.
      *
@@ -159,17 +170,6 @@ public class ConditionChain implements ConfigurationSerializable, Cloneable {
                 .add("placeholder", placeholder)
                 .build();
 
-    }
-
-    public static ConditionChain deserialize(Map<String, Object> map) {
-        TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
-        Item item = resolvingMap.getValue("item");
-        Location location = resolvingMap.getValue("location");
-        Permission permission = resolvingMap.getValue("permission");
-        Time time = resolvingMap.getValue("time");
-        Weather weather = resolvingMap.getValue("weather");
-        Placeholder placeholder = resolvingMap.getValueOrDefault("placeholder", null);
-        return new ConditionChain(item, location, permission, time, weather, placeholder);
     }
 
     /**

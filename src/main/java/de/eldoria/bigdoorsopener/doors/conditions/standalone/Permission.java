@@ -28,6 +28,11 @@ public class Permission implements DoorCondition {
         this.permission = permission;
     }
 
+    public Permission(Map<String, Object> map) {
+        TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
+        permission = resolvingMap.getValue("permission");
+    }
+
     @Override
     public Boolean isOpen(Player player, World world, ConditionalDoor door, boolean currentState) {
         return player.hasPermission(permission);
@@ -59,10 +64,5 @@ public class Permission implements DoorCondition {
         return SerializationUtil.newBuilder()
                 .add("permission", permission)
                 .build();
-    }
-
-    public Permission (Map<String, Object> map) {
-        TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
-        permission = resolvingMap.getValue("permission");
     }
 }

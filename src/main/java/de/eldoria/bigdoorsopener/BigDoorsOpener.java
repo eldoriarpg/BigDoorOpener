@@ -54,18 +54,16 @@ import java.util.regex.Pattern;
 public class BigDoorsOpener extends JavaPlugin {
 
     private static Logger logger;
+    private static CachingJSEngine JS;
+    private static boolean placeholderEnabled = false;
+    @Getter
+    private static RegionContainer regionContainer = null;
     private final BukkitScheduler scheduler = Bukkit.getScheduler();
     private Config config;
     private boolean initialized;
     private Localizer localizer;
-    private static CachingJSEngine JS;
-    private static boolean placeholderEnabled = false;
-
-
     // External instances.
     private BigDoors doors;
-    @Getter
-    private static RegionContainer regionContainer = null;
     private Commander commander;
 
     // scheduler
@@ -74,6 +72,26 @@ public class BigDoorsOpener extends JavaPlugin {
     // listener
     private WeatherListener weatherListener;
     private RegisterInteraction registerInteraction;
+
+    /**
+     * Get the plugin logger instance.
+     *
+     * @return plugin logger instance
+     */
+    @SuppressWarnings("StaticVariableUsedBeforeInitialization")
+    @NotNull
+    public static Logger logger() {
+        return logger;
+    }
+
+    @SuppressWarnings("StaticVariableUsedBeforeInitialization")
+    public static CachingJSEngine JS() {
+        return JS;
+    }
+
+    public static boolean isPlaceholderEnabled() {
+        return placeholderEnabled;
+    }
 
     @Override
     public void onDisable() {
@@ -183,7 +201,7 @@ public class BigDoorsOpener extends JavaPlugin {
                 } else {
                     logger().warning("Failed to hook into world guard.");
                 }
-            }else{
+            } else {
                 logger().info("Found legacy World Guard Version. Region conditions can't be used.");
             }
         } else {
@@ -289,25 +307,5 @@ public class BigDoorsOpener extends JavaPlugin {
             buildString = "release";
         }
         return new Pair<>(versionString, buildString);
-    }
-
-    /**
-     * Get the plugin logger instance.
-     *
-     * @return plugin logger instance
-     */
-    @SuppressWarnings("StaticVariableUsedBeforeInitialization")
-    @NotNull
-    public static Logger logger() {
-        return logger;
-    }
-
-    @SuppressWarnings("StaticVariableUsedBeforeInitialization")
-    public static CachingJSEngine JS() {
-        return JS;
-    }
-
-    public static boolean isPlaceholderEnabled() {
-        return placeholderEnabled;
     }
 }

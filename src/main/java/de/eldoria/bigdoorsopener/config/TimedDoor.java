@@ -68,6 +68,19 @@ public class TimedDoor implements ConfigurationSerializable {
         this.invertOpen = invertOpen;
     }
 
+    public static TimedDoor deserialize(Map<String, Object> map) {
+        TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
+        long doorUID = Long.parseLong(resolvingMap.getValue("doorUID"));
+        String world = resolvingMap.getValue("world");
+        Vector position = resolvingMap.getValue("position");
+        String permission = resolvingMap.getValue("permission");
+        int ticksClose = resolvingMap.getValue("ticksClose");
+        int ticksOpen = resolvingMap.getValue("ticksOpen");
+        double range = resolvingMap.getValue("range");
+        boolean invertOpen = resolvingMap.getValue("invertOpen");
+        return new TimedDoor(doorUID, world, position, permission, ticksClose, ticksOpen, range, invertOpen);
+    }
+
     @Override
     public Map<String, Object> serialize() {
         return SerializationUtil.newBuilder()
@@ -80,19 +93,6 @@ public class TimedDoor implements ConfigurationSerializable {
                 .add("range", openRange)
                 .add("invertOpen", invertOpen)
                 .build();
-    }
-
-    public static TimedDoor deserialize(Map<String, Object> map) {
-        TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
-        long doorUID = Long.parseLong(resolvingMap.getValue("doorUID"));
-        String world = resolvingMap.getValue("world");
-        Vector position = resolvingMap.getValue("position");
-        String permission = resolvingMap.getValue("permission");
-        int ticksClose = resolvingMap.getValue("ticksClose");
-        int ticksOpen = resolvingMap.getValue("ticksOpen");
-        double range = resolvingMap.getValue("range");
-        boolean invertOpen = resolvingMap.getValue("invertOpen");
-        return new TimedDoor(doorUID, world, position,permission, ticksClose, ticksOpen, range, invertOpen);
     }
 
     public boolean shouldBeOpen(long fulltime) {
