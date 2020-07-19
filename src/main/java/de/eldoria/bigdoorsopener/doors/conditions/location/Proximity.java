@@ -67,13 +67,12 @@ public class Proximity implements Location {
                 .build();
     }
 
-    public static Proximity deserialize(Map<String, Object> map) {
+    public Proximity (Map<String, Object> map) {
         TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
-        Vector vector = resolvingMap.getValue("dimensions");
+        dimensions = resolvingMap.getValue("dimensions");
         String formString = resolvingMap.getValue("proximityForm");
         formString = formString.replaceAll("(?i)elipsoid", "ellipsoid");
-        ProximityForm proximityForm = EnumUtil.parse(formString, ProximityForm.class);
-        return new Proximity(vector, proximityForm);
+        proximityForm = EnumUtil.parse(formString, ProximityForm.class);
     }
 
     public enum ProximityForm {

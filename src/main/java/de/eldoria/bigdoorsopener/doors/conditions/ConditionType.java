@@ -16,6 +16,7 @@ public enum ConditionType {
     ITEM_OWNING(ConditionGroup.ITEM),
     PROXIMITY(ConditionGroup.LOCATION),
     REGION(ConditionGroup.LOCATION),
+    SIMPLE_REGION(ConditionGroup.LOCATION),
     PERMISSION(ConditionGroup.PERMISSION),
     TIME(ConditionGroup.TIME),
     WEATHER(ConditionGroup.WEATHER),

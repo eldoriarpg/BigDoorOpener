@@ -61,9 +61,8 @@ public class Permission implements DoorCondition {
                 .build();
     }
 
-    public static Permission deserialize(Map<String, Object> map) {
+    public Permission (Map<String, Object> map) {
         TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
-        String permission = resolvingMap.getValue("permission");
-        return new Permission(permission);
+        permission = resolvingMap.getValue("permission");
     }
 }

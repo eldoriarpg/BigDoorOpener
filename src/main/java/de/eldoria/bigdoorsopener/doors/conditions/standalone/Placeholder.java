@@ -69,8 +69,8 @@ public class Placeholder implements DoorCondition {
                 .build();
     }
 
-    public static Placeholder deserialize(Map<String, Object> map) {
+    public Placeholder (Map<String, Object> map) {
         TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
-        return new Placeholder(resolvingMap.getValue("evaluator"));
+        evaluator = resolvingMap.getValue("evaluator");
     }
 }

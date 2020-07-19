@@ -125,12 +125,11 @@ public class Time implements DoorCondition {
                 .build();
     }
 
-    public static Time deserialize(Map<String, Object> map) {
+    public Time (Map<String, Object> map) {
         TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
-        int openTick = resolvingMap.getValue("openTick");
-        int closeTick = resolvingMap.getValue("closeTick");
-        boolean forceState = resolvingMap.getValue("forceState");
-        return new Time(openTick, closeTick, forceState);
+        openTick = resolvingMap.getValue("openTick");
+        closeTick = resolvingMap.getValue("closeTick");
+        forceState = resolvingMap.getValue("forceState");
     }
 
 }
