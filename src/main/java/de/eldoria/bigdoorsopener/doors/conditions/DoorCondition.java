@@ -10,7 +10,7 @@ import org.bukkit.entity.Player;
 /**
  * A interface which represents a condition which opens a door under specific circumstances.
  */
-public interface DoorCondition extends ConfigurationSerializable {
+public interface DoorCondition extends ConfigurationSerializable, Cloneable {
     String SET_COMMAND = "/bdo setCondition ";
     String REMOVE_COMMAND = "/bdo removeCondition ";
 
@@ -48,4 +48,12 @@ public interface DoorCondition extends ConfigurationSerializable {
      * @return creation command as string.
      */
     String getRemoveCommand(ConditionalDoor door);
+
+    /**
+     * This method is called after the check for the door of this condition is done and a new evaluation cycle starts.
+     * Deletes any internal data in this key.
+     */
+    void evaluated();
+
+    DoorCondition clone();
 }

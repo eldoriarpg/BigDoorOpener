@@ -68,6 +68,16 @@ public class Placeholder implements DoorCondition {
     }
 
     @Override
+    public void evaluated() {
+
+    }
+
+    @Override
+    public Placeholder clone() {
+        return new Placeholder(evaluator);
+    }
+
+    @Override
     public @NotNull Map<String, Object> serialize() {
         return SerializationUtil.newBuilder()
                 .add("evaluator", evaluator)

@@ -1,8 +1,11 @@
 package de.eldoria.bigdoorsopener.scheduler;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import de.eldoria.bigdoorsopener.BigDoorsOpener;
 import de.eldoria.bigdoorsopener.config.Config;
 import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
+import de.eldoria.bigdoorsopener.util.C;
 import de.eldoria.eldoutilities.localization.Localizer;
 import nl.pim16aap2.bigDoors.BigDoors;
 import org.bukkit.Bukkit;
@@ -13,9 +16,13 @@ import org.bukkit.entity.Player;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 
 public class DoorChecker extends BigDoorsAdapter implements Runnable {
 
@@ -27,6 +34,8 @@ public class DoorChecker extends BigDoorsAdapter implements Runnable {
     private final Set<ConditionalDoor> open = new HashSet<>();
     private final Set<ConditionalDoor> close = new HashSet<>();
     private final Set<ConditionalDoor> evaluated = new HashSet<>();
+
+    private final Cache<String, List<Player>> worldPlayers = C.getShortExpiringCache();
 
     public DoorChecker(Config config, BigDoors bigDoors, Localizer localizer) {
         super(bigDoors, localizer);
@@ -95,7 +104,6 @@ public class DoorChecker extends BigDoorsAdapter implements Runnable {
 
             // skip busy doors. bcs why should we try to open/close a door we cant open/close
             if (getCommander().isDoorBusy(door.getDoorUID())) {
-                evaluated.clear();
                 continue;
             }
 
@@ -114,16 +122,20 @@ public class DoorChecker extends BigDoorsAdapter implements Runnable {
             if (door.requiresPlayerEvaluation()) {
                 boolean opened = false;
                 // Evaluate door per player. If one player can open it, it will open.
-                for (Player player : world.getPlayers()) {
-                    if (door.getState(player, world, open)) {
-                        opened = true;
-                        // only open the door if its not yet open. because why open it then.
-                        if (!open) {
-                            this.open.add(door);
-                            openedBy.put(door.getDoorUID(), player);
+                try {
+                    for (Player player : worldPlayers.get(world.getName(), world::getPlayers)) {
+                        if (door.getState(player, world, open)) {
+                            opened = true;
+                            // only open the door if its not yet open. because why open it then.
+                            if (!open) {
+                                this.open.add(door);
+                                openedBy.put(door.getDoorUID(), player);
+                            }
+                            break;
                         }
-                        break;
                     }
+                } catch (ExecutionException e) {
+                    BigDoorsOpener.logger().log(Level.WARNING, "Failed to compute. Please report this.", e);
                 }
                 if (!opened && open) {
                     close.add(door);

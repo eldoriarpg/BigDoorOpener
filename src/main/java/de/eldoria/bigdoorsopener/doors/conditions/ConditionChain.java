@@ -187,7 +187,7 @@ public class ConditionChain implements ConfigurationSerializable, Cloneable {
      * @return new condition chain.
      */
     public ConditionChain copy() {
-        return new ConditionChain(item, location, permission, time, weather, placeholder);
+        return new ConditionChain(item.clone(), location, permission, time, weather, placeholder);
     }
 
     /**

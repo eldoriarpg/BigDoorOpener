@@ -57,4 +57,9 @@ public class ItemHolding extends Item {
     public String getCreationCommand(ConditionalDoor door) {
         return SET_COMMAND + door.getDoorUID() + " itemHolding " + getItem().getAmount() + " " + isConsumed();
     }
+
+    @Override
+    public void evaluated() {
+
+    }
 }

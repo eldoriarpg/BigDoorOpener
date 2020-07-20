@@ -1,5 +1,8 @@
 package de.eldoria.bigdoorsopener.doors.conditions.location;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import de.eldoria.bigdoorsopener.BigDoorsOpener;
 import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
 import de.eldoria.bigdoorsopener.doors.conditions.ConditionType;
 import de.eldoria.bigdoorsopener.util.C;
@@ -18,6 +21,9 @@ import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 
 /**
  * A condition which opens the door when the player is within a specific range of defined by geometric form
@@ -27,6 +33,9 @@ public class Proximity implements Location {
     private final Vector dimensions;
     private final ProximityForm proximityForm;
 
+    private final Cache<Vector, Boolean> cache = CacheBuilder.newBuilder()
+            .expireAfterAccess(10, TimeUnit.SECONDS)
+            .build();
 
     public Proximity(Vector dimensions, ProximityForm proximityForm) {
         this.dimensions = dimensions;
@@ -43,7 +52,13 @@ public class Proximity implements Location {
 
     @Override
     public Boolean isOpen(Player player, World world, ConditionalDoor door, boolean currentState) {
-        return proximityForm.check.apply(door.getPosition(), player.getLocation().toVector(), dimensions);
+        try {
+            Vector pos = player.getLocation().toVector();
+            return cache.get(pos, () -> proximityForm.check.apply(door.getPosition(), pos, dimensions));
+        } catch (ExecutionException e) {
+            BigDoorsOpener.logger().log(Level.WARNING, "Could not compute value", e);
+        }
+        return null;
     }
 
     @Override
@@ -65,6 +80,15 @@ public class Proximity implements Location {
         return SET_COMMAND + door.getDoorUID() + " proximity "
                 + dimensions.getX() + "," + dimensions.getY() + "," + dimensions.getZ()
                 + " " + proximityForm.name().toLowerCase();
+    }
+
+    @Override
+    public void evaluated() {
+    }
+
+    @Override
+    public Proximity clone() {
+        return new Proximity(dimensions, proximityForm);
     }
 
     @Override

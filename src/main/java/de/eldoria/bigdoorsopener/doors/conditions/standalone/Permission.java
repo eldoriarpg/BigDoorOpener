@@ -60,6 +60,16 @@ public class Permission implements DoorCondition {
     }
 
     @Override
+    public void evaluated() {
+
+    }
+
+    @Override
+    public DoorCondition clone() {
+        return null;
+    }
+
+    @Override
     public @NotNull Map<String, Object> serialize() {
         return SerializationUtil.newBuilder()
                 .add("permission", permission)

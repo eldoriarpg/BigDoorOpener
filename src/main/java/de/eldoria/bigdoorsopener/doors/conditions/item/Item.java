@@ -180,13 +180,6 @@ public abstract class Item implements DoorCondition {
                 .build();
     }
 
-    /**
-     * This method is called after the check for the door of this key is done and a new evaluation cycle starts.
-     * Deletes any internal data in this key.
-     */
-    public void evaluated() {
-    }
-
     @Override
     public TextComponent getDescription(Localizer localizer) {
         ItemMeta meta = item.getItemMeta();
@@ -219,5 +212,10 @@ public abstract class Item implements DoorCondition {
     @Override
     public String getRemoveCommand(ConditionalDoor door) {
         return REMOVE_COMMAND + door.getDoorUID() + " item";
+    }
+
+    @Override
+    public Item clone() {
+        return new ItemOwning(getItem(), isConsumed());
     }
 }

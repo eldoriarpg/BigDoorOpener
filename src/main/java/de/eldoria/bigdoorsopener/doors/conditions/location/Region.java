@@ -1,5 +1,6 @@
 package de.eldoria.bigdoorsopener.doors.conditions.location;
 
+import com.google.common.cache.Cache;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import de.eldoria.bigdoorsopener.BigDoorsOpener;
@@ -19,6 +20,8 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
 
 /**
  * A condition which opens the door, when a player is inside a world guard region.
@@ -29,6 +32,8 @@ public class Region implements Location {
     private final World world;
     private final String worldName;
     private final String regionId;
+
+    private final Cache<org.bukkit.Location, Boolean> cache = C.getExpiringCache();
 
     public Region(ProtectedRegion region, World world) {
         this.region = region;
@@ -66,7 +71,14 @@ public class Region implements Location {
     public Boolean isOpen(Player player, World world, ConditionalDoor door, boolean currentState) {
         if (world != this.world) return false;
         if (region == null) return null;
-        return region.contains(BukkitAdapter.asBlockVector(player.getLocation()));
+        try {
+            return cache.get(player.getLocation(), () ->
+                    region.contains(BukkitAdapter.asBlockVector(player.getLocation()))
+            );
+        } catch (ExecutionException e) {
+            BigDoorsOpener.logger().log(Level.WARNING, "Could not compute value", e);
+        }
+        return null;
     }
 
     @Override
@@ -86,6 +98,16 @@ public class Region implements Location {
     @Override
     public String getCreationCommand(ConditionalDoor door) {
         return SET_COMMAND + door.getDoorUID() + " region " + regionId;
+    }
+
+    @Override
+    public void evaluated() {
+
+    }
+
+    @Override
+    public Region clone() {
+        return new Region(world, region, worldName, regionId);
     }
 
     @Override

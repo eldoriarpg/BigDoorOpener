@@ -6,7 +6,7 @@
 
     <groupId>de.eldoria</groupId>
     <artifactId>BigDoorsOpener</artifactId>
-    <version>2.2-BETA</version>
+    <version>2.2.1-BETA</version>
     <name>BigDoorsOpener</name>
     <url>https://github.com/eldoriarpg/BigDoorOpener</url>
     <description>Open and close doors automatically on certain conditions</description>

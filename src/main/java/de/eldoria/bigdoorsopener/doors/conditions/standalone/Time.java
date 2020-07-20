@@ -1,5 +1,7 @@
 package de.eldoria.bigdoorsopener.doors.conditions.standalone;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
 import de.eldoria.bigdoorsopener.doors.conditions.ConditionType;
 import de.eldoria.bigdoorsopener.doors.conditions.DoorCondition;
@@ -19,6 +21,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A key which defines the door state by current world time.
@@ -37,6 +42,10 @@ public class Time implements DoorCondition {
     private final boolean forceState;
 
     private DoorState state = null;
+
+    // We use a static cache here for all time conditions.
+    // The time condition is not very likely to change out of a sudden so the refresh cycle does not need to be precisely correct.
+    private static final Cache<Long, Optional<Boolean>> STATE_CACHE = C.getExpiringCache();
 
     /**
      * Creates a time key which opens and closes the door based on time.
@@ -62,7 +71,11 @@ public class Time implements DoorCondition {
 
     @Override
     public Boolean isOpen(@Nullable Player player, World world, @Nullable ConditionalDoor door, boolean currentState) {
-        return shouldBeOpen(world.getFullTime());
+        try {
+            return STATE_CACHE.get(door.getDoorUID(), () -> Optional.ofNullable(shouldBeOpen(world.getFullTime()))).orElse(null);
+        } catch (ExecutionException e) {
+            return null;
+        }
     }
 
     @Override
@@ -90,6 +103,16 @@ public class Time implements DoorCondition {
     @Override
     public String getRemoveCommand(ConditionalDoor door) {
         return REMOVE_COMMAND + door.getDoorUID() + " time";
+    }
+
+    @Override
+    public void evaluated() {
+
+    }
+
+    @Override
+    public Time clone() {
+        return new Time(openTick, closeTick, forceState);
     }
 
     public Boolean shouldBeOpen(long fulltime) {
