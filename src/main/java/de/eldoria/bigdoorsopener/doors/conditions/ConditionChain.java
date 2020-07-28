@@ -8,6 +8,7 @@ import de.eldoria.bigdoorsopener.doors.conditions.standalone.Permission;
 import de.eldoria.bigdoorsopener.doors.conditions.standalone.Placeholder;
 import de.eldoria.bigdoorsopener.doors.conditions.standalone.Time;
 import de.eldoria.bigdoorsopener.doors.conditions.standalone.Weather;
+import de.eldoria.bigdoorsopener.util.C;
 import de.eldoria.bigdoorsopener.util.ConditionChainEvaluator;
 import de.eldoria.eldoutilities.container.Pair;
 import de.eldoria.eldoutilities.serialization.SerializationUtil;
@@ -178,7 +179,10 @@ public class ConditionChain implements ConfigurationSerializable, Cloneable {
      * @return true if all conditions are nulkl
      */
     public boolean isEmpty() {
-        return item == null && location == null && permission == null && time == null && weather == null;
+        for (DoorCondition condition : getConditions()) {
+            if (condition != null) return false;
+        }
+        return true;
     }
 
     /**
@@ -187,7 +191,9 @@ public class ConditionChain implements ConfigurationSerializable, Cloneable {
      * @return new condition chain.
      */
     public ConditionChain copy() {
-        return new ConditionChain(item.clone(), location, permission, time, weather, placeholder);
+        return new ConditionChain(C.nonNullOrElse(item, Item::clone, null), C.nonNullOrElse(location, Location::clone, null),
+                C.nonNullOrElse(permission, Permission::clone, null), C.nonNullOrElse(time, Time::clone, null),
+                C.nonNullOrElse(weather, Weather::clone, null), C.nonNullOrElse(placeholder, Placeholder::clone, null));
     }
 
     /**
@@ -304,4 +310,6 @@ public class ConditionChain implements ConfigurationSerializable, Cloneable {
                 throw new IllegalStateException("Unexpected value: " + group);
         }
     }
+
+
 }
