@@ -189,9 +189,10 @@ public class Config {
         checkUpdates = config.getBoolean("checkUpdates", true);
         jsCacheSize = config.getInt("jsCacheSize", 400);
 
-        if (jsCacheSize < 10) {
+        // ensure that js cache size is not too small
+        if (jsCacheSize < 200) {
             BigDoorsOpener.logger().warning("Js cache is small. This may cause performance issues. We recommend at least a size of 200");
-            jsCacheSize = 10;
+            jsCacheSize = Math.max(jsCacheSize, 10);
         }
 
         BigDoorsOpener.logger().info("Config loaded!");
