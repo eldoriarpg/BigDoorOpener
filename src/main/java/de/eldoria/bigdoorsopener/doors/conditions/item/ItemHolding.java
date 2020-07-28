@@ -25,11 +25,11 @@ public class ItemHolding extends Item {
         super(item, consumed);
     }
 
-    public static ItemClick deserialize(Map<String, Object> map) {
+    public static ItemHolding deserialize(Map<String, Object> map) {
         TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
         ItemStack stack = resolvingMap.getValue("item");
         boolean consumed = resolvingMap.getValue("consumed");
-        return new ItemClick(stack, consumed);
+        return new ItemHolding(stack, consumed);
     }
 
     @Override
