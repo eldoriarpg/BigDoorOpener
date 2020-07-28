@@ -32,6 +32,9 @@ import java.util.concurrent.ExecutionException;
  */
 @SerializableAs("weatherCondition")
 public class Weather implements DoorCondition {
+    // We use a static cache here for all weather conditions.
+    // The weather condition is not very likely to change out of a sudden so the refresh cycle does not need to be precisely correct.
+    private static final Cache<ConditionalDoor, Optional<Boolean>> STATE_CACHE = C.getExpiringCache();
     private final WeatherType weatherType;
     private boolean forceState;
     private DoorState state;
@@ -39,10 +42,6 @@ public class Weather implements DoorCondition {
     public Weather(WeatherType weatherType, boolean forceState) {
         this.weatherType = weatherType;
     }
-
-    // We use a static cache here for all weather conditions.
-    // The weather condition is not very likely to change out of a sudden so the refresh cycle does not need to be precisely correct.
-    private static final Cache<ConditionalDoor, Optional<Boolean>> STATE_CACHE = C.getExpiringCache();
 
     public Weather(Map<String, Object> map) {
         TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);

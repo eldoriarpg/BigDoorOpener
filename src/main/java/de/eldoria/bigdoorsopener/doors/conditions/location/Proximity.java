@@ -104,8 +104,7 @@ public class Proximity implements Location {
                 (point, target, dimensions) -> {
                     if (Math.abs(point.getX() - target.getX()) > dimensions.getX()) return false;
                     if (Math.abs(point.getY() - target.getY()) > dimensions.getY()) return false;
-                    if (Math.abs(point.getZ() - target.getZ()) > dimensions.getZ()) return false;
-                    return true;
+                    return !(Math.abs(point.getZ() - target.getZ()) > dimensions.getZ());
                 }),
         ELLIPSOID("conditionDesc.proximityForm.ellipsoid",
                 (point, target, dimensions) ->

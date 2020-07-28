@@ -2,7 +2,6 @@ package de.eldoria.bigdoorsopener.doors.conditions.item.interacting;
 
 import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
 import de.eldoria.bigdoorsopener.doors.conditions.ConditionType;
-import de.eldoria.bigdoorsopener.doors.conditions.item.Item;
 import de.eldoria.bigdoorsopener.util.C;
 import de.eldoria.bigdoorsopener.util.TextColors;
 import de.eldoria.eldoutilities.localization.Localizer;

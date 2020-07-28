@@ -65,8 +65,8 @@ public class Permission implements DoorCondition {
     }
 
     @Override
-    public DoorCondition clone() {
-        return null;
+    public Permission clone() {
+        return new Permission(permission);
     }
 
     @Override

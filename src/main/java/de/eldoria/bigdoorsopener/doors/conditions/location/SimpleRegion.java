@@ -4,7 +4,6 @@ import com.google.common.cache.Cache;
 import de.eldoria.bigdoorsopener.BigDoorsOpener;
 import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
 import de.eldoria.bigdoorsopener.doors.conditions.ConditionType;
-import de.eldoria.bigdoorsopener.doors.conditions.DoorCondition;
 import de.eldoria.bigdoorsopener.util.C;
 import de.eldoria.bigdoorsopener.util.TextColors;
 import de.eldoria.eldoutilities.localization.Localizer;
@@ -89,7 +88,7 @@ public class SimpleRegion implements Location {
     }
 
     @Override
-    public DoorCondition clone() {
+    public SimpleRegion clone() {
         return new SimpleRegion(minimum, maximum, world);
     }
 

@@ -1,7 +1,6 @@
 package de.eldoria.bigdoorsopener.doors.conditions.standalone;
 
 import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
 import de.eldoria.bigdoorsopener.doors.conditions.ConditionType;
 import de.eldoria.bigdoorsopener.doors.conditions.DoorCondition;
@@ -23,13 +22,15 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 
 /**
  * A key which defines the door state by current world time.
  */
 @SerializableAs("timeCondition")
 public class Time implements DoorCondition {
+    // We use a static cache here for all time conditions.
+    // The time condition is not very likely to change out of a sudden so the refresh cycle does not need to be precisely correct.
+    private static final Cache<Long, Optional<Boolean>> STATE_CACHE = C.getExpiringCache();
     /**
      * The ticks from when to door should be closed
      */
@@ -38,14 +39,8 @@ public class Time implements DoorCondition {
      * The ticks from when the door should be open.
      */
     private final int closeTick;
-
     private final boolean forceState;
-
     private DoorState state = null;
-
-    // We use a static cache here for all time conditions.
-    // The time condition is not very likely to change out of a sudden so the refresh cycle does not need to be precisely correct.
-    private static final Cache<Long, Optional<Boolean>> STATE_CACHE = C.getExpiringCache();
 
     /**
      * Creates a time key which opens and closes the door based on time.
