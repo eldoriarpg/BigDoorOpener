@@ -217,9 +217,6 @@ public class BigDoorsOpener extends JavaPlugin {
         }
     }
 
-    private void worldGuardHook() throws ClassNotFoundException {
-    }
-
     /**
      * Register the serializer classes.
      * When a provided alias should be used the class needs the {@link org.bukkit.configuration.serialization.SerializableAs}
