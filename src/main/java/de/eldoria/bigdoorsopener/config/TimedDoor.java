@@ -103,10 +103,7 @@ public class TimedDoor implements ConfigurationSerializable {
 
         long openInTicks = getDiff(fulltime, getTicksOpen());
         long closedInTicks = getDiff(fulltime, getTicksClose());
-        if (openInTicks > closedInTicks) {
-            return true;
-        }
-        return false;
+        return openInTicks > closedInTicks;
     }
 
     @Override
