@@ -19,7 +19,7 @@ public final class C {
     private C() {
     }
 
-    public static <A, B> LoadingCache<A, B> getRefreshingCache(Function<A,B> function) {
+    public static <A, B> LoadingCache<A, B> getRefreshingCache(Function<A, B> function) {
         return CacheBuilder.newBuilder()
                 .expireAfterAccess(5, TimeUnit.MINUTES)
                 .refreshAfterWrite(5, TimeUnit.SECONDS)
@@ -31,7 +31,7 @@ public final class C {
                 });
     }
 
-    public static <A, B> LoadingCache<A, B> getRefreshingCache(CacheLoader<A,B> cacheLoader) {
+    public static <A, B> LoadingCache<A, B> getRefreshingCache(CacheLoader<A, B> cacheLoader) {
         return CacheBuilder.newBuilder()
                 .expireAfterAccess(5, TimeUnit.MINUTES)
                 .refreshAfterWrite(5, TimeUnit.SECONDS)
@@ -41,6 +41,7 @@ public final class C {
     public static <A, B> Cache<A, B> getExpiringCache() {
         return getExpiringCache(30, TimeUnit.SECONDS);
     }
+
     public static <A, B> Cache<A, B> getShortExpiringCache() {
         return getExpiringCache(5, TimeUnit.SECONDS);
     }
@@ -49,5 +50,12 @@ public final class C {
         return CacheBuilder.newBuilder()
                 .expireAfterWrite(duration, timeUnit)
                 .build();
+    }
+
+    public static <R, A> R nonNullOrElse(A obj, Function<A, R> function, R defaultVal) {
+        if (obj != null) {
+            return function.apply(obj);
+        }
+        return defaultVal;
     }
 }
