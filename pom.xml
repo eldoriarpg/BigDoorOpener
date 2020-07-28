@@ -106,7 +106,7 @@
             <artifactId>BigDoors</artifactId>
             <version>1.0.0</version>
             <scope>system</scope>
-            <systemPath>${project.basedir}/dependency/BigDoors.jar</systemPath>
+            <systemPath>${project.basedir}/../dependency/BigDoors.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>org.jetbrains</groupId>
