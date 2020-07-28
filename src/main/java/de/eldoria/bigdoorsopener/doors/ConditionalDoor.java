@@ -8,6 +8,7 @@ import de.eldoria.eldoutilities.serialization.TypeResolvingMap;
 import de.eldoria.eldoutilities.utils.EnumUtil;
 import lombok.Getter;
 import lombok.Setter;
+import org.bukkit.Chunk;
 import org.bukkit.World;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.SerializableAs;
@@ -74,6 +75,7 @@ public class ConditionalDoor implements ConfigurationSerializable {
     @Getter
     private boolean invertOpen = false;
 
+
     public ConditionalDoor(long doorUID, String world, Vector position, ConditionChain conditionChain) {
         this.doorUID = doorUID;
         this.world = world;
@@ -94,17 +96,16 @@ public class ConditionalDoor implements ConfigurationSerializable {
         this.stayOpen = stayOpen;
     }
 
-    public static ConditionalDoor deserialize(Map<String, Object> map) {
+    public ConditionalDoor(Map<String, Object> map){
         TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
-        int doorUID = resolvingMap.getValue("doorUID");
-        String world = resolvingMap.getValue("world");
-        Vector position = resolvingMap.getValue("position");
-        boolean invertOpen = resolvingMap.getValue("invertOpen");
-        String evaluator = resolvingMap.getValue("evaluator");
-        EvaluationType evaluationType = EnumUtil.parse(resolvingMap.getValue("evaluationType"), EvaluationType.class);
-        ConditionChain conditionChain = resolvingMap.getValue("conditionChain");
-        int stayOpen = resolvingMap.getValue("stayOpen");
-        return new ConditionalDoor(doorUID, world, position, invertOpen, evaluator, evaluationType, conditionChain, stayOpen);
+        doorUID = resolvingMap.getValue("doorUID");
+        world = resolvingMap.getValue("world");
+        position = resolvingMap.getValue("position");
+        invertOpen = resolvingMap.getValue("invertOpen");
+        evaluator = resolvingMap.getValue("evaluator");
+        evaluationType = EnumUtil.parse(resolvingMap.getValue("evaluationType"), EvaluationType.class);
+        conditionChain = resolvingMap.getValue("conditionChain");
+        stayOpen = resolvingMap.getValue("stayOpen");
     }
 
     /**
@@ -163,20 +164,6 @@ public class ConditionalDoor implements ConfigurationSerializable {
         conditionChain.evaluated();
     }
 
-    @Override
-    public @NotNull Map<String, Object> serialize() {
-        return SerializationUtil.newBuilder()
-                .add("doorUID", doorUID)
-                .add("world", world)
-                .add("position", position)
-                .add("invertOpen", invertOpen)
-                .add("evaluator", evaluator)
-                .add("evaluationType", evaluationType)
-                .add("stayOpen", stayOpen)
-                .add("conditionChain", conditionChain)
-                .build();
-    }
-
     public boolean requiresPlayerEvaluation() {
         return conditionChain.requiresPlayerEvaluation();
     }
@@ -209,6 +196,21 @@ public class ConditionalDoor implements ConfigurationSerializable {
     public void invertOpen() {
         invertOpen = !invertOpen;
     }
+
+    @Override
+    public @NotNull Map<String, Object> serialize() {
+        return SerializationUtil.newBuilder()
+                .add("doorUID", doorUID)
+                .add("world", world)
+                .add("position", position)
+                .add("invertOpen", invertOpen)
+                .add("evaluator", evaluator)
+                .add("evaluationType", evaluationType)
+                .add("stayOpen", stayOpen)
+                .add("conditionChain", conditionChain)
+                .build();
+    }
+
 
     public enum EvaluationType {
         CUSTOM, AND, OR
