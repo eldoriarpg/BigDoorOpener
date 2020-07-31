@@ -1,5 +1,6 @@
 package de.eldoria.bigdoorsopener.util;
 
+import de.eldoria.bigdoorsopener.doors.ConditionScope;
 import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
 import de.eldoria.bigdoorsopener.doors.conditions.ConditionChain;
 import de.eldoria.bigdoorsopener.doors.conditions.DoorCondition;
@@ -62,7 +63,14 @@ public class ConditionChainEvaluator {
 
         if (current != null && current) return this;
 
-        Boolean open = doorCondition.isOpen(player, world, door, currentState);
+        Boolean open;
+
+        if (doorCondition.getScope() == ConditionScope.Scope.PLAYER && player == null) {
+            open = false;
+        } else {
+            open = doorCondition.isOpen(player, world, door, currentState);
+        }
+
         if (open == null) {
             return this;
         }
@@ -93,7 +101,13 @@ public class ConditionChainEvaluator {
 
         if (current != null && !current) return this;
 
-        Boolean open = doorCondition.isOpen(player, world, door, currentState);
+        Boolean open;
+
+        if (doorCondition.getScope() == ConditionScope.Scope.PLAYER && player == null) {
+            open = false;
+        } else {
+            open = doorCondition.isOpen(player, world, door, currentState);
+        }
 
         if (open == null) {
             return this;

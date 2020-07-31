@@ -14,6 +14,7 @@ import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.Nonnull;
 import java.time.Instant;
@@ -161,8 +162,9 @@ public class ConditionalDoor implements ConfigurationSerializable {
      *
      * @param player player which opened the door.
      */
-    public void opened(Player player) {
+    public void opened(@Nullable Player player) {
         waitForOpen = true;
+        if (player == null) return;
         conditionChain.opened(player);
     }
 
@@ -224,6 +226,7 @@ public class ConditionalDoor implements ConfigurationSerializable {
                 .add("conditionChain", conditionChain)
                 .build();
     }
+
 
 
     public enum EvaluationType {

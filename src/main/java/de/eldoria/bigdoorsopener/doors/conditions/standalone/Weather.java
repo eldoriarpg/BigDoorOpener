@@ -1,6 +1,7 @@
 package de.eldoria.bigdoorsopener.doors.conditions.standalone;
 
 import com.google.common.cache.Cache;
+import de.eldoria.bigdoorsopener.doors.ConditionScope;
 import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
 import de.eldoria.bigdoorsopener.doors.conditions.ConditionType;
 import de.eldoria.bigdoorsopener.doors.conditions.DoorCondition;
@@ -31,6 +32,7 @@ import java.util.concurrent.ExecutionException;
  * A condition which opens the door based on the current weather in the world.
  */
 @SerializableAs("weatherCondition")
+@ConditionScope(ConditionScope.Scope.WORLD)
 public class Weather implements DoorCondition {
     // We use a static cache here for all weather conditions.
     // The weather condition is not very likely to change out of a sudden so the refresh cycle does not need to be precisely correct.

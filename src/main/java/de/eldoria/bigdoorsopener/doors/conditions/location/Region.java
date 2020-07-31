@@ -4,6 +4,7 @@ import com.google.common.cache.Cache;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import de.eldoria.bigdoorsopener.BigDoorsOpener;
+import de.eldoria.bigdoorsopener.doors.ConditionScope;
 import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
 import de.eldoria.bigdoorsopener.doors.conditions.ConditionType;
 import de.eldoria.bigdoorsopener.util.C;
@@ -27,6 +28,7 @@ import java.util.logging.Level;
  * A condition which opens the door, when a player is inside a world guard region.
  */
 @SerializableAs("regionCondition")
+@ConditionScope(ConditionScope.Scope.PLAYER)
 public class Region implements Location {
     private final ProtectedRegion region;
     private final World world;

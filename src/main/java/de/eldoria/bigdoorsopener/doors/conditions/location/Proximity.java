@@ -3,6 +3,7 @@ package de.eldoria.bigdoorsopener.doors.conditions.location;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import de.eldoria.bigdoorsopener.BigDoorsOpener;
+import de.eldoria.bigdoorsopener.doors.ConditionScope;
 import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
 import de.eldoria.bigdoorsopener.doors.conditions.ConditionType;
 import de.eldoria.bigdoorsopener.util.C;
@@ -29,6 +30,7 @@ import java.util.logging.Level;
  * A condition which opens the door when the player is within a specific range of defined by geometric form
  */
 @SerializableAs("proximityCondition")
+@ConditionScope(ConditionScope.Scope.PLAYER)
 public class Proximity implements Location {
     private final Vector dimensions;
     private final ProximityForm proximityForm;
@@ -118,6 +120,9 @@ public class Proximity implements Location {
                             + Math.pow(target.getZ() - point.getZ(), 2) / Math.pow(dimensions.getZ(), 2) <= 1;
                 });
 
+        /**
+         * point, target, dimension
+         */
         public TriFunction<Vector, Vector, Vector, Boolean> check;
         public final String localKey;
 

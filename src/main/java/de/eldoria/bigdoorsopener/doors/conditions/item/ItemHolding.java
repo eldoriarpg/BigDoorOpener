@@ -1,5 +1,6 @@
 package de.eldoria.bigdoorsopener.doors.conditions.item;
 
+import de.eldoria.bigdoorsopener.doors.ConditionScope;
 import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
 import de.eldoria.bigdoorsopener.doors.conditions.ConditionType;
 import de.eldoria.bigdoorsopener.util.TextColors;
@@ -19,6 +20,7 @@ import java.util.Map;
  * A key which will be open when the player is holding a key in his hand.
  */
 @SerializableAs("itemHoldingCondition")
+@ConditionScope(ConditionScope.Scope.PLAYER)
 public class ItemHolding extends Item {
     public ItemHolding(ItemStack item, boolean consumed) {
         super(item, consumed);

@@ -1,6 +1,7 @@
 package de.eldoria.bigdoorsopener.doors.conditions;
 
 import de.eldoria.bigdoorsopener.BigDoorsOpener;
+import de.eldoria.bigdoorsopener.doors.ConditionScope;
 import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
 import de.eldoria.bigdoorsopener.doors.conditions.item.Item;
 import de.eldoria.bigdoorsopener.doors.conditions.location.Location;
@@ -115,8 +116,16 @@ public class ConditionChain implements ConfigurationSerializable, Cloneable {
                         + doorCondition.getClass().getSimpleName());
                 continue;
             }
+            Boolean state;
+
+            if (doorCondition.getScope() == ConditionScope.Scope.PLAYER
+                    && player == null) {
+                state = false;
+            } else {
+                state = doorCondition.isOpen(player, world, door, currentState);
+            }
             evaluationString = evaluationString.replaceAll("(?i)" + condition.conditionParameter,
-                    String.valueOf(doorCondition.isOpen(player, world, door, currentState)));
+                    String.valueOf(state));
         }
 
         evaluationString = evaluationString.replaceAll("(?i)currentState",

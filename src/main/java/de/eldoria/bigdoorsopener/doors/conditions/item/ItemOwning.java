@@ -1,5 +1,6 @@
 package de.eldoria.bigdoorsopener.doors.conditions.item;
 
+import de.eldoria.bigdoorsopener.doors.ConditionScope;
 import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
 import de.eldoria.bigdoorsopener.doors.conditions.ConditionType;
 import de.eldoria.bigdoorsopener.util.TextColors;
@@ -19,6 +20,7 @@ import java.util.Map;
  * A key which opens a doow, when the player has it in his inventory.
  */
 @SerializableAs("itemOwningCondition")
+@ConditionScope(ConditionScope.Scope.PLAYER)
 public class ItemOwning extends Item {
     public ItemOwning(ItemStack item, boolean consumed) {
         super(item, consumed);

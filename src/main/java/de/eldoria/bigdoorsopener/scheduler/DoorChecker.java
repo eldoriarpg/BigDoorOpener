@@ -4,13 +4,16 @@ import com.google.common.cache.Cache;
 import de.eldoria.bigdoorsopener.BigDoorsOpener;
 import de.eldoria.bigdoorsopener.config.Config;
 import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
+import de.eldoria.bigdoorsopener.doors.conditions.location.Proximity;
 import de.eldoria.bigdoorsopener.util.C;
+import de.eldoria.eldoutilities.functions.TriFunction;
 import de.eldoria.eldoutilities.localization.Localizer;
 import nl.pim16aap2.bigDoors.BigDoors;
 import org.bukkit.Bukkit;
 import org.bukkit.Server;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
+import org.bukkit.util.Vector;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -35,6 +38,7 @@ public class DoorChecker extends BigDoorsAdapter implements Runnable {
     private final Cache<String, List<Player>> worldPlayers = C.getShortExpiringCache();
     private final Cache<Long, Boolean> chunkStateCache = C.getShortExpiringCache();
     private double doorUpdateInterval;
+    private final TriFunction<Vector, Vector, Vector, Boolean> proximity = Proximity.ProximityForm.CUBOID.check;
 
     public DoorChecker(Config config, BigDoors bigDoors, Localizer localizer) {
         super(bigDoors, localizer);
@@ -134,13 +138,31 @@ public class DoorChecker extends BigDoorsAdapter implements Runnable {
                 boolean opened = false;
                 // Evaluate door per player. If one player can open it, it will open.
                 try {
+                    boolean checked = false;
                     for (Player player : worldPlayers.get(world.getName(), world::getPlayers)) {
+                        if (!proximity.apply(door.getPosition(),
+                                player.getLocation().toVector(),
+                                config.getPlayerCheckRadius())) {
+                            continue;
+                        }
+                        checked = true;
                         if (door.getState(player, world, open)) {
                             opened = true;
                             // only open the door if its not yet open. because why open it then.
                             if (!open) {
                                 this.open.add(door);
                                 openedBy.put(door.getDoorUID(), player);
+                            }
+                            break;
+                        }
+                    }
+                    if (!checked) {
+                        if (door.getState(null, world, open)) {
+                            opened = true;
+                            // only open the door if its not yet open. because why open it then.
+                            if (!open) {
+                                this.open.add(door);
+                                openedBy.put(door.getDoorUID(), null);
                             }
                             break;
                         }

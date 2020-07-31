@@ -1,6 +1,7 @@
 package de.eldoria.bigdoorsopener.doors.conditions.standalone;
 
 import com.google.common.cache.Cache;
+import de.eldoria.bigdoorsopener.doors.ConditionScope;
 import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
 import de.eldoria.bigdoorsopener.doors.conditions.ConditionType;
 import de.eldoria.bigdoorsopener.doors.conditions.DoorCondition;
@@ -27,6 +28,7 @@ import java.util.concurrent.ExecutionException;
  * A key which defines the door state by current world time.
  */
 @SerializableAs("timeCondition")
+@ConditionScope(ConditionScope.Scope.WORLD)
 public class Time implements DoorCondition {
     // We use a static cache here for all time conditions.
     // The time condition is not very likely to change out of a sudden so the refresh cycle does not need to be precisely correct.

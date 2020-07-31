@@ -2,6 +2,7 @@ package de.eldoria.bigdoorsopener.doors.conditions.location;
 
 import com.google.common.cache.Cache;
 import de.eldoria.bigdoorsopener.BigDoorsOpener;
+import de.eldoria.bigdoorsopener.doors.ConditionScope;
 import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
 import de.eldoria.bigdoorsopener.doors.conditions.ConditionType;
 import de.eldoria.bigdoorsopener.util.C;
@@ -24,6 +25,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
 @SerializableAs("simpleRegionCondition")
+@ConditionScope(ConditionScope.Scope.PLAYER)
 public class SimpleRegion implements Location {
     private final BlockVector minimum;
     private final BlockVector maximum;

@@ -1,5 +1,6 @@
 package de.eldoria.bigdoorsopener.doors.conditions.standalone;
 
+import de.eldoria.bigdoorsopener.doors.ConditionScope;
 import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
 import de.eldoria.bigdoorsopener.doors.conditions.ConditionType;
 import de.eldoria.bigdoorsopener.doors.conditions.DoorCondition;
@@ -21,6 +22,7 @@ import java.util.Map;
  * A condition which opens the door, when a player has a specifid permission.
  */
 @SerializableAs("permissionCondition")
+@ConditionScope(ConditionScope.Scope.PLAYER)
 public class Permission implements DoorCondition {
     private final String permission;
 

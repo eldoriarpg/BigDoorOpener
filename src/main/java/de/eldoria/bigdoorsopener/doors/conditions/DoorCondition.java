@@ -1,5 +1,6 @@
 package de.eldoria.bigdoorsopener.doors.conditions;
 
+import de.eldoria.bigdoorsopener.doors.ConditionScope;
 import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
 import de.eldoria.eldoutilities.localization.Localizer;
 import net.kyori.adventure.text.TextComponent;
@@ -56,4 +57,12 @@ public interface DoorCondition extends ConfigurationSerializable, Cloneable {
     void evaluated();
 
     DoorCondition clone();
+
+    /**
+     * Returns the scope of the condition.
+     * @return condition scope
+     */
+    default ConditionScope.Scope getScope() {
+        return getClass().getAnnotation(ConditionScope.class).value();
+    }
 }
