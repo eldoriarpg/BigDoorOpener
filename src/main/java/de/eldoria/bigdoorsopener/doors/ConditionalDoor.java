@@ -8,7 +8,6 @@ import de.eldoria.eldoutilities.serialization.TypeResolvingMap;
 import de.eldoria.eldoutilities.utils.EnumUtil;
 import lombok.Getter;
 import lombok.Setter;
-import org.bukkit.Chunk;
 import org.bukkit.World;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.SerializableAs;
@@ -67,6 +66,8 @@ public class ConditionalDoor implements ConfigurationSerializable {
      */
     private int stayOpen = 0;
 
+    private boolean waitForOpen = false;
+
 
     /**
      * True if the door was registered in open state.
@@ -96,9 +97,10 @@ public class ConditionalDoor implements ConfigurationSerializable {
         this.stayOpen = stayOpen;
     }
 
-    public ConditionalDoor(Map<String, Object> map){
+    public ConditionalDoor(Map<String, Object> map) {
         TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
-        doorUID = resolvingMap.getValue("doorUID");
+        int doorUID = resolvingMap.getValue("doorUID");
+        this.doorUID = doorUID;
         world = resolvingMap.getValue("world");
         position = resolvingMap.getValue("position");
         invertOpen = resolvingMap.getValue("invertOpen");
@@ -118,6 +120,10 @@ public class ConditionalDoor implements ConfigurationSerializable {
      */
     public boolean getState(Player player, World world, boolean currentState) {
         if (openTill != null && openTill.isAfter(Instant.now())) return true;
+
+        if (waitForOpen) {
+            return true;
+        }
 
         switch (evaluationType) {
             case CUSTOM:
@@ -151,13 +157,21 @@ public class ConditionalDoor implements ConfigurationSerializable {
     }
 
     /**
-     * This method is called when a door changes its state from closed to open.
+     * This method is called when a door is toggled to change its state from closed to open.
      *
      * @param player player which opened the door.
      */
     public void opened(Player player) {
-        openTill = Instant.now().plus(stayOpen, SECONDS);
+        waitForOpen = true;
         conditionChain.opened(player);
+    }
+
+    /**
+     * Called when a door is fully opened.
+     */
+    public void opened() {
+        waitForOpen = false;
+        openTill = Instant.now().plus(stayOpen, SECONDS);
     }
 
     public void evaluated() {
