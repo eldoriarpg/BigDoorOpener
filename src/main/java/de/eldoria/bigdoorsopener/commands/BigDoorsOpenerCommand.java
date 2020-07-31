@@ -512,7 +512,7 @@ public class BigDoorsOpenerCommand implements TabExecutor {
                         || vector.getY() < 1 || vector.getY() > 100
                         || vector.getZ() < 1 || vector.getZ() > 100) {
                     messageSender.sendError(player, localizer.getMessage("error.invalidRange",
-                            Replacement.create("MIN", 0).addFormatting('6'),
+                            Replacement.create("MIN", 1).addFormatting('6'),
                             Replacement.create("MAX", 100).addFormatting('6')));
                     return true;
                 }
