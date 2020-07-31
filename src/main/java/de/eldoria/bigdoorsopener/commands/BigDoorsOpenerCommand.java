@@ -414,11 +414,11 @@ public class BigDoorsOpenerCommand implements TabExecutor {
                     return true;
                 }
 
-                if (argumentsInvalid(player, conditionArgs, 2,
+                if (argumentsInvalid(player, conditionArgs, 1,
                         "<" + localizer.getMessage("syntax.doorId") + "> <"
                                 + localizer.getMessage("syntax.condition") + "> <"
-                                + localizer.getMessage("syntax.amount") + "> <"
-                                + localizer.getMessage("tabcomplete.consumed") + ">")) {
+                                + localizer.getMessage("syntax.amount") + "> ["
+                                + localizer.getMessage("tabcomplete.consumed") + "]")) {
                     return true;
                 }
 
