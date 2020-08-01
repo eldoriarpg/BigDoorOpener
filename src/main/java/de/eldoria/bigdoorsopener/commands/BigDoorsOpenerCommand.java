@@ -525,6 +525,9 @@ public class BigDoorsOpenerCommand implements TabExecutor {
                 }
 
                 conditionChain.setLocation(new Proximity(vector, form));
+
+                // TODO: display region
+
                 messageSender.sendMessage(player, localizer.getMessage("setCondition.proximity"));
                 break;
             // <regionName>
