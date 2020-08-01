@@ -14,7 +14,7 @@ import java.util.UUID;
  * For some reasons spigot does not know the current weather of a world... wtf.
  */
 public class WeatherListener implements Listener {
-    private static Map<UUID, Boolean> weatherMap = new HashMap<>();
+    private static final Map<UUID, Boolean> WEATHER_MAP = new HashMap<>();
 
     /**
      * Get if its raining in a world.
@@ -24,11 +24,11 @@ public class WeatherListener implements Listener {
      * @return true if its currently raining in the world
      */
     public static boolean isRaining(World world) {
-        return weatherMap.computeIfAbsent(world.getUID(), (k) -> world.hasStorm());
+        return WEATHER_MAP.computeIfAbsent(world.getUID(), (k) -> world.hasStorm());
     }
 
     @EventHandler
     public void onWeatherChange(WeatherChangeEvent event) {
-        weatherMap.put(event.getWorld().getUID(), event.toWeatherState());
+        WEATHER_MAP.put(event.getWorld().getUID(), event.toWeatherState());
     }
 }

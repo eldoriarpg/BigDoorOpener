@@ -18,6 +18,7 @@ import de.eldoria.bigdoorsopener.doors.conditions.standalone.Permission;
 import de.eldoria.bigdoorsopener.doors.conditions.standalone.Placeholder;
 import de.eldoria.bigdoorsopener.doors.conditions.standalone.Time;
 import de.eldoria.bigdoorsopener.doors.conditions.standalone.Weather;
+import de.eldoria.bigdoorsopener.listener.DoorOpenedListener;
 import de.eldoria.bigdoorsopener.listener.ItemConditionListener;
 import de.eldoria.bigdoorsopener.listener.WeatherListener;
 import de.eldoria.bigdoorsopener.listener.registration.RegisterInteraction;
@@ -166,6 +167,7 @@ public class BigDoorsOpener extends JavaPlugin {
         registerInteraction = new RegisterInteraction();
         pm.registerEvents(registerInteraction, this);
         pm.registerEvents(new ItemConditionListener(doors, localizer, config), this);
+        pm.registerEvents(new DoorOpenedListener(config), this);
     }
 
     @SuppressWarnings( {"AssignmentToStaticFieldFromInstanceMethod", "VariableNotUsedInsideIf"})
@@ -215,9 +217,6 @@ public class BigDoorsOpener extends JavaPlugin {
         } else {
             logger().info("Placeholder API not found. Placeholder usage is disabled.");
         }
-    }
-
-    private void worldGuardHook() throws ClassNotFoundException {
     }
 
     /**

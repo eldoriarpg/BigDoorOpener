@@ -1,5 +1,7 @@
 package de.eldoria.bigdoorsopener.doors.conditions.standalone;
 
+import com.google.common.cache.Cache;
+import de.eldoria.bigdoorsopener.doors.ConditionScope;
 import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
 import de.eldoria.bigdoorsopener.doors.conditions.ConditionType;
 import de.eldoria.bigdoorsopener.doors.conditions.DoorCondition;
@@ -13,6 +15,7 @@ import de.eldoria.eldoutilities.serialization.SerializationUtil;
 import de.eldoria.eldoutilities.serialization.TypeResolvingMap;
 import de.eldoria.eldoutilities.utils.EnumUtil;
 import net.kyori.adventure.text.TextComponent;
+import org.bukkit.Bukkit;
 import org.bukkit.WeatherType;
 import org.bukkit.World;
 import org.bukkit.configuration.serialization.SerializableAs;
@@ -22,12 +25,18 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 
 /**
  * A condition which opens the door based on the current weather in the world.
  */
 @SerializableAs("weatherCondition")
+@ConditionScope(ConditionScope.Scope.WORLD)
 public class Weather implements DoorCondition {
+    // We use a static cache here for all weather conditions.
+    // The weather condition is not very likely to change out of a sudden so the refresh cycle does not need to be precisely correct.
+    private static final Cache<ConditionalDoor, Optional<Boolean>> STATE_CACHE = C.getShortExpiringCache();
     private final WeatherType weatherType;
     private boolean forceState;
     private DoorState state;
@@ -44,9 +53,19 @@ public class Weather implements DoorCondition {
 
     @Override
     public Boolean isOpen(@Nullable Player player, World world, ConditionalDoor door, boolean currentState) {
+        try {
+            return STATE_CACHE.get(door, () -> Optional.ofNullable(isRaining(door))).orElse(null);
+        } catch (ExecutionException e) {
+            return null;
+        }
+    }
+
+    private Boolean isRaining(ConditionalDoor door) {
         Vector pos = door.getPosition();
 
+        World world = Bukkit.getWorld(door.getWorld());
         boolean raining = WeatherListener.isRaining(world);
+
 
         // check if it can rain at door based on temperature.
         if (raining) {
@@ -111,6 +130,16 @@ public class Weather implements DoorCondition {
     @Override
     public String getRemoveCommand(ConditionalDoor door) {
         return REMOVE_COMMAND + door.getDoorUID() + " weather";
+    }
+
+    @Override
+    public void evaluated() {
+
+    }
+
+    @Override
+    public Weather clone() {
+        return new Weather(weatherType, forceState);
     }
 
     private double getTemperature(World world, Vector pos) {

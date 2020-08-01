@@ -1,8 +1,8 @@
 package de.eldoria.bigdoorsopener.doors.conditions.item;
 
+import de.eldoria.bigdoorsopener.doors.ConditionScope;
 import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
 import de.eldoria.bigdoorsopener.doors.conditions.ConditionType;
-import de.eldoria.bigdoorsopener.doors.conditions.item.interacting.ItemClick;
 import de.eldoria.bigdoorsopener.util.TextColors;
 import de.eldoria.eldoutilities.localization.Localizer;
 import de.eldoria.eldoutilities.localization.Replacement;
@@ -20,6 +20,7 @@ import java.util.Map;
  * A key which opens a doow, when the player has it in his inventory.
  */
 @SerializableAs("itemOwningCondition")
+@ConditionScope(ConditionScope.Scope.PLAYER)
 public class ItemOwning extends Item {
     public ItemOwning(ItemStack item, boolean consumed) {
         super(item, consumed);
@@ -36,11 +37,11 @@ public class ItemOwning extends Item {
         return hasPlayerItemInInventory(player);
     }
 
-    public ItemClick deserialize(Map<String, Object> map) {
+    public ItemOwning deserialize(Map<String, Object> map) {
         TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
         ItemStack stack = resolvingMap.getValue("item");
         boolean consumed = resolvingMap.getValue("consumed");
-        return new ItemClick(stack, consumed);
+        return new ItemOwning(stack, consumed);
     }
 
     @Override
@@ -56,5 +57,10 @@ public class ItemOwning extends Item {
     @Override
     public String getCreationCommand(ConditionalDoor door) {
         return SET_COMMAND + door.getDoorUID() + " itemOwning " + getItem().getAmount() + " " + isConsumed();
+    }
+
+    @Override
+    public void evaluated() {
+
     }
 }

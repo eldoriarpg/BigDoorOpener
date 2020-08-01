@@ -1,6 +1,7 @@
 package de.eldoria.bigdoorsopener.doors.conditions.standalone;
 
 import de.eldoria.bigdoorsopener.BigDoorsOpener;
+import de.eldoria.bigdoorsopener.doors.ConditionScope;
 import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
 import de.eldoria.bigdoorsopener.doors.conditions.ConditionType;
 import de.eldoria.bigdoorsopener.doors.conditions.DoorCondition;
@@ -23,6 +24,7 @@ import java.util.Map;
  * A condition which uses the placeholder api.
  */
 @SerializableAs("placeholderCondition")
+@ConditionScope(ConditionScope.Scope.PLAYER)
 public class Placeholder implements DoorCondition {
 
     private final String evaluator;
@@ -65,6 +67,16 @@ public class Placeholder implements DoorCondition {
     @Override
     public String getRemoveCommand(ConditionalDoor door) {
         return REMOVE_COMMAND + door.getDoorUID() + " placeholder";
+    }
+
+    @Override
+    public void evaluated() {
+
+    }
+
+    @Override
+    public Placeholder clone() {
+        return new Placeholder(evaluator);
     }
 
     @Override

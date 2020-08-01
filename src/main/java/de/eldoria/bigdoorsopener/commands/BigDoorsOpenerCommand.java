@@ -414,11 +414,11 @@ public class BigDoorsOpenerCommand implements TabExecutor {
                     return true;
                 }
 
-                if (argumentsInvalid(player, conditionArgs, 2,
+                if (argumentsInvalid(player, conditionArgs, 1,
                         "<" + localizer.getMessage("syntax.doorId") + "> <"
                                 + localizer.getMessage("syntax.condition") + "> <"
-                                + localizer.getMessage("syntax.amount") + "> <"
-                                + localizer.getMessage("tabcomplete.consumed") + ">")) {
+                                + localizer.getMessage("syntax.amount") + "> ["
+                                + localizer.getMessage("tabcomplete.consumed") + "]")) {
                     return true;
                 }
 
@@ -512,7 +512,7 @@ public class BigDoorsOpenerCommand implements TabExecutor {
                         || vector.getY() < 1 || vector.getY() > 100
                         || vector.getZ() < 1 || vector.getZ() > 100) {
                     messageSender.sendError(player, localizer.getMessage("error.invalidRange",
-                            Replacement.create("MIN", 0).addFormatting('6'),
+                            Replacement.create("MIN", 1).addFormatting('6'),
                             Replacement.create("MAX", 100).addFormatting('6')));
                     return true;
                 }
@@ -525,6 +525,9 @@ public class BigDoorsOpenerCommand implements TabExecutor {
                 }
 
                 conditionChain.setLocation(new Proximity(vector, form));
+
+                // TODO: display region
+
                 messageSender.sendMessage(player, localizer.getMessage("setCondition.proximity"));
                 break;
             // <regionName>

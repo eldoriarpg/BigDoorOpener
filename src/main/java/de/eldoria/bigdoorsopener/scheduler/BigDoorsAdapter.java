@@ -7,6 +7,7 @@ import de.eldoria.eldoutilities.localization.Replacement;
 import lombok.Getter;
 import nl.pim16aap2.bigDoors.BigDoors;
 import nl.pim16aap2.bigDoors.Commander;
+import nl.pim16aap2.bigDoors.Door;
 import org.bukkit.Bukkit;
 import org.bukkit.Server;
 import org.bukkit.World;
@@ -79,10 +80,18 @@ public abstract class BigDoorsAdapter {
      * @return true if the door is available
      */
     protected boolean isAvailableToOpen(ConditionalDoor door) {
-        return !isOpen(door) && !isBusy(door);
+        return !isOpen(door) && !isBusy(door) && isDoorLoaded(getDoor(door.getDoorUID()));
+    }
+
+    protected boolean isDoorLoaded(Door door) {
+        return bigDoors.areChunksLoadedForDoor(door);
     }
 
     protected boolean isBusy(ConditionalDoor door) {
         return getCommander().isDoorBusy(door.getDoorUID());
+    }
+
+    protected Door getDoor(long uid) {
+        return commander.getDoor(null, uid);
     }
 }

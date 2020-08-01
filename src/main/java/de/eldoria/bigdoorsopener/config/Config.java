@@ -29,6 +29,7 @@ public class Config {
     private int refreshRate;
     private boolean checkUpdates;
     private int jsCacheSize;
+    private Vector playerCheckRadius;
 
     public Config(Plugin plugin) {
         this.plugin = plugin;
@@ -160,6 +161,8 @@ public class Config {
         setIfAbsent(config, "language", "en_US");
         setIfAbsent(config, "checkUpdates", true);
         setIfAbsent(config, "jsCacheSize", 400);
+        setIfAbsent(config, "playerCheckRadius", 200);
+
 
         // never set the version here.
     }
@@ -188,11 +191,16 @@ public class Config {
         language = config.getString("language", "en_US");
         checkUpdates = config.getBoolean("checkUpdates", true);
         jsCacheSize = config.getInt("jsCacheSize", 400);
+        int radius = config.getInt("playerCheckRadius", 200);
+        playerCheckRadius = new Vector(radius, radius, radius);
 
-        if (jsCacheSize < 10) {
+        // ensure that js cache size is not too small
+        if (jsCacheSize < 200) {
             BigDoorsOpener.logger().warning("Js cache is small. This may cause performance issues. We recommend at least a size of 200");
-            jsCacheSize = 10;
+            jsCacheSize = Math.max(jsCacheSize, 10);
         }
+
+        safeConfig();
 
         BigDoorsOpener.logger().info("Config loaded!");
     }

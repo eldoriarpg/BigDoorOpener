@@ -1,5 +1,6 @@
 package de.eldoria.bigdoorsopener.doors.conditions.item.interacting;
 
+import de.eldoria.bigdoorsopener.doors.ConditionScope;
 import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
 import de.eldoria.bigdoorsopener.doors.conditions.ConditionType;
 import de.eldoria.bigdoorsopener.util.C;
@@ -25,6 +26,7 @@ import java.util.Map;
  * A key which opens a door, when the player is clicking at a specific block
  */
 @SerializableAs("itemBlockCondition")
+@ConditionScope(ConditionScope.Scope.PLAYER)
 public class ItemBlock extends ItemInteraction {
 
     @Setter
@@ -108,6 +110,10 @@ public class ItemBlock extends ItemInteraction {
     @Override
     public String getCreationCommand(ConditionalDoor door) {
         return SET_COMMAND + door.getDoorUID() + " itemBlock " + getItem().getAmount() + " " + isConsumed();
+    }
 
+    @Override
+    public ItemBlock clone() {
+        return new ItemBlock(position, getItem(), isConsumed());
     }
 }

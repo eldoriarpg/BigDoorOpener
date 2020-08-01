@@ -28,6 +28,7 @@ public final class Permissions {
     public static final String PLACEHOLDER_CONDITION = "bdo.condition.placeholder";
     // permission to access all conditions
     public static final String ALL_CONDITION = "bdo.condition.all";
+
     private Permissions() {
     }
 }

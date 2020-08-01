@@ -1,21 +1,29 @@
 package de.eldoria.bigdoorsopener.scheduler;
 
+import com.google.common.cache.Cache;
 import de.eldoria.bigdoorsopener.BigDoorsOpener;
 import de.eldoria.bigdoorsopener.config.Config;
 import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
+import de.eldoria.bigdoorsopener.doors.conditions.location.Proximity;
+import de.eldoria.bigdoorsopener.util.C;
+import de.eldoria.eldoutilities.functions.TriFunction;
 import de.eldoria.eldoutilities.localization.Localizer;
 import nl.pim16aap2.bigDoors.BigDoors;
 import org.bukkit.Bukkit;
 import org.bukkit.Server;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
+import org.bukkit.util.Vector;
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
 
 public class DoorChecker extends BigDoorsAdapter implements Runnable {
 
@@ -27,6 +35,10 @@ public class DoorChecker extends BigDoorsAdapter implements Runnable {
     private final Set<ConditionalDoor> open = new HashSet<>();
     private final Set<ConditionalDoor> close = new HashSet<>();
     private final Set<ConditionalDoor> evaluated = new HashSet<>();
+    private final Cache<String, List<Player>> worldPlayers = C.getShortExpiringCache();
+    private final Cache<Long, Boolean> chunkStateCache = C.getShortExpiringCache();
+    private double doorUpdateInterval;
+    private final TriFunction<Vector, Vector, Vector, Boolean> proximity = Proximity.ProximityForm.CUBOID.check;
 
     public DoorChecker(Config config, BigDoors bigDoors, Localizer localizer) {
         super(bigDoors, localizer);
@@ -71,7 +83,8 @@ public class DoorChecker extends BigDoorsAdapter implements Runnable {
     public void run() {
         if (doors.isEmpty()) return;
 
-        int count = (int) Math.max(Math.ceil((double) doors.size() / config.getRefreshRate()), 1);
+        doorUpdateInterval += doors.size() / (double) config.getRefreshRate();
+
 
         open.clear();
         close.clear();
@@ -79,7 +92,8 @@ public class DoorChecker extends BigDoorsAdapter implements Runnable {
 
         Map<Long, Player> openedBy = new HashMap<>();
 
-        for (int i = 0; i < count; i++) {
+        while (doorUpdateInterval > 1) {
+            doorUpdateInterval--;
             // poll from queue and append door again.
             ConditionalDoor door = doors.poll();
             assert door != null : "Door is null. How could this happen?";
@@ -93,37 +107,68 @@ public class DoorChecker extends BigDoorsAdapter implements Runnable {
 
             doors.add(door);
 
+            World world = server.getWorld(door.getWorld());
+            // If the world of the door does not exists, why should we evaluate it.
+            if (world == null) continue;
+
+            // check if chunk of door is loaded. if not skip.
+            try {
+                if (chunkStateCache.get(door.getDoorUID(), () -> !isDoorLoaded(getDoor(door.getDoorUID())))) {
+                    // Skip doors in unloaded chunks
+                    continue;
+                }
+            } catch (ExecutionException e) {
+                BigDoorsOpener.logger().log(Level.WARNING,
+                        "A error occured while calculating the chunk cache state. Please report this.", e);
+                continue;
+            }
+
             // skip busy doors. bcs why should we try to open/close a door we cant open/close
             if (getCommander().isDoorBusy(door.getDoorUID())) {
-                evaluated.clear();
                 continue;
             }
 
             // collect all doors we evaluated.
             evaluated.add(door);
 
-
-            World world = server.getWorld(door.getWorld());
-            // If the world of the door does not exists, why should we evaluate it.
-            if (world == null) continue;
-
             boolean open = isOpen(door);
-
 
             //Check if the door really needs a per player evaluation
             if (door.requiresPlayerEvaluation()) {
                 boolean opened = false;
                 // Evaluate door per player. If one player can open it, it will open.
-                for (Player player : world.getPlayers()) {
-                    if (door.getState(player, world, open)) {
-                        opened = true;
-                        // only open the door if its not yet open. because why open it then.
-                        if (!open) {
-                            this.open.add(door);
-                            openedBy.put(door.getDoorUID(), player);
+                try {
+                    boolean checked = false;
+                    for (Player player : worldPlayers.get(world.getName(), world::getPlayers)) {
+                        if (!proximity.apply(door.getPosition(),
+                                player.getLocation().toVector(),
+                                config.getPlayerCheckRadius())) {
+                            continue;
                         }
-                        break;
+                        checked = true;
+                        if (door.getState(player, world, open)) {
+                            opened = true;
+                            // only open the door if its not yet open. because why open it then.
+                            if (!open) {
+                                this.open.add(door);
+                                openedBy.put(door.getDoorUID(), player);
+                            }
+                            break;
+                        }
                     }
+                    if (!checked) {
+                        if (door.getState(null, world, open)) {
+                            opened = true;
+                            // only open the door if its not yet open. because why open it then.
+                            if (!open) {
+                                this.open.add(door);
+                                openedBy.put(door.getDoorUID(), null);
+                            }
+                            break;
+                        }
+                    }
+                } catch (ExecutionException e) {
+                    BigDoorsOpener.logger().log(Level.WARNING, "Failed to compute. Please report this.", e);
                 }
                 if (!opened && open) {
                     close.add(door);
