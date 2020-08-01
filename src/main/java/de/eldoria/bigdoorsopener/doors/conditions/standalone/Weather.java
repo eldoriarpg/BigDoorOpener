@@ -36,7 +36,7 @@ import java.util.concurrent.ExecutionException;
 public class Weather implements DoorCondition {
     // We use a static cache here for all weather conditions.
     // The weather condition is not very likely to change out of a sudden so the refresh cycle does not need to be precisely correct.
-    private static final Cache<ConditionalDoor, Optional<Boolean>> STATE_CACHE = C.getExpiringCache();
+    private static final Cache<ConditionalDoor, Optional<Boolean>> STATE_CACHE = C.getShortExpiringCache();
     private final WeatherType weatherType;
     private boolean forceState;
     private DoorState state;

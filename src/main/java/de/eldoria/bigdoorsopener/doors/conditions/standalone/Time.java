@@ -32,7 +32,7 @@ import java.util.concurrent.ExecutionException;
 public class Time implements DoorCondition {
     // We use a static cache here for all time conditions.
     // The time condition is not very likely to change out of a sudden so the refresh cycle does not need to be precisely correct.
-    private static final Cache<Long, Optional<Boolean>> STATE_CACHE = C.getExpiringCache();
+    private static final Cache<Long, Optional<Boolean>> STATE_CACHE = C.getShortExpiringCache();
     /**
      * The ticks from when to door should be closed
      */
