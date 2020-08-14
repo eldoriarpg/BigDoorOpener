@@ -5,6 +5,7 @@ import de.eldoria.bigdoorsopener.doors.ConditionScope;
 import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
 import de.eldoria.bigdoorsopener.doors.conditions.item.Item;
 import de.eldoria.bigdoorsopener.doors.conditions.location.Location;
+import de.eldoria.bigdoorsopener.doors.conditions.standalone.MythicMob;
 import de.eldoria.bigdoorsopener.doors.conditions.standalone.Permission;
 import de.eldoria.bigdoorsopener.doors.conditions.standalone.Placeholder;
 import de.eldoria.bigdoorsopener.doors.conditions.standalone.Time;
@@ -40,16 +41,18 @@ public class ConditionChain implements ConfigurationSerializable, Cloneable {
     private Time time = null;
     private Weather weather = null;
     private Placeholder placeholder = null;
+    private MythicMob mythicMob = null;
 
     public ConditionChain() {
     }
 
-    private ConditionChain(Item item, Location location, Permission permission, Time time, Weather weather, Placeholder placeholder) {
+    private ConditionChain(Item item, Location location, Permission permission, Time time, Weather weather, Placeholder placeholder, MythicMob mythicMob) {
         this.item = item;
         this.location = location;
         this.permission = permission;
         this.time = time;
         this.weather = weather;
+        this.mythicMob = mythicMob;
     }
 
     public static ConditionChain deserialize(Map<String, Object> map) {
@@ -60,7 +63,8 @@ public class ConditionChain implements ConfigurationSerializable, Cloneable {
         Time time = resolvingMap.getValue("time");
         Weather weather = resolvingMap.getValue("weather");
         Placeholder placeholder = resolvingMap.getValueOrDefault("placeholder", null);
-        return new ConditionChain(item, location, permission, time, weather, placeholder);
+        MythicMob mythicMob = resolvingMap.getValueOrDefault("mythicMob", null);
+        return new ConditionChain(item, location, permission, time, weather, placeholder, mythicMob);
     }
 
     /**
@@ -178,6 +182,7 @@ public class ConditionChain implements ConfigurationSerializable, Cloneable {
                 .add("time", time)
                 .add("weather", weather)
                 .add("placeholder", placeholder)
+                .add("mythicMob", mythicMob)
                 .build();
 
     }
@@ -202,7 +207,9 @@ public class ConditionChain implements ConfigurationSerializable, Cloneable {
     public ConditionChain copy() {
         return new ConditionChain(C.nonNullOrElse(item, Item::clone, null), C.nonNullOrElse(location, Location::clone, null),
                 C.nonNullOrElse(permission, Permission::clone, null), C.nonNullOrElse(time, Time::clone, null),
-                C.nonNullOrElse(weather, Weather::clone, null), C.nonNullOrElse(placeholder, Placeholder::clone, null));
+                C.nonNullOrElse(weather, Weather::clone, null), C.nonNullOrElse(placeholder, Placeholder::clone, null),
+                C.nonNullOrElse(mythicMob, MythicMob::clone, null)
+        );
     }
 
     /**
@@ -211,7 +218,7 @@ public class ConditionChain implements ConfigurationSerializable, Cloneable {
      * @return array of conditions. May contain null values.
      */
     public DoorCondition[] getConditions() {
-        return new DoorCondition[] {location, permission, time, weather, item, placeholder};
+        return new DoorCondition[] {location, time, weather, mythicMob, permission, item, placeholder};
     }
 
     /**
@@ -226,7 +233,8 @@ public class ConditionChain implements ConfigurationSerializable, Cloneable {
                 new Pair<>(time, ConditionType.ConditionGroup.TIME),
                 new Pair<>(weather, ConditionType.ConditionGroup.WEATHER),
                 new Pair<>(item, ConditionType.ConditionGroup.ITEM),
-                new Pair<>(placeholder, ConditionType.ConditionGroup.PLACEHOLDER));
+                new Pair<>(placeholder, ConditionType.ConditionGroup.PLACEHOLDER),
+                new Pair<>(mythicMob, ConditionType.ConditionGroup.MYTHIC_MOB));
     }
 
     /**
@@ -249,6 +257,8 @@ public class ConditionChain implements ConfigurationSerializable, Cloneable {
                 return weather;
             case PLACEHOLDER:
                 return placeholder;
+            case MYTHIC_MOB:
+                return mythicMob;
             default:
                 throw new IllegalStateException("Unexpected value: " + group);
         }
@@ -285,6 +295,9 @@ public class ConditionChain implements ConfigurationSerializable, Cloneable {
             case PLACEHOLDER:
                 placeholder = (Placeholder) condition;
                 break;
+            case MYTHIC_MOB:
+                mythicMob = (MythicMob) condition;
+                break;
             default:
                 throw new IllegalStateException("Unexpected value: " + group);
         }
@@ -314,6 +327,9 @@ public class ConditionChain implements ConfigurationSerializable, Cloneable {
                 break;
             case PLACEHOLDER:
                 placeholder = null;
+                break;
+            case MYTHIC_MOB:
+                mythicMob = null;
                 break;
             default:
                 throw new IllegalStateException("Unexpected value: " + group);

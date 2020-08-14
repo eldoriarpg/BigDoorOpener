@@ -1,5 +1,6 @@
 package de.eldoria.bigdoorsopener.commands;
 
+import com.google.common.cache.Cache;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
@@ -17,6 +18,7 @@ import de.eldoria.bigdoorsopener.doors.conditions.item.interacting.ItemClick;
 import de.eldoria.bigdoorsopener.doors.conditions.location.Proximity;
 import de.eldoria.bigdoorsopener.doors.conditions.location.Region;
 import de.eldoria.bigdoorsopener.doors.conditions.location.SimpleRegion;
+import de.eldoria.bigdoorsopener.doors.conditions.standalone.MythicMob;
 import de.eldoria.bigdoorsopener.doors.conditions.standalone.Permission;
 import de.eldoria.bigdoorsopener.doors.conditions.standalone.Placeholder;
 import de.eldoria.bigdoorsopener.doors.conditions.standalone.Time;
@@ -37,6 +39,7 @@ import de.eldoria.eldoutilities.utils.ArgumentUtils;
 import de.eldoria.eldoutilities.utils.ArrayUtil;
 import de.eldoria.eldoutilities.utils.EnumUtil;
 import de.eldoria.eldoutilities.utils.Parser;
+import io.lumine.xikage.mythicmobs.MythicMobs;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
@@ -68,6 +71,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -88,6 +94,8 @@ public class BigDoorsOpenerCommand implements TabExecutor {
     private final RegisterInteraction registerInteraction;
     private final RegionContainer regionContainer;
     private final BukkitAudiences bukkitAudiences;
+
+    private final Cache<String, List<String>> pluginCache = C.getExpiringCache(30, TimeUnit.SECONDS);
 
     static {
         ENGINE = BigDoorsOpener.JS();
@@ -734,6 +742,31 @@ public class BigDoorsOpenerCommand implements TabExecutor {
 
                 messageSender.sendMessage(player, localizer.getMessage("setCondition.placeholder"));
                 break;
+            case MYTHIC_MOBS:
+                if (!BigDoorsOpener.isMythicMobsEnabled()) {
+                    messageSender.sendError(player, localizer.getMessage("error.mythicMob"));
+                    return true;
+                }
+
+                if (argumentsInvalid(player, conditionArgs, 1,
+                        "<" + localizer.getMessage("syntax.doorId") + "> <"
+                                + localizer.getMessage("syntax.condition") + "> <"
+                                + localizer.getMessage("syntax.mobType") + ">")) {
+                    return true;
+                }
+
+                String mob = conditionArgs[0];
+
+                boolean exists = MythicMobs.inst().getAPIHelper().getMythicMob(mob) != null;
+
+                if (!exists) {
+                    messageSender.sendError(player, localizer.getMessage("error.invalidMob"));
+                    return true;
+                }
+
+                conditionChain.setCondition(ConditionType.ConditionGroup.MYTHIC_MOB, new MythicMob(mob));
+                messageSender.sendMessage(player, localizer.getMessage("setCondition.mythicMob"));
+                break;
             default:
                 messageSender.sendError(player, localizer.getMessage("error.invalidConditionType"));
                 return true;
@@ -813,6 +846,9 @@ public class BigDoorsOpenerCommand implements TabExecutor {
                 break;
             case PLACEHOLDER:
                 messageSender.sendMessage(player, localizer.getMessage("removeCondition.placeholder"));
+                break;
+            case MYTHIC_MOB:
+                messageSender.sendMessage(player, localizer.getMessage("removeCondition.mythicMob"));
                 break;
         }
 
@@ -1181,6 +1217,7 @@ public class BigDoorsOpenerCommand implements TabExecutor {
             messageSender.sendMessage(player, localizer.getMessage("error.invalidEvaluationType"));
             return true;
         }
+
         if (type != ConditionalDoor.EvaluationType.CUSTOM) {
             door.first.setEvaluator(type);
             if (type == ConditionalDoor.EvaluationType.AND) {
@@ -1469,6 +1506,9 @@ public class BigDoorsOpenerCommand implements TabExecutor {
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         String cmd = args[0];
 
+        if (!(sender instanceof Player)) return null;
+        Player player = (Player) sender;
+
         if (args.length > 10) {
             return Collections.singletonList("(╯°□°）╯︵ ┻━┻");
         }
@@ -1483,10 +1523,8 @@ public class BigDoorsOpenerCommand implements TabExecutor {
         }
 
         if ("setCondition".equalsIgnoreCase(cmd)) {
-
-
             if (args.length == 2) {
-                return Collections.singletonList("<" + localizer.getMessage("syntax.doorId") + ">");
+                return getDoorCompletion(player, args[1]);
             }
             if (args.length == 3) {
                 return ArrayUtil.startingWithInArray(args[2], CONDITION_TYPES).collect(Collectors.toList());
@@ -1556,12 +1594,26 @@ public class BigDoorsOpenerCommand implements TabExecutor {
                     break;
                 case PLACEHOLDER:
                     return Collections.singletonList("<" + localizer.getMessage("syntax.customEvaluator") + ">");
+                case MYTHIC_MOBS:
+                    List<String> mythicMobs;
+                    try {
+                        mythicMobs = pluginCache.get("mythicMobs", () -> MythicMobs.inst()
+                                .getMobManager().getMobTypes()
+
+                                .parallelStream()
+                                .map(m -> m.getInternalName())
+                                .collect(Collectors.toList()));
+                    } catch (ExecutionException e) {
+                        plugin.getLogger().log(Level.WARNING, "Could not build mob names.", e);
+                        return Collections.emptyList();
+                    }
+                    return ArrayUtil.startingWithInArray(args[3], mythicMobs.toArray(new String[0])).collect(Collectors.toList());
             }
         }
 
         if ("removeCondition".equalsIgnoreCase(cmd)) {
             if (args.length == 2) {
-                return Collections.singletonList("<" + localizer.getMessage("syntax.doorId") + ">");
+                return getDoorCompletion(player, args[1]);
             }
             if (args.length == 3) {
                 return ArrayUtil.startingWithInArray(args[2], CONDITION_GROUPS).collect(Collectors.toList());
@@ -1570,10 +1622,10 @@ public class BigDoorsOpenerCommand implements TabExecutor {
 
         if ("copyCondition".equalsIgnoreCase(cmd)) {
             if (args.length == 2) {
-                return Collections.singletonList("<" + localizer.getMessage("syntax.sourceDoor") + ">");
+                return getDoorCompletion(player, args[1]);
             }
             if (args.length == 3) {
-                return Collections.singletonList("<" + localizer.getMessage("syntax.targetDoor") + ">");
+                return getDoorCompletion(player, args[2]);
             }
             if (args.length == 4) {
                 return ArrayUtil.startingWithInArray(args[3], CONDITION_GROUPS).collect(Collectors.toList());
@@ -1582,34 +1634,34 @@ public class BigDoorsOpenerCommand implements TabExecutor {
 
         if ("cloneDoor".equalsIgnoreCase(cmd)) {
             if (args.length == 2) {
-                return Collections.singletonList("<" + localizer.getMessage("syntax.sourceDoor") + ">");
+                return getDoorCompletion(player, args[1]);
             }
             if (args.length == 3) {
-                return Collections.singletonList("<" + localizer.getMessage("syntax.targetDoor") + ">");
+                return getDoorCompletion(player, args[2]);
             }
         }
 
         if ("info".equalsIgnoreCase(cmd)) {
             if (args.length == 2) {
-                return Collections.singletonList("<" + localizer.getMessage("syntax.doorId") + ">");
+                return getDoorCompletion(player, args[1]);
             }
         }
 
         if ("unregister".equalsIgnoreCase(cmd)) {
             if (args.length == 2) {
-                return Collections.singletonList("<" + localizer.getMessage("syntax.doorId") + ">");
+                return getDoorCompletion(player, args[1]);
             }
         }
 
         if ("invertOpen".equalsIgnoreCase(cmd)) {
             if (args.length == 2) {
-                return Collections.singletonList("<" + localizer.getMessage("syntax.doorId") + ">");
+                return getDoorCompletion(player, args[1]);
             }
         }
 
         if ("setEvaluator".equalsIgnoreCase(cmd)) {
             if (args.length == 2) {
-                return Collections.singletonList("<" + localizer.getMessage("syntax.doorId") + ">");
+                return getDoorCompletion(player, args[1]);
             }
             if (args.length == 3) {
                 return ArrayUtil.startingWithInArray(args[2], EVALUATOR_TYPES).collect(Collectors.toList());
@@ -1635,7 +1687,7 @@ public class BigDoorsOpenerCommand implements TabExecutor {
 
         if ("giveKey".equalsIgnoreCase(cmd)) {
             if (args.length == 2) {
-                return Collections.singletonList("<" + localizer.getMessage("syntax.doorId") + ">");
+                return getDoorCompletion(player, args[1]);
             }
 
             if (args.length == 3) {
@@ -1652,7 +1704,7 @@ public class BigDoorsOpenerCommand implements TabExecutor {
 
         if ("stayOpen".equalsIgnoreCase(cmd)) {
             if (args.length == 2) {
-                return Collections.singletonList("<" + localizer.getMessage("syntax.doorId") + ">");
+                return getDoorCompletion(player, args[1]);
             }
             if (args.length == 3) {
                 return Collections.singletonList("<" + localizer.getMessage("syntax.amount") + ">");
@@ -1660,5 +1712,26 @@ public class BigDoorsOpenerCommand implements TabExecutor {
         }
 
         return Collections.emptyList();
+    }
+
+    public List<String> getDoorCompletion(Player player, String name) {
+        if (player == null) {
+            return Collections.singletonList("<" + localizer.getMessage("syntax.doorId") + ">");
+        }
+        List<String> doorNames;
+        try {
+            doorNames = pluginCache.get(player.getName() + "doors",
+                    () -> commander.getDoors(player.getUniqueId().toString(), null)
+                            .stream()
+                            .map(Door::getName)
+                            .collect(Collectors.toList()));
+        } catch (ExecutionException e) {
+            plugin.getLogger().log(Level.WARNING, "Could not build tab completion cache for door names.", e);
+            return Collections.singletonList("<" + localizer.getMessage("syntax.doorId") + ">");
+        }
+
+        return ArrayUtil.startingWithInArray(name,
+                doorNames.toArray(new String[0]))
+                .collect(Collectors.toList());
     }
 }

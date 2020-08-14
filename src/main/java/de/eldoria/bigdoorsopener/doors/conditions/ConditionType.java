@@ -3,6 +3,7 @@ package de.eldoria.bigdoorsopener.doors.conditions;
 import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
 import de.eldoria.bigdoorsopener.doors.conditions.item.Item;
 import de.eldoria.bigdoorsopener.doors.conditions.location.Location;
+import de.eldoria.bigdoorsopener.doors.conditions.standalone.MythicMob;
 import de.eldoria.bigdoorsopener.doors.conditions.standalone.Permission;
 import de.eldoria.bigdoorsopener.doors.conditions.standalone.Placeholder;
 import de.eldoria.bigdoorsopener.doors.conditions.standalone.Time;
@@ -20,7 +21,8 @@ public enum ConditionType {
     PERMISSION(ConditionGroup.PERMISSION),
     TIME(ConditionGroup.TIME),
     WEATHER(ConditionGroup.WEATHER),
-    PLACEHOLDER(ConditionGroup.PLACEHOLDER);
+    PLACEHOLDER(ConditionGroup.PLACEHOLDER),
+    MYTHIC_MOBS(ConditionGroup.MYTHIC_MOB);
 
     public final ConditionGroup conditionGroup;
     public final String conditionName;
@@ -60,7 +62,8 @@ public enum ConditionType {
         PERMISSION("permission", "permission", "info.permission", Permission.class, Permissions.PERMISSION_CONDITION),
         TIME("time", "time", "info.time", Time.class, Permissions.TIME_CONDITION),
         WEATHER("weather", "weather", "info.weather", Weather.class, Permissions.WEATHER_CONDITION),
-        PLACEHOLDER("placeholder", "placeholder", "info.placeholder", Placeholder.class, Permissions.PLACEHOLDER_CONDITION);
+        PLACEHOLDER("placeholder", "placeholder", "info.placeholder", Placeholder.class, Permissions.PLACEHOLDER_CONDITION),
+        MYTHIC_MOB("mythicMobs", "mythicMobs", "info.mythicMob", MythicMob.class, Permissions.MYTHIC_MOBS);
 
         public final String conditionParameter;
         public final String infoKey;
@@ -77,7 +80,7 @@ public enum ConditionType {
         }
 
         public String getBaseSetCommand(ConditionalDoor door) {
-            return "/bdo setCondition " + door.getDoorUID() + " " + baseSetCommand;
+            return "/bdo setCondition " + door.getDoorUID() + " " + baseSetCommand + " ";
         }
     }
 }
