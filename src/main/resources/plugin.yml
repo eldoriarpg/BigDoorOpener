@@ -9,6 +9,7 @@ depend: [BigDoors]
 softdepend:
   - WorldGuard
   - PlaceholderAPI
+  - MythicMobs
 
 commands:
   bigdoorsopener:
