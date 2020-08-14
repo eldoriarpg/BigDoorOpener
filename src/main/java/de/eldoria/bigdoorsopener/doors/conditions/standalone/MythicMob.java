@@ -44,7 +44,7 @@ public class MythicMob implements DoorCondition {
     public TextComponent getDescription(Localizer localizer) {
         return TextComponent.builder(
                 localizer.getMessage("conditionDesc.type.mythicMob",
-                        Replacement.create("NAME", ConditionType.PERMISSION.conditionName))).color(TextColors.AQUA)
+                        Replacement.create("NAME", ConditionType.MYTHIC_MOBS.conditionName))).color(TextColors.AQUA)
                 .append(TextComponent.newline())
                 .append(TextComponent.builder(localizer.getMessage("conditionDesc.mythicMob") + " ").color(C.baseColor))
                 .append(TextComponent.builder(mobType).color(C.highlightColor))
