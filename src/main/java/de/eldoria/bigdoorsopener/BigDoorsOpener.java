@@ -104,6 +104,10 @@ public class BigDoorsOpener extends JavaPlugin {
         return mythicMobsEnabled;
     }
 
+    public static BigDoors getBigDoors() {
+        return instance.doors;
+    }
+
     @Override
     public void onDisable() {
         super.onDisable();
@@ -118,6 +122,7 @@ public class BigDoorsOpener extends JavaPlugin {
 
         PluginManager pm = Bukkit.getPluginManager();
         if (!initialized) {
+            instance = this;
             logger = this.getLogger();
 
             buildSerializer();
