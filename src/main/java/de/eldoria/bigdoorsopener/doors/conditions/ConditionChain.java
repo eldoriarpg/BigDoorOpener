@@ -63,7 +63,7 @@ public class ConditionChain implements ConfigurationSerializable, Cloneable {
         Time time = resolvingMap.getValue("time");
         Weather weather = resolvingMap.getValue("weather");
         Placeholder placeholder = resolvingMap.getValueOrDefault("placeholder", null);
-        MythicMob mythicMob = resolvingMap.getValueOrDefault("mythicMobs", null);
+        MythicMob mythicMob = resolvingMap.getValueOrDefault("mythicMob", null);
         return new ConditionChain(item, location, permission, time, weather, placeholder, mythicMob);
     }
 
@@ -182,6 +182,7 @@ public class ConditionChain implements ConfigurationSerializable, Cloneable {
                 .add("time", time)
                 .add("weather", weather)
                 .add("placeholder", placeholder)
+                .add("mythicMob", mythicMob)
                 .build();
 
     }
