@@ -80,7 +80,7 @@ public enum ConditionType {
         }
 
         public String getBaseSetCommand(ConditionalDoor door) {
-            return "/bdo setCondition " + door.getDoorUID() + " " + baseSetCommand;
+            return "/bdo setCondition " + door.getDoorUID() + " " + baseSetCommand + " ";
         }
     }
 }
