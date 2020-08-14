@@ -14,12 +14,14 @@ import de.eldoria.bigdoorsopener.doors.conditions.item.interacting.ItemClick;
 import de.eldoria.bigdoorsopener.doors.conditions.location.Proximity;
 import de.eldoria.bigdoorsopener.doors.conditions.location.Region;
 import de.eldoria.bigdoorsopener.doors.conditions.location.SimpleRegion;
+import de.eldoria.bigdoorsopener.doors.conditions.standalone.MythicMob;
 import de.eldoria.bigdoorsopener.doors.conditions.standalone.Permission;
 import de.eldoria.bigdoorsopener.doors.conditions.standalone.Placeholder;
 import de.eldoria.bigdoorsopener.doors.conditions.standalone.Time;
 import de.eldoria.bigdoorsopener.doors.conditions.standalone.Weather;
 import de.eldoria.bigdoorsopener.listener.DoorOpenedListener;
 import de.eldoria.bigdoorsopener.listener.ItemConditionListener;
+import de.eldoria.bigdoorsopener.listener.MythicMobsListener;
 import de.eldoria.bigdoorsopener.listener.WeatherListener;
 import de.eldoria.bigdoorsopener.listener.registration.RegisterInteraction;
 import de.eldoria.bigdoorsopener.scheduler.DoorChecker;
@@ -57,6 +59,7 @@ public class BigDoorsOpener extends JavaPlugin {
     private static Logger logger;
     private static CachingJSEngine JS;
     private static boolean placeholderEnabled = false;
+    private static boolean mythicMobsEnabled;
     @Getter
     private static RegionContainer regionContainer = null;
     private final BukkitScheduler scheduler = Bukkit.getScheduler();
@@ -73,6 +76,7 @@ public class BigDoorsOpener extends JavaPlugin {
     // listener
     private WeatherListener weatherListener;
     private RegisterInteraction registerInteraction;
+    private static BigDoorsOpener instance;
 
     /**
      * Get the plugin logger instance.
@@ -94,6 +98,12 @@ public class BigDoorsOpener extends JavaPlugin {
         return placeholderEnabled;
     }
 
+    @SuppressWarnings("StaticVariableUsedBeforeInitialization")
+    @NotNull
+    public static boolean isMythicMobsEnabled() {
+        return mythicMobsEnabled;
+    }
+
     @Override
     public void onDisable() {
         super.onDisable();
@@ -112,9 +122,6 @@ public class BigDoorsOpener extends JavaPlugin {
 
             buildSerializer();
 
-            // Load external resources.
-            loadExternalSources();
-
             // create config
             config = new Config(this);
 
@@ -130,6 +137,9 @@ public class BigDoorsOpener extends JavaPlugin {
 
             //enable metrics
             enableMetrics();
+
+            // Load external resources.
+            loadExternalSources();
 
             registerListener();
 
@@ -217,6 +227,14 @@ public class BigDoorsOpener extends JavaPlugin {
         } else {
             logger().info("Placeholder API not found. Placeholder usage is disabled.");
         }
+
+        if (Bukkit.getPluginManager().isPluginEnabled("MythicMobs")) {
+            mythicMobsEnabled = true;
+            logger().info("MythicMobs found. Enabling mythic mobs listener.");
+            pm.registerEvents(new MythicMobsListener(doors, localizer, config), this);
+        } else {
+            logger().info("MythicMobs not found. MythicMobs conditions are disabled.");
+        }
     }
 
     /**
@@ -240,6 +258,7 @@ public class BigDoorsOpener extends JavaPlugin {
         ConfigurationSerialization.registerClass(Time.class, "timeCondition");
         ConfigurationSerialization.registerClass(Weather.class, "weatherCondition");
         ConfigurationSerialization.registerClass(Placeholder.class, "placeholderCondition");
+        ConfigurationSerialization.registerClass(MythicMob.class, "mythicMobsCondition");
     }
 
     /**
@@ -280,6 +299,7 @@ public class BigDoorsOpener extends JavaPlugin {
             counts.put("permission", (int) values.parallelStream().filter(d -> d.getConditionChain().getPermission() != null).count());
             counts.put("time", (int) values.parallelStream().filter(d -> d.getConditionChain().getTime() != null).count());
             counts.put("weather", (int) values.parallelStream().filter(d -> d.getConditionChain().getWeather() != null).count());
+            counts.put("mythicMobs", (int) values.parallelStream().filter(d -> d.getConditionChain().getMythicMob() != null).count());
             return counts;
         }));
     }

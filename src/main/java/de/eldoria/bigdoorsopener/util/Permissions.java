@@ -26,8 +26,11 @@ public final class Permissions {
     public static final String WEATHER_CONDITION = "bdo.condition.weather";
     // permission to access the placeholder condition
     public static final String PLACEHOLDER_CONDITION = "bdo.condition.placeholder";
+    // permission to acces the mythicMobs condition
+    public static final String MYTHIC_MOBS = "bdo.condition.mythicMobs";
     // permission to access all conditions
     public static final String ALL_CONDITION = "bdo.condition.all";
+
 
     private Permissions() {
     }

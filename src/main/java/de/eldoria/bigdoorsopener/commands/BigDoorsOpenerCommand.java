@@ -734,6 +734,31 @@ public class BigDoorsOpenerCommand implements TabExecutor {
 
                 messageSender.sendMessage(player, localizer.getMessage("setCondition.placeholder"));
                 break;
+            case MYTHIC_MOBS:
+                if (!BigDoorsOpener.isMythicMobsEnabled()) {
+                    messageSender.sendError(player, localizer.getMessage("error.mythicMob"));
+                    return true;
+                }
+
+                if (argumentsInvalid(player, conditionArgs, 1,
+                        "<" + localizer.getMessage("syntax.doorId") + "> <"
+                                + localizer.getMessage("syntax.condition") + "> <"
+                                + localizer.getMessage("syntax.mobType") + ">")) {
+                    return true;
+                }
+
+                String mob = conditionArgs[0];
+
+                boolean exists = MythicMobs.inst().getAPIHelper().getMythicMob(mob) != null;
+
+                if (!exists) {
+                    messageSender.sendError(player, localizer.getMessage("error.invalidMob"));
+                    return true;
+                }
+
+                conditionChain.setCondition(ConditionType.ConditionGroup.MYTHIC_MOB, new MythicMob(mob));
+                messageSender.sendMessage(player, localizer.getMessage("setCondition.mythicMob"));
+                break;
             default:
                 messageSender.sendError(player, localizer.getMessage("error.invalidConditionType"));
                 return true;
@@ -813,6 +838,9 @@ public class BigDoorsOpenerCommand implements TabExecutor {
                 break;
             case PLACEHOLDER:
                 messageSender.sendMessage(player, localizer.getMessage("removeCondition.placeholder"));
+                break;
+            case MYTHIC_MOB:
+                messageSender.sendMessage(player, localizer.getMessage("removeCondition.mythicMob"));
                 break;
         }
 
@@ -1181,6 +1209,7 @@ public class BigDoorsOpenerCommand implements TabExecutor {
             messageSender.sendMessage(player, localizer.getMessage("error.invalidEvaluationType"));
             return true;
         }
+
         if (type != ConditionalDoor.EvaluationType.CUSTOM) {
             door.first.setEvaluator(type);
             if (type == ConditionalDoor.EvaluationType.AND) {
@@ -1556,6 +1585,22 @@ public class BigDoorsOpenerCommand implements TabExecutor {
                     break;
                 case PLACEHOLDER:
                     return Collections.singletonList("<" + localizer.getMessage("syntax.customEvaluator") + ">");
+                case MYTHIC_MOBS:
+                    List<String> mythicMobs;
+                    try {
+                        mythicMobs = pluginCache.get("mythicMobs", () -> MythicMobs.inst()
+                                .getMobManager().getMobTypes()
+
+                                .parallelStream()
+                                .map(m -> m.getInternalName())
+                                .collect(Collectors.toList()));
+                    } catch (ExecutionException e) {
+                        plugin.getLogger().log(Level.WARNING, "Could not build mob names.", e);
+                        return Collections.emptyList();
+                    }
+                    return ArrayUtil.startingWithInArray(args[3], mythicMobs.toArray(new String[0])).collect(Collectors.toList());
+            }
+        }
             }
         }
 
