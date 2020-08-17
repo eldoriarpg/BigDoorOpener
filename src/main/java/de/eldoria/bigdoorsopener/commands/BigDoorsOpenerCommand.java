@@ -68,6 +68,7 @@ import org.bukkit.util.Vector;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -1332,7 +1333,7 @@ public class BigDoorsOpenerCommand extends BigDoorsAdapter implements TabExecuto
 
         if (player.hasPermission(Permissions.ACCESS_ALL)) {
             for (ConditionalDoor value : doors.values()) {
-                Door door = getDoor(null, String.valueOf(value.getDoorUID()));
+                Door door = getDoor(String.valueOf(value.getDoorUID()), null);
                 builder.append(value.getDoorUID()).append(" | ")
                         .append("§6").append(door.getName()).append("§r")
                         .append(" (").append(door.getWorld().getName()).append(")\n");
@@ -1436,7 +1437,7 @@ public class BigDoorsOpenerCommand extends BigDoorsAdapter implements TabExecuto
     private Door getPlayerDoor(String doorUID, Player player) {
         if (player == null) {
             // requester is console. should always have access to all doors.
-            Door door = getDoor(null, doorUID);
+            Door door = getDoor(doorUID, null);
             if (door == null) {
                 messageSender.sendError(null, localizer.getMessage("error.doorNotFound"));
                 return null;
@@ -1449,7 +1450,7 @@ public class BigDoorsOpenerCommand extends BigDoorsAdapter implements TabExecuto
 
         if (doors.isEmpty()) {
             // door is null. check if door exists anyway
-            Door door = getDoor(null, doorUID);
+            Door door = getDoor(doorUID, null);
             if (door == null) {
                 messageSender.sendError(player, localizer.getMessage("error.doorNotFound"));
                 return null;
@@ -1743,7 +1744,35 @@ public class BigDoorsOpenerCommand extends BigDoorsAdapter implements TabExecuto
         List<Door> doors;
         try {
             doors = (List<Door>) pluginCache.get("doors",
-                    () -> new ArrayList<>(getDoors()));
+                    () -> {
+                        List<Door> d = new ArrayList<>();
+                        d.addAll(getDoors());
+                        return d;
+                    });
+        } catch (ExecutionException e) {
+            plugin.getLogger().log(Level.WARNING, "Could not build tab completion cache for door names.", e);
+            return Collections.singletonList("<" + localizer.getMessage("syntax.doorId") + ">");
+        }
+        List<String> doorNames;
+        try {
+            doorNames = (List<String>) pluginCache.get(player.getName() + "doors",
+                    () -> {
+                        // Map door names for doors where the player is the creator and can use the door name
+                        Map<Long, String> doorNamesMap = new HashMap<>();
+                        doors.stream()
+                                .filter(door -> door.getPlayerUUID().equals(player.getUniqueId()))
+                                .forEach(d -> doorNamesMap.put(d.getDoorUID(), d.getName()));
+
+                        List<String> result = new ArrayList<>(doorNamesMap.values());
+
+                        // Add not owned doors as door ID if the player has the permission.
+                        if (player.hasPermission(Permissions.ACCESS_ALL)) {
+                            doors.stream()
+                                    .filter(d -> !doorNamesMap.containsKey(d.getDoorUID()))
+                                    .forEach(d -> result.add(String.valueOf(d.getDoorUID())));
+                        }
+                        return result;
+                    });
         } catch (ExecutionException e) {
             plugin.getLogger().log(Level.WARNING, "Could not build tab completion cache for door names.", e);
             return Collections.singletonList("<" + localizer.getMessage("syntax.doorId") + ">");
