@@ -25,6 +25,7 @@ import de.eldoria.bigdoorsopener.doors.conditions.standalone.Time;
 import de.eldoria.bigdoorsopener.doors.conditions.standalone.Weather;
 import de.eldoria.bigdoorsopener.listener.registration.InteractionRegistrationObject;
 import de.eldoria.bigdoorsopener.listener.registration.RegisterInteraction;
+import de.eldoria.bigdoorsopener.scheduler.BigDoorsAdapter;
 import de.eldoria.bigdoorsopener.scheduler.DoorChecker;
 import de.eldoria.bigdoorsopener.util.C;
 import de.eldoria.bigdoorsopener.util.CachingJSEngine;
@@ -45,7 +46,7 @@ import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextDecoration;
-import nl.pim16aap2.bigDoors.Commander;
+import nl.pim16aap2.bigDoors.BigDoors;
 import nl.pim16aap2.bigDoors.Door;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -66,6 +67,7 @@ import org.bukkit.util.Vector;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -77,7 +79,7 @@ import java.util.logging.Level;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-public class BigDoorsOpenerCommand implements TabExecutor {
+public class BigDoorsOpenerCommand extends BigDoorsAdapter implements TabExecutor {
     private static final CachingJSEngine ENGINE;
     // Tabcomplete utils
     private static final String[] CONDITION_TYPES;
@@ -86,7 +88,6 @@ public class BigDoorsOpenerCommand implements TabExecutor {
     private static final String[] WEATHER_TYPE;
     private static final String[] EVALUATOR_TYPES;
     private final BigDoorsOpener plugin;
-    private final Commander commander;
     private final Config config;
     private final Localizer localizer;
     private final DoorChecker doorChecker;
@@ -95,7 +96,7 @@ public class BigDoorsOpenerCommand implements TabExecutor {
     private final RegionContainer regionContainer;
     private final BukkitAudiences bukkitAudiences;
 
-    private final Cache<String, List<String>> pluginCache = C.getExpiringCache(30, TimeUnit.SECONDS);
+    private final Cache<String, List<?>> pluginCache = C.getExpiringCache(30, TimeUnit.SECONDS);
 
     static {
         ENGINE = BigDoorsOpener.JS();
@@ -117,10 +118,10 @@ public class BigDoorsOpenerCommand implements TabExecutor {
     }
 
 
-    public BigDoorsOpenerCommand(BigDoorsOpener plugin, Commander commander, Config config, Localizer localizer,
+    public BigDoorsOpenerCommand(BigDoorsOpener plugin, BigDoors doors, Config config, Localizer localizer,
                                  DoorChecker doorChecker, RegisterInteraction registerInteraction) {
+        super(doors, localizer);
         this.plugin = plugin;
-        this.commander = commander;
         this.config = config;
         this.localizer = localizer;
         messageSender = MessageSender.get(plugin);
@@ -1315,13 +1316,13 @@ public class BigDoorsOpenerCommand implements TabExecutor {
 
         if (player.hasPermission(Permissions.ACCESS_ALL)) {
             for (ConditionalDoor value : doors.values()) {
-                Door door = commander.getDoor(String.valueOf(value.getDoorUID()), null);
+                Door door = getDoor(String.valueOf(value.getDoorUID()), null);
                 builder.append(value.getDoorUID()).append(" | ")
                         .append("§6").append(door.getName()).append("§r")
                         .append(" (").append(door.getWorld().getName()).append(")\n");
             }
         } else {
-            List<Door> registeredDoors = commander.getDoors(player.getUniqueId().toString(), null)
+            List<Door> registeredDoors = getDoors(player, null)
                     .stream()
                     .filter(d -> doors.containsKey(d.getDoorUID()))
                     .collect(Collectors.toList());
@@ -1419,7 +1420,7 @@ public class BigDoorsOpenerCommand implements TabExecutor {
     private Door getPlayerDoor(String doorUID, Player player) {
         if (player == null) {
             // requester is console. should always have access to all doors.
-            Door door = commander.getDoor(doorUID, null);
+            Door door = getDoor(doorUID, null);
             if (door == null) {
                 messageSender.sendError(null, localizer.getMessage("error.doorNotFound"));
                 return null;
@@ -1428,11 +1429,11 @@ public class BigDoorsOpenerCommand implements TabExecutor {
         }
 
         // sender id not console. retrieve door of player.
-        ArrayList<Door> doors = commander.getDoors(player.getUniqueId().toString(), doorUID);
+        List<Door> doors = getDoors(player, doorUID);
 
         if (doors.isEmpty()) {
             // door is null. check if door exists anyway
-            Door door = commander.getDoor(doorUID, null);
+            Door door = getDoor(doorUID, null);
             if (door == null) {
                 messageSender.sendError(player, localizer.getMessage("error.doorNotFound"));
                 return null;
@@ -1597,9 +1598,8 @@ public class BigDoorsOpenerCommand implements TabExecutor {
                 case MYTHIC_MOBS:
                     List<String> mythicMobs;
                     try {
-                        mythicMobs = pluginCache.get("mythicMobs", () -> MythicMobs.inst()
+                        mythicMobs = (List<String>) pluginCache.get("mythicMobs", () -> MythicMobs.inst()
                                 .getMobManager().getMobTypes()
-
                                 .parallelStream()
                                 .map(m -> m.getInternalName())
                                 .collect(Collectors.toList()));
@@ -1718,13 +1718,38 @@ public class BigDoorsOpenerCommand implements TabExecutor {
         if (player == null) {
             return Collections.singletonList("<" + localizer.getMessage("syntax.doorId") + ">");
         }
+        List<Door> doors;
+        try {
+            doors = (List<Door>) pluginCache.get("doors",
+                    () -> {
+                        List<Door> d = new ArrayList<>();
+                        d.addAll(getDoors());
+                        return d;
+                    });
+        } catch (ExecutionException e) {
+            plugin.getLogger().log(Level.WARNING, "Could not build tab completion cache for door names.", e);
+            return Collections.singletonList("<" + localizer.getMessage("syntax.doorId") + ">");
+        }
         List<String> doorNames;
         try {
-            doorNames = pluginCache.get(player.getName() + "doors",
-                    () -> commander.getDoors(player.getUniqueId().toString(), null)
-                            .stream()
-                            .map(Door::getName)
-                            .collect(Collectors.toList()));
+            doorNames = (List<String>) pluginCache.get(player.getName() + "doors",
+                    () -> {
+                        // Map door names for doors where the player is the creator and can use the door name
+                        Map<Long, String> doorNamesMap = new HashMap<>();
+                        doors.stream()
+                                .filter(door -> door.getPlayerUUID().equals(player.getUniqueId()))
+                                .forEach(d -> doorNamesMap.put(d.getDoorUID(), d.getName()));
+
+                        List<String> result = new ArrayList<>(doorNamesMap.values());
+
+                        // Add not owned doors as door ID if the player has the permission.
+                        if (player.hasPermission(Permissions.ACCESS_ALL)) {
+                            doors.stream()
+                                    .filter(d -> !doorNamesMap.containsKey(d.getDoorUID()))
+                                    .forEach(d -> result.add(String.valueOf(d.getDoorUID())));
+                        }
+                        return result;
+                    });
         } catch (ExecutionException e) {
             plugin.getLogger().log(Level.WARNING, "Could not build tab completion cache for door names.", e);
             return Collections.singletonList("<" + localizer.getMessage("syntax.doorId") + ">");
