@@ -1,5 +1,6 @@
 package de.eldoria.bigdoorsopener.doors.conditions.permission;
 
+import com.google.common.cache.Cache;
 import de.eldoria.bigdoorsopener.BigDoorsOpener;
 import de.eldoria.bigdoorsopener.doors.ConditionScope;
 import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
@@ -12,12 +13,17 @@ import de.eldoria.eldoutilities.localization.Replacement;
 import de.eldoria.eldoutilities.serialization.SerializationUtil;
 import de.eldoria.eldoutilities.serialization.TypeResolvingMap;
 import net.kyori.adventure.text.TextComponent;
+import nl.pim16aap2.bigDoors.Door;
 import org.bukkit.World;
 import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 
 /**
  * A condition which opens the door, when a player has a access level for the door.
@@ -26,6 +32,7 @@ import java.util.Map;
 @ConditionScope(ConditionScope.Scope.PLAYER)
 public class DoorPermission extends BigDoorsAdapter implements Permission {
     private final int permissionLevel;
+    private final Cache<UUID, Boolean> cache = C.getExpiringCache(30, TimeUnit.SECONDS);
 
     public DoorPermission(int permissionLevel) {
         super(BigDoorsOpener.getBigDoors(), BigDoorsOpener.getLocalizer());
@@ -40,8 +47,17 @@ public class DoorPermission extends BigDoorsAdapter implements Permission {
 
     @Override
     public Boolean isOpen(Player player, World world, ConditionalDoor door, boolean currentState) {
-        int permission = getDoor(player, door.getDoorUID()).getPermission();
-        return permission <= permissionLevel && permission < 0;
+        try {
+            return cache.get(player.getUniqueId(), () -> {
+                Door d = getDoor(player, door.getDoorUID());
+                if (d == null) return false;
+                int permission = d.getPermission();
+                return permission <= permissionLevel && permission >= 0;
+            });
+        } catch (ExecutionException e) {
+            BigDoorsOpener.logger().log(Level.WARNING, "Calucation of door ownership failed. Please report this.", e);
+            return false;
+        }
     }
 
     @Override
@@ -91,13 +107,13 @@ public class DoorPermission extends BigDoorsAdapter implements Permission {
     }
 
     public static int parsePermissionLevel(String permission) {
-        if("owner".equalsIgnoreCase(permission)){
+        if ("owner".equalsIgnoreCase(permission)) {
             return 0;
         }
-        if("editor".equalsIgnoreCase(permission)){
+        if ("editor".equalsIgnoreCase(permission)) {
             return 1;
         }
-        if("user".equalsIgnoreCase(permission)){
+        if ("user".equalsIgnoreCase(permission)) {
             return 2;
         }
         return -1;
