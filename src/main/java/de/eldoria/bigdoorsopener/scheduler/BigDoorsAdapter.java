@@ -77,7 +77,7 @@ public abstract class BigDoorsAdapter {
     }
 
     /**
-     * Checks if a door is availbale.
+     * Checks if a door is available.
      * A door is considered available if its not open and not busy
      *
      * @param door door to check
@@ -120,11 +120,11 @@ public abstract class BigDoorsAdapter {
     /**
      * Get the door with the specified id.
      *
-     * @param uid uid of the door.
+     * @param doorId uid of the door.
      * @return door with id if exitsts
      */
-    protected Door getDoor(long uid) {
-        return commander.getDoor(null, uid);
+    protected Door getDoor(long doorId) {
+        return commander.getDoor(null, doorId);
     }
 
     /**
@@ -134,17 +134,17 @@ public abstract class BigDoorsAdapter {
      * @return Door with id if exists.
      */
     protected Door getDoor(String doorId) {
-        return getDoor(doorId, null);
+        return getDoor(null, doorId);
     }
 
     /**
-     * Get the door with a specific id when the player is the owner of the door.
+     * Get the door with a specific id when the player the permission to access this door.
      *
-     * @param doorId id of the door as long or string
      * @param player owner of the door.
+     * @param doorId id of the door as long or string
      * @return Door with id if exists.
      */
-    protected Door getDoor(String doorId, Player player) {
+    protected Door getDoor(Player player, String doorId) {
         return commander.getDoor(doorId, player);
     }
 
@@ -176,5 +176,9 @@ public abstract class BigDoorsAdapter {
      */
     protected Set<Door> getDoors() {
         return commander.getDoors();
+    }
+
+    private Localizer getLocalizer() {
+        return localizer;
     }
 }
