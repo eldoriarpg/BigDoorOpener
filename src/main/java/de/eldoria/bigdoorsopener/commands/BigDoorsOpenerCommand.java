@@ -625,7 +625,7 @@ public class BigDoorsOpenerCommand extends BigDoorsAdapter implements TabExecuto
                 }
                 conditionChain.setPermission(new DoorPermission(i));
                 messageSender.sendMessage(player, localizer.getMessage("setCondition.doorPermission"));
-                return true;
+                break;
             case TIME:
                 if (argumentsInvalid(player, conditionArgs, 2,
                         "<" + localizer.getMessage("syntax.doorId") + "> <"
