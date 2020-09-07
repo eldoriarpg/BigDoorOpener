@@ -18,8 +18,9 @@ import de.eldoria.bigdoorsopener.doors.conditions.item.interacting.ItemClick;
 import de.eldoria.bigdoorsopener.doors.conditions.location.Proximity;
 import de.eldoria.bigdoorsopener.doors.conditions.location.Region;
 import de.eldoria.bigdoorsopener.doors.conditions.location.SimpleRegion;
+import de.eldoria.bigdoorsopener.doors.conditions.permission.DoorPermission;
+import de.eldoria.bigdoorsopener.doors.conditions.permission.PermissionNode;
 import de.eldoria.bigdoorsopener.doors.conditions.standalone.MythicMob;
-import de.eldoria.bigdoorsopener.doors.conditions.standalone.Permission;
 import de.eldoria.bigdoorsopener.doors.conditions.standalone.Placeholder;
 import de.eldoria.bigdoorsopener.doors.conditions.standalone.Time;
 import de.eldoria.bigdoorsopener.doors.conditions.standalone.Weather;
@@ -104,7 +105,7 @@ public class BigDoorsOpenerCommand extends BigDoorsAdapter implements TabExecuto
                 .map(v -> v.conditionName)
                 .toArray(String[]::new);
         CONDITION_GROUPS = Arrays.stream(ConditionType.ConditionGroup.values())
-                .map(v -> v.name().toLowerCase())
+                .map(v -> v.name().toLowerCase().replace("_", ""))
                 .toArray(String[]::new);
         PROXIMITY_FORM = Arrays.stream(Proximity.ProximityForm.values())
                 .map(v -> v.name().toLowerCase())
@@ -598,17 +599,33 @@ public class BigDoorsOpenerCommand extends BigDoorsAdapter implements TabExecuto
                 });
                 break;
             // permission
-            case PERMISSION:
+            case PERMISSION_NODE:
                 if (argumentsInvalid(player, conditionArgs, 1,
                         "<" + localizer.getMessage("syntax.doorId") + "> <"
                                 + localizer.getMessage("syntax.condition") + "> <"
-                                + localizer.getMessage("tabcomplete.permission") + ">")) {
+                                + localizer.getMessage("tabcomplete.permissionNode") + ">")) {
                     return true;
                 }
 
-                conditionChain.setPermission(new Permission(conditionArgs[0]));
-                messageSender.sendMessage(player, localizer.getMessage("setCondition.permission"));
+                conditionChain.setPermission(new PermissionNode(conditionArgs[0]));
+                messageSender.sendMessage(player, localizer.getMessage("setCondition.permissionNode"));
                 break;
+            case DOOR_PERMISSION:
+                if (argumentsInvalid(player, conditionArgs, 1,
+                        "<" + localizer.getMessage("syntax.doorId") + "> <"
+                                + localizer.getMessage("syntax.condition") + "> <"
+                                + localizer.getMessage("tabcomplete.doorPermission") + ">")) {
+                    return true;
+                }
+
+                int i = DoorPermission.parsePermissionLevel(conditionArgs[0]);
+                if (i < 0) {
+                    messageSender.sendError(player, localizer.getMessage("error.invalidAccessLevel"));
+                    return true;
+                }
+                conditionChain.setPermission(new DoorPermission(i));
+                messageSender.sendMessage(player, localizer.getMessage("setCondition.doorPermission"));
+                return true;
             case TIME:
                 if (argumentsInvalid(player, conditionArgs, 2,
                         "<" + localizer.getMessage("syntax.doorId") + "> <"
@@ -1316,7 +1333,7 @@ public class BigDoorsOpenerCommand extends BigDoorsAdapter implements TabExecuto
 
         if (player.hasPermission(Permissions.ACCESS_ALL)) {
             for (ConditionalDoor value : doors.values()) {
-                Door door = getDoor(String.valueOf(value.getDoorUID()), null);
+                Door door = getDoor(null, String.valueOf(value.getDoorUID()));
                 builder.append(value.getDoorUID()).append(" | ")
                         .append("§6").append(door.getName()).append("§r")
                         .append(" (").append(door.getWorld().getName()).append(")\n");
@@ -1420,7 +1437,7 @@ public class BigDoorsOpenerCommand extends BigDoorsAdapter implements TabExecuto
     private Door getPlayerDoor(String doorUID, Player player) {
         if (player == null) {
             // requester is console. should always have access to all doors.
-            Door door = getDoor(doorUID, null);
+            Door door = getDoor(null, doorUID);
             if (door == null) {
                 messageSender.sendError(null, localizer.getMessage("error.doorNotFound"));
                 return null;
@@ -1433,7 +1450,7 @@ public class BigDoorsOpenerCommand extends BigDoorsAdapter implements TabExecuto
 
         if (doors.isEmpty()) {
             // door is null. check if door exists anyway
-            Door door = getDoor(doorUID, null);
+            Door door = getDoor(null, doorUID);
             if (door == null) {
                 messageSender.sendError(player, localizer.getMessage("error.doorNotFound"));
                 return null;
@@ -1569,9 +1586,14 @@ public class BigDoorsOpenerCommand extends BigDoorsAdapter implements TabExecuto
                         return Collections.singletonList("<" + localizer.getMessage("tabcomplete.regionName") + ">");
                     }
                     break;
-                case PERMISSION:
+                case PERMISSION_NODE:
                     if (args.length == 4) {
-                        return Collections.singletonList("<" + localizer.getMessage("tabcomplete.permission") + ">");
+                        return Collections.singletonList("<" + localizer.getMessage("tabcomplete.permissionNode") + ">");
+                    }
+                    break;
+                case DOOR_PERMISSION:
+                    if (args.length == 4) {
+                        return ArrayUtil.startingWithInArray(args[3], new String[] {"owner", "editor", "user"}).collect(Collectors.toList());
                     }
                     break;
                 case TIME:

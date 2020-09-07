@@ -14,8 +14,9 @@ import de.eldoria.bigdoorsopener.doors.conditions.item.interacting.ItemClick;
 import de.eldoria.bigdoorsopener.doors.conditions.location.Proximity;
 import de.eldoria.bigdoorsopener.doors.conditions.location.Region;
 import de.eldoria.bigdoorsopener.doors.conditions.location.SimpleRegion;
+import de.eldoria.bigdoorsopener.doors.conditions.permission.DoorPermission;
 import de.eldoria.bigdoorsopener.doors.conditions.standalone.MythicMob;
-import de.eldoria.bigdoorsopener.doors.conditions.standalone.Permission;
+import de.eldoria.bigdoorsopener.doors.conditions.permission.PermissionNode;
 import de.eldoria.bigdoorsopener.doors.conditions.standalone.Placeholder;
 import de.eldoria.bigdoorsopener.doors.conditions.standalone.Time;
 import de.eldoria.bigdoorsopener.doors.conditions.standalone.Weather;
@@ -108,6 +109,10 @@ public class BigDoorsOpener extends JavaPlugin {
         return instance.doors;
     }
 
+    public static Localizer getLocalizer() {
+        return instance.localizer;
+    }
+
     @Override
     public void onDisable() {
         super.onDisable();
@@ -156,7 +161,7 @@ public class BigDoorsOpener extends JavaPlugin {
             scheduler.scheduleSyncRepeatingTask(this, doorChecker, 100, 1);
 
             registerCommand("bigdoorsopener",
-                    new BigDoorsOpenerCommand(this, commander, config, localizer, doorChecker, registerInteraction));
+                    new BigDoorsOpenerCommand(this, doors, config, localizer, doorChecker, registerInteraction));
         }
 
         if (initialized) {
@@ -259,7 +264,8 @@ public class BigDoorsOpener extends JavaPlugin {
         ConfigurationSerialization.registerClass(Proximity.class, "proximityCondition");
         ConfigurationSerialization.registerClass(Region.class, "regionCondition");
         ConfigurationSerialization.registerClass(SimpleRegion.class, "simpleRegionCondition");
-        ConfigurationSerialization.registerClass(Permission.class, "permissionCondition");
+        ConfigurationSerialization.registerClass(PermissionNode.class, "permissionCondition");
+        ConfigurationSerialization.registerClass(DoorPermission.class, "doorPermissionCondition");
         ConfigurationSerialization.registerClass(Time.class, "timeCondition");
         ConfigurationSerialization.registerClass(Weather.class, "weatherCondition");
         ConfigurationSerialization.registerClass(Placeholder.class, "placeholderCondition");
