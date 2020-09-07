@@ -12,6 +12,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Server;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Set;
@@ -113,6 +114,7 @@ public abstract class BigDoorsAdapter {
      * @param uid uid of the door.
      * @return door with id if exitsts
      */
+    @Nullable
     protected Door getDoor(Player player, long uid) {
         return commander.getDoor(player.getUniqueId(), uid);
     }
@@ -123,6 +125,7 @@ public abstract class BigDoorsAdapter {
      * @param doorId uid of the door.
      * @return door with id if exitsts
      */
+    @Nullable
     protected Door getDoor(long doorId) {
         return commander.getDoor(null, doorId);
     }
@@ -133,6 +136,7 @@ public abstract class BigDoorsAdapter {
      * @param doorId id of the door as long or string
      * @return Door with id if exists.
      */
+    @Nullable
     protected Door getDoor(String doorId) {
         return getDoor(null, doorId);
     }
@@ -144,6 +148,7 @@ public abstract class BigDoorsAdapter {
      * @param doorId id of the door as long or string
      * @return Door with id if exists.
      */
+    @Nullable
     protected Door getDoor(Player player, String doorId) {
         return commander.getDoor(doorId, player);
     }
@@ -178,7 +183,7 @@ public abstract class BigDoorsAdapter {
         return commander.getDoors();
     }
 
-    private Localizer getLocalizer() {
+    protected Localizer getLocalizer() {
         return localizer;
     }
 }
