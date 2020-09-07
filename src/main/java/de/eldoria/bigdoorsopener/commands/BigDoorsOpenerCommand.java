@@ -68,7 +68,6 @@ import org.bukkit.util.Vector;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -1736,6 +1735,7 @@ public class BigDoorsOpenerCommand extends BigDoorsAdapter implements TabExecuto
         return Collections.emptyList();
     }
 
+    @SuppressWarnings("unchecked")
     public List<String> getDoorCompletion(Player player, String name) {
         if (player == null) {
             return Collections.singletonList("<" + localizer.getMessage("syntax.doorId") + ">");
@@ -1743,11 +1743,7 @@ public class BigDoorsOpenerCommand extends BigDoorsAdapter implements TabExecuto
         List<Door> doors;
         try {
             doors = (List<Door>) pluginCache.get("doors",
-                    () -> {
-                        List<Door> d = new ArrayList<>();
-                        d.addAll(getDoors());
-                        return d;
-                    });
+                    () -> new ArrayList<>(getDoors()));
         } catch (ExecutionException e) {
             plugin.getLogger().log(Level.WARNING, "Could not build tab completion cache for door names.", e);
             return Collections.singletonList("<" + localizer.getMessage("syntax.doorId") + ">");
@@ -1756,23 +1752,20 @@ public class BigDoorsOpenerCommand extends BigDoorsAdapter implements TabExecuto
         try {
             doorNames = (List<String>) pluginCache.get(player.getName() + "doors",
                     () -> {
-                        // Map door names for doors where the player is the creator and can use the door name
-                        Map<Long, String> doorNamesMap = new HashMap<>();
-                        doors.stream()
-                                .filter(door -> door.getPlayerUUID().equals(player.getUniqueId()))
-                                .forEach(d -> doorNamesMap.put(d.getDoorUID(), d.getName()));
-
-                        List<String> result = new ArrayList<>(doorNamesMap.values());
-
-                        // Add not owned doors as door ID if the player has the permission.
                         if (player.hasPermission(Permissions.ACCESS_ALL)) {
-                            doors.stream()
-                                    .filter(d -> !doorNamesMap.containsKey(d.getDoorUID()))
-                                    .forEach(d -> result.add(String.valueOf(d.getDoorUID())));
+                            return doors.stream()
+                                    .map(d -> d.getPlayerUUID().equals(player.getUniqueId())
+                                            ? d.getName() : String.valueOf(d.getDoorUID()))
+                                    .collect(Collectors.toList());
                         }
-                        return result;
+
+                        // Map door names for doors where the player is the creator and can use the door name
+                        return getDoors(player).stream()
+                                .map(d -> d.getPermission() == 0 ? d.getName() : String.valueOf(d.getDoorUID()))
+                                .collect(Collectors.toList());
                     });
-        } catch (ExecutionException e) {
+        } catch (
+                ExecutionException e) {
             plugin.getLogger().log(Level.WARNING, "Could not build tab completion cache for door names.", e);
             return Collections.singletonList("<" + localizer.getMessage("syntax.doorId") + ">");
         }
