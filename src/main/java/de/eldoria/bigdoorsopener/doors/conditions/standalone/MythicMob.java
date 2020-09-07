@@ -58,7 +58,7 @@ public class MythicMob implements DoorCondition {
 
     @Override
     public String getRemoveCommand(ConditionalDoor door) {
-        return REMOVE_COMMAND + door.getDoorUID() + "mythicMobs";
+        return REMOVE_COMMAND + door.getDoorUID() + " mythicMob";
     }
 
     @Override
