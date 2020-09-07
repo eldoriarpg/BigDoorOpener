@@ -22,9 +22,7 @@ import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 
 /**
  * A condition which opens the door when the player is within a specific range of defined by geometric form
@@ -34,10 +32,6 @@ import java.util.logging.Level;
 public class Proximity implements Location {
     private final Vector dimensions;
     private final ProximityForm proximityForm;
-
-    private final Cache<Vector, Boolean> cache = CacheBuilder.newBuilder()
-            .expireAfterAccess(10, TimeUnit.SECONDS)
-            .build();
 
     public Proximity(Vector dimensions, ProximityForm proximityForm) {
         this.dimensions = dimensions;
@@ -54,13 +48,10 @@ public class Proximity implements Location {
 
     @Override
     public Boolean isOpen(Player player, World world, ConditionalDoor door, boolean currentState) {
-        try {
-            Vector pos = player.getLocation().toVector();
-            return cache.get(pos, () -> proximityForm.check.apply(door.getPosition(), pos, dimensions));
-        } catch (ExecutionException e) {
-            BigDoorsOpener.logger().log(Level.WARNING, "Could not compute value", e);
-        }
-        return null;
+        Vector vector = player.getLocation().toVector();
+        return proximityForm.check.apply(door.getPosition(),
+                new Vector(vector.getBlockX(), vector.getBlockY(), vector.getBlockZ()),
+                dimensions);
     }
 
     @Override
