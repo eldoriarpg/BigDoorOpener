@@ -1,7 +1,7 @@
 package de.eldoria.bigdoorsopener.doors.conditions;
 
 import de.eldoria.bigdoorsopener.BigDoorsOpener;
-import de.eldoria.bigdoorsopener.doors.ConditionScope;
+import de.eldoria.bigdoorsopener.doors.Condition;
 import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
 import de.eldoria.bigdoorsopener.doors.conditions.item.Item;
 import de.eldoria.bigdoorsopener.doors.conditions.location.Location;
@@ -18,13 +18,13 @@ import de.eldoria.eldoutilities.serialization.TypeResolvingMap;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.World;
-import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -34,7 +34,8 @@ import java.util.Map;
 @Setter
 @Getter
 @SerializableAs("conditionChain")
-public class ConditionChain implements ConfigurationSerializable, Cloneable {
+@Deprecated
+public class ConditionChain implements ConditionCollection {
     private Item item = null;
     private Location location = null;
     private Permission permission = null;
@@ -76,10 +77,11 @@ public class ConditionChain implements ConfigurationSerializable, Cloneable {
      * @param currentState the current state of the door
      * @return result of the conditions.
      */
+    @Override
     public boolean or(Player player, World world, ConditionalDoor door, boolean currentState) {
         // the conditions should be evaluated from the simpelest to the most expensive computation.
         return ConditionChainEvaluator.or(player, world, door, currentState,
-                this);
+                getConditions());
     }
 
     /**
@@ -90,11 +92,12 @@ public class ConditionChain implements ConfigurationSerializable, Cloneable {
      * @param door         door which is checked
      * @param currentState the current state of the door
      * @return result of the conditions.
-     */
+     */    @Override
+
     public boolean and(Player player, World world, ConditionalDoor door, boolean currentState) {
         // the conditions should be evaluated from the simpelest to the most expensive computation.
         return ConditionChainEvaluator.and(player, world, door, currentState,
-                this);
+                getConditions());
     }
 
     /**
@@ -106,7 +109,8 @@ public class ConditionChain implements ConfigurationSerializable, Cloneable {
      * @param door         door which is checked
      * @param currentState the current state of the door
      * @return string with the values replaced.
-     */
+     */    @Override
+
     public String custom(String string, Player player, World world, ConditionalDoor door, boolean currentState) {
         String evaluationString = string;
 
@@ -122,7 +126,7 @@ public class ConditionChain implements ConfigurationSerializable, Cloneable {
             }
             Boolean state;
 
-            if (doorCondition.getScope() == ConditionScope.Scope.PLAYER
+            if (ConditionHelper.getScope(doorCondition.getClass()) == Condition.Scope.PLAYER
                     && player == null) {
                 state = false;
             } else {
@@ -148,14 +152,16 @@ public class ConditionChain implements ConfigurationSerializable, Cloneable {
      * Checks if a key is present which needs a player lookup.
      *
      * @return true if a player key is present.
-     */
+     */    @Override
+
     public boolean requiresPlayerEvaluation() {
         return item != null || permission != null || location != null || placeholder != null;
     }
 
     /**
      * Called when the door was evaluated and a new evaluation cycle begins.
-     */
+     */    @Override
+
     public void evaluated() {
         if (item != null) {
             item.evaluated();
@@ -166,10 +172,11 @@ public class ConditionChain implements ConfigurationSerializable, Cloneable {
      * Called when the chain was true and the door was opened.
      *
      * @param player player which opened the door.
-     */
+     */    @Override
+
     public void opened(Player player) {
         if (item != null) {
-            item.used(player);
+            item.opened(player);
         }
     }
 
@@ -191,7 +198,8 @@ public class ConditionChain implements ConfigurationSerializable, Cloneable {
      * Checks if all conditions are null.
      *
      * @return true if all conditions are nulkl
-     */
+     */    @Override
+
     public boolean isEmpty() {
         for (DoorCondition condition : getConditions()) {
             if (condition != null) return false;
@@ -203,7 +211,8 @@ public class ConditionChain implements ConfigurationSerializable, Cloneable {
      * Get a mutable new condition chain with the same conditions like this condition chain.
      *
      * @return new condition chain.
-     */
+     */    @Override
+
     public ConditionChain copy() {
         return new ConditionChain(C.nonNullOrElse(item, Item::clone, null), C.nonNullOrElse(location, Location::clone, null),
                 C.nonNullOrElse(permission, Permission::clone, null), C.nonNullOrElse(time, Time::clone, null),
@@ -216,9 +225,10 @@ public class ConditionChain implements ConfigurationSerializable, Cloneable {
      * Get the conditions in a order from the less expensive to the most expensive computation time
      *
      * @return array of conditions. May contain null values.
-     */
-    public DoorCondition[] getConditions() {
-        return new DoorCondition[] {location, time, weather, mythicMob, permission, item, placeholder};
+     */    @Override
+
+    public Collection<DoorCondition> getConditions() {
+        return Arrays.asList(location, time, weather, mythicMob, permission, item, placeholder);
     }
 
     /**
@@ -335,6 +345,4 @@ public class ConditionChain implements ConfigurationSerializable, Cloneable {
                 throw new IllegalStateException("Unexpected value: " + group);
         }
     }
-
-
 }
