@@ -11,6 +11,7 @@ import de.eldoria.bigdoorsopener.doors.conditions.standalone.Time;
 import de.eldoria.bigdoorsopener.doors.conditions.standalone.Weather;
 import de.eldoria.bigdoorsopener.util.Permissions;
 
+@Deprecated
 public enum ConditionType {
     ITEM_CLICK(ConditionGroup.ITEM),
     ITEM_BLOCK(ConditionGroup.ITEM),
@@ -58,6 +59,7 @@ public enum ConditionType {
         return null;
     }
 
+    @Deprecated
     public enum ConditionGroup {
         ITEM("item", "item", "info.item", Item.class, Permissions.ITEM_CONDITION),
         LOCATION("location", "", "info.location", Location.class, Permissions.LOCATION_CONDITION),
