@@ -1,11 +1,13 @@
 package de.eldoria.bigdoorsopener.util;
 
-import de.eldoria.bigdoorsopener.doors.ConditionScope;
+import de.eldoria.bigdoorsopener.doors.Condition;
 import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
-import de.eldoria.bigdoorsopener.doors.conditions.ConditionChain;
+import de.eldoria.bigdoorsopener.doors.conditions.ConditionHelper;
 import de.eldoria.bigdoorsopener.doors.conditions.DoorCondition;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
+
+import java.util.Collection;
 
 public class ConditionChainEvaluator {
     private Boolean current;
@@ -20,9 +22,9 @@ public class ConditionChainEvaluator {
      * @param conditions   conditions to evaluate
      * @return the result of the chain evaluator
      */
-    public static boolean or(Player player, World world, ConditionalDoor door, boolean currentState, ConditionChain conditions) {
+    public static boolean or(Player player, World world, ConditionalDoor door, boolean currentState, Collection<DoorCondition> conditions) {
         ConditionChainEvaluator evaluator = new ConditionChainEvaluator();
-        for (DoorCondition doorCondition : conditions.getConditions()) {
+        for (DoorCondition doorCondition : conditions) {
             evaluator.or(doorCondition, player, world, door, currentState);
         }
 
@@ -39,9 +41,9 @@ public class ConditionChainEvaluator {
      * @param conditions   conditions to evaluate
      * @return the result of the chain evaluator
      */
-    public static boolean and(Player player, World world, ConditionalDoor door, boolean currentState, ConditionChain conditions) {
+    public static boolean and(Player player, World world, ConditionalDoor door, boolean currentState, Collection<DoorCondition> conditions) {
         ConditionChainEvaluator evaluator = new ConditionChainEvaluator();
-        for (DoorCondition doorCondition : conditions.getConditions()) {
+        for (DoorCondition doorCondition : conditions) {
             evaluator.and(doorCondition, player, world, door, currentState);
         }
 
@@ -65,7 +67,7 @@ public class ConditionChainEvaluator {
 
         Boolean open;
 
-        if (doorCondition.getScope() == ConditionScope.Scope.PLAYER && player == null) {
+        if (ConditionHelper.getScope(doorCondition.getClass()) == Condition.Scope.PLAYER && player == null) {
             open = false;
         } else {
             open = doorCondition.isOpen(player, world, door, currentState);
@@ -103,7 +105,7 @@ public class ConditionChainEvaluator {
 
         Boolean open;
 
-        if (doorCondition.getScope() == ConditionScope.Scope.PLAYER && player == null) {
+        if (ConditionHelper.getScope(doorCondition.getClass()) == Condition.Scope.PLAYER && player == null) {
             open = false;
         } else {
             open = doorCondition.isOpen(player, world, door, currentState);
