@@ -39,7 +39,7 @@ public abstract class ItemInteraction extends Item {
      * @param player player which opened the door.
      */
     @Override
-    public abstract void used(Player player);
+    public abstract void opened(Player player);
 
     /**
      * This method is called when player interact event is fired.
