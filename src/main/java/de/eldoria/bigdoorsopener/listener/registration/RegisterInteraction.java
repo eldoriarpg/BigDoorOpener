@@ -1,5 +1,7 @@
 package de.eldoria.bigdoorsopener.listener.registration;
 
+import de.eldoria.bigdoorsopener.config.Config;
+import de.eldoria.eldoutilities.messages.MessageSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -14,14 +16,21 @@ import java.util.UUID;
  */
 public class RegisterInteraction implements Listener {
     private final Map<UUID, InteractionRegistrationObject> registerObjects = new HashMap<>();
+    private final MessageSender messageSender;
+    private final Config config;
+
+    public RegisterInteraction(MessageSender messageSender, Config config) {
+        this.messageSender = messageSender;
+        this.config = config;
+    }
 
     @EventHandler
     public void onPlayerInteraction(PlayerInteractEvent event) {
         if (registerObjects.containsKey(event.getPlayer().getUniqueId())) {
             InteractionRegistrationObject registrationObject = registerObjects.get(event.getPlayer().getUniqueId());
-            boolean register = registrationObject.register(event);
-            if (register) {
+            if (registrationObject.invoke(event, messageSender)) {
                 registerObjects.remove(event.getPlayer().getUniqueId());
+                config.safeConfig();
             }
         }
     }

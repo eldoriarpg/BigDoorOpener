@@ -1,5 +1,6 @@
 package de.eldoria.bigdoorsopener.listener.registration;
 
+import de.eldoria.eldoutilities.messages.MessageSender;
 import org.bukkit.event.player.PlayerInteractEvent;
 
 /**
@@ -12,5 +13,5 @@ public interface InteractionRegistrationObject {
      * @param event interaction event of the player.
      * @return true if the registration is done and the object can be removed.
      */
-    boolean register(PlayerInteractEvent event);
+    boolean invoke(PlayerInteractEvent event, MessageSender messageSender);
 }
