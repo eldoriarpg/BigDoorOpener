@@ -2,6 +2,7 @@ package de.eldoria.bigdoorsopener.doors;
 
 import com.google.common.base.Objects;
 import de.eldoria.bigdoorsopener.BigDoorsOpener;
+import de.eldoria.bigdoorsopener.doors.conditions.ConditionBag;
 import de.eldoria.bigdoorsopener.doors.conditions.ConditionChain;
 import de.eldoria.eldoutilities.serialization.SerializationUtil;
 import de.eldoria.eldoutilities.serialization.TypeResolvingMap;
@@ -60,7 +61,7 @@ public class ConditionalDoor implements ConfigurationSerializable {
     @Getter
     @Setter
     @Nonnull
-    private ConditionChain conditionChain;
+    private ConditionBag conditionBag;
 
     /**
      * Amount of time in seconds a door will stay open when opened.
@@ -78,36 +79,32 @@ public class ConditionalDoor implements ConfigurationSerializable {
     private boolean invertOpen = false;
 
 
-    public ConditionalDoor(long doorUID, String world, Vector position, ConditionChain conditionChain) {
+    public ConditionalDoor(long doorUID, String world, Vector position, ConditionBag conditionChain) {
         this.doorUID = doorUID;
         this.world = world;
         this.position = position;
-        this.conditionChain = conditionChain;
+        this.conditionBag = conditionChain;
     }
 
     public ConditionalDoor(long doorUID, String world, Vector position) {
-        this(doorUID, world, position, new ConditionChain());
-    }
-
-    public ConditionalDoor(long doorUID, String world, Vector position, boolean invertOpen, String evaluator,
-                           EvaluationType evaluationType, ConditionChain conditionChain, int stayOpen) {
-        this(doorUID, world, position, conditionChain);
-        this.invertOpen = invertOpen;
-        this.evaluator = evaluator;
-        this.evaluationType = evaluationType;
-        this.stayOpen = stayOpen;
+        this(doorUID, world, position, new ConditionBag());
     }
 
     public ConditionalDoor(Map<String, Object> map) {
         TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
-        int doorUID = resolvingMap.getValue("doorUID");
-        this.doorUID = doorUID;
+        doorUID = resolvingMap.getValue("doorUID");
         world = resolvingMap.getValue("world");
         position = resolvingMap.getValue("position");
         invertOpen = resolvingMap.getValue("invertOpen");
         evaluator = resolvingMap.getValue("evaluator");
         evaluationType = EnumUtil.parse(resolvingMap.getValue("evaluationType"), EvaluationType.class);
-        conditionChain = resolvingMap.getValue("conditionChain");
+        if (resolvingMap.containsKey("conditionChain")) {
+            ConditionChain conditionChain = resolvingMap.getValue("conditionChain");
+            conditionBag = new ConditionBag();
+            conditionChain.getConditions().stream().filter(java.util.Objects::nonNull).forEach(c -> conditionBag.putCondition(c));
+        } else {
+            conditionBag = resolvingMap.getValue("conditionBag");
+        }
         stayOpen = resolvingMap.getValue("stayOpen");
     }
 
@@ -128,12 +125,12 @@ public class ConditionalDoor implements ConfigurationSerializable {
 
         switch (evaluationType) {
             case CUSTOM:
-                String custom = conditionChain.custom(evaluator, player, world, this, currentState);
+                String custom = conditionBag.custom(evaluator, player, world, this, currentState);
                 return BigDoorsOpener.JS().eval(custom, currentState);
             case AND:
-                return conditionChain.and(player, world, this, currentState);
+                return conditionBag.and(player, world, this, currentState);
             case OR:
-                return conditionChain.or(player, world, this, currentState);
+                return conditionBag.or(player, world, this, currentState);
             default:
                 throw new IllegalStateException("Unexpected value: " + evaluationType);
         }
@@ -165,7 +162,7 @@ public class ConditionalDoor implements ConfigurationSerializable {
     public void opened(@Nullable Player player) {
         waitForOpen = true;
         if (player == null) return;
-        conditionChain.opened(player);
+        conditionBag.opened(player);
     }
 
     /**
@@ -177,11 +174,11 @@ public class ConditionalDoor implements ConfigurationSerializable {
     }
 
     public void evaluated() {
-        conditionChain.evaluated();
+        conditionBag.evaluated();
     }
 
     public boolean requiresPlayerEvaluation() {
-        return conditionChain.requiresPlayerEvaluation();
+        return conditionBag.requiresPlayerEvaluation();
     }
 
     public void setEvaluator(EvaluationType evaluationType) {
@@ -223,10 +220,9 @@ public class ConditionalDoor implements ConfigurationSerializable {
                 .add("evaluator", evaluator)
                 .add("evaluationType", evaluationType)
                 .add("stayOpen", stayOpen)
-                .add("conditionChain", conditionChain)
+                .add("conditionBag", conditionBag)
                 .build();
     }
-
 
 
     public enum EvaluationType {
