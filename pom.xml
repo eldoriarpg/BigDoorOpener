@@ -135,7 +135,7 @@
         <dependency>
             <groupId>de.eldoria</groupId>
             <artifactId>EldoUtilities</artifactId>
-            <version>v1.0.12</version>
+            <version>v1.0.14</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
