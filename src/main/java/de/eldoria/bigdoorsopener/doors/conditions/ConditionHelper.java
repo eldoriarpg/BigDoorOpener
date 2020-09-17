@@ -1,9 +1,6 @@
 package de.eldoria.bigdoorsopener.doors.conditions;
 
-import de.eldoria.bigdoorsopener.BigDoorsOpener;
-import de.eldoria.bigdoorsopener.doors.Condition;
-
-import java.util.logging.Level;
+import org.bukkit.configuration.serialization.SerializableAs;
 
 public final class ConditionHelper {
     private ConditionHelper() {
@@ -27,28 +24,10 @@ public final class ConditionHelper {
         return "info." + getName(condition);
     }
 
-    public static String getGroup(Class<? extends DoorCondition> conClazz) {
-        return conClazz.getAnnotation(Condition.class).group();
-    }
-
-    private static String name(Class<? extends DoorCondition> conClazz) {
-        return conClazz.getAnnotation(Condition.class).name();
-    }
-
     public static String serializedName(Class<? extends DoorCondition> condition) {
-        return condition.getAnnotation(Condition.class).serializedName();
-    }
-    public static Condition.Scope getScope(Class<? extends DoorCondition> condition) {
-        return condition.getAnnotation(Condition.class).scope();
-    }
-
-    public static boolean isCondition(Class<? extends DoorCondition> conClazz) {
-        if (conClazz.isAnnotationPresent(Condition.class)) {
-            BigDoorsOpener.logger().log(Level.WARNING, "Condition " + ConditionHelper.getName(conClazz)
-                            + " is a condition but has no condition annotation.",
-                    new RuntimeException("Failed to register condition."));
-            return false;
+        if (!condition.isAnnotationPresent(SerializableAs.class)) {
+            throw new IllegalStateException("Missing serialization annotation in class " + condition.getName());
         }
-        return true;
+        return condition.getAnnotation(SerializableAs.class).value();
     }
 }
