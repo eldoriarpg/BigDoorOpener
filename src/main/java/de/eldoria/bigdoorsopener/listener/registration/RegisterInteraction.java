@@ -15,13 +15,26 @@ import java.util.UUID;
  * This listener allows to execute a call on a object which tries further actions though player interactions.
  */
 public class RegisterInteraction implements Listener {
+    private static RegisterInteraction instance;
     private final Map<UUID, InteractionRegistrationObject> registerObjects = new HashMap<>();
     private final MessageSender messageSender;
     private final Config config;
 
     public RegisterInteraction(MessageSender messageSender, Config config) {
+        if (instance != null) {
+            throw new ExceptionInInitializerError("Register interaction is already initialized");
+        }
+
         this.messageSender = messageSender;
         this.config = config;
+        instance = this;
+    }
+
+    public static RegisterInteraction getInstance() {
+        if (instance == null) {
+            throw new NullPointerException("Register interaction is not initialized");
+        }
+        return instance;
     }
 
     @EventHandler
