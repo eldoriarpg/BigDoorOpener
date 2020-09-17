@@ -1,31 +1,37 @@
 package de.eldoria.bigdoorsopener.doors.conditions.location;
 
 import com.google.common.cache.Cache;
-import de.eldoria.bigdoorsopener.BigDoorsOpener;
-import de.eldoria.bigdoorsopener.doors.ConditionScope;
+import de.eldoria.bigdoorsopener.core.BigDoorsOpener;
+import de.eldoria.bigdoorsopener.core.conditions.ConditionContainer;
+import de.eldoria.bigdoorsopener.core.conditions.Scope;
 import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
 import de.eldoria.bigdoorsopener.doors.conditions.ConditionType;
+import de.eldoria.bigdoorsopener.listener.registration.InteractionRegistrationObject;
+import de.eldoria.bigdoorsopener.listener.registration.RegisterInteraction;
 import de.eldoria.bigdoorsopener.util.C;
 import de.eldoria.bigdoorsopener.util.TextColors;
 import de.eldoria.eldoutilities.localization.Localizer;
 import de.eldoria.eldoutilities.localization.Replacement;
+import de.eldoria.eldoutilities.messages.MessageSender;
 import de.eldoria.eldoutilities.serialization.SerializationUtil;
 import de.eldoria.eldoutilities.serialization.TypeResolvingMap;
 import net.kyori.adventure.text.TextComponent;
 import org.bukkit.World;
 import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.entity.Player;
+import org.bukkit.event.block.Action;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.util.BlockVector;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
 @SerializableAs("simpleRegionCondition")
-@ConditionScope(ConditionScope.Scope.PLAYER)
 public class SimpleRegion implements Location {
     private final BlockVector minimum;
     private final BlockVector maximum;
@@ -44,6 +50,41 @@ public class SimpleRegion implements Location {
         minimum = resolvingMap.getValue("minimum");
         maximum = resolvingMap.getValue("maximum");
         world = resolvingMap.getValue("world");
+    }
+
+    public static ConditionContainer getConditionContainer() {
+        return ConditionContainer.ofClass(Proximity.class, Scope.PLAYER)
+                .withFactory((player, messageSender, conditionBag, arguments) -> {
+                    Localizer localizer = BigDoorsOpener.localizer();
+                    messageSender.sendMessage(player, localizer.getMessage("setCondition.firstPoint"));
+                    RegisterInteraction.getInstance().register(player, new InteractionRegistrationObject() {
+                        private String world;
+                        private BlockVector first;
+
+                        @Override
+                        public boolean invoke(PlayerInteractEvent event, MessageSender messageSender) {
+                            if (event.getAction() != Action.LEFT_CLICK_BLOCK) {
+                                return false;
+                            }
+                            BlockVector vec = event.getClickedBlock().getLocation().toVector().toBlockVector();
+                            if (first == null) {
+                                world = event.getPlayer().getWorld().getName();
+                                first = vec;
+                                event.setCancelled(true);
+                                messageSender.sendMessage(player, localizer.getMessage("setCondition.secondPoint"));
+                                return false;
+                            }
+                            conditionBag.putCondition(new SimpleRegion(first, vec, world));
+                            event.setCancelled(true);
+                            messageSender.sendMessage(player, localizer.getMessage("setCondition.simpleRegionRegisterd"));
+                            return true;
+                        }
+                    });
+
+                })
+                .onTabComplete((sender, localizer, args) -> Collections.emptyList())
+                .withMeta("simpleRegion", "location", ConditionContainer.Builder.Cost.PLAYER_LOW.cost)
+                .build();
     }
 
     @Override
@@ -102,4 +143,5 @@ public class SimpleRegion implements Location {
                 .add("world", world)
                 .build();
     }
+
 }

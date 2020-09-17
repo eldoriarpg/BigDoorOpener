@@ -1,11 +1,14 @@
 package de.eldoria.bigdoorsopener.doors.conditions.standalone;
 
 import com.google.common.cache.Cache;
-import de.eldoria.bigdoorsopener.doors.ConditionScope;
+import de.eldoria.bigdoorsopener.core.BigDoorsOpener;
+import de.eldoria.bigdoorsopener.core.conditions.ConditionContainer;
+import de.eldoria.bigdoorsopener.core.conditions.Scope;
 import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
 import de.eldoria.bigdoorsopener.doors.conditions.ConditionType;
 import de.eldoria.bigdoorsopener.doors.conditions.DoorCondition;
 import de.eldoria.bigdoorsopener.doors.conditions.DoorState;
+import de.eldoria.bigdoorsopener.doors.conditions.location.Proximity;
 import de.eldoria.bigdoorsopener.listener.WeatherListener;
 import de.eldoria.bigdoorsopener.util.C;
 import de.eldoria.bigdoorsopener.util.TextColors;
@@ -13,7 +16,10 @@ import de.eldoria.eldoutilities.localization.Localizer;
 import de.eldoria.eldoutilities.localization.Replacement;
 import de.eldoria.eldoutilities.serialization.SerializationUtil;
 import de.eldoria.eldoutilities.serialization.TypeResolvingMap;
+import de.eldoria.eldoutilities.utils.ArgumentUtils;
+import de.eldoria.eldoutilities.utils.ArrayUtil;
 import de.eldoria.eldoutilities.utils.EnumUtil;
+import de.eldoria.eldoutilities.utils.Parser;
 import net.kyori.adventure.text.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.WeatherType;
@@ -24,15 +30,19 @@ import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
+
+import static de.eldoria.bigdoorsopener.util.ArgumentHelper.argumentsInvalid;
 
 /**
  * A condition which opens the door based on the current weather in the world.
  */
 @SerializableAs("weatherCondition")
-@ConditionScope(ConditionScope.Scope.WORLD)
 public class Weather implements DoorCondition {
     // We use a static cache here for all weather conditions.
     // The weather condition is not very likely to change out of a sudden so the refresh cycle does not need to be precisely correct.
@@ -49,6 +59,56 @@ public class Weather implements DoorCondition {
         TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
         weatherType = EnumUtil.parse(resolvingMap.getValue("weatherType"), WeatherType.class);
         forceState = resolvingMap.getValueOrDefault("forceState", false);
+    }
+
+    public static ConditionContainer getConditionContainer() {
+        return ConditionContainer.ofClass(Proximity.class, Scope.PLAYER)
+                .withFactory((player, messageSender, conditionBag, arguments) -> {
+                    Localizer localizer = BigDoorsOpener.localizer();
+                    if (argumentsInvalid(player, messageSender, localizer, arguments, 1,
+                            "<" + localizer.getMessage("syntax.doorId") + "> <"
+                                    + localizer.getMessage("syntax.condition") + "> <"
+                                    + localizer.getMessage("syntax.weatherType") + ">")) {
+                        return;
+                    }
+
+                    WeatherType weatherType = null;
+                    for (WeatherType value : WeatherType.values()) {
+                        if (value.name().equalsIgnoreCase(arguments[0])) {
+                            weatherType = value;
+                        }
+                    }
+                    if (weatherType == null) {
+                        messageSender.sendError(player, localizer.getMessage("error.invalidWeatherType"));
+                        return;
+                    }
+
+                    Optional<Boolean> forceWeather = ArgumentUtils.getOptionalParameter(arguments, 1, Optional.of(false), Parser::parseBoolean);
+
+                    if (!forceWeather.isPresent()) {
+                        messageSender.sendError(player, localizer.getMessage("error.invalidBoolean"));
+                        return;
+                    }
+
+                    conditionBag.putCondition(new Weather(weatherType, forceWeather.get()));
+                    messageSender.sendMessage(player, localizer.getMessage("setCondition.weather",
+                            Replacement.create("OPEN", weatherType == WeatherType.CLEAR
+                                    ? localizer.getMessage("conditionDesc.clear")
+                                    : localizer.getMessage("conditionDesc.downfall"))));
+
+                })
+                .onTabComplete((sender, localizer, args) -> {
+                    final String[] weatherType = Arrays.stream(WeatherType.values())
+                            .map(v -> v.name().toLowerCase())
+                            .toArray(String[]::new);
+
+                    if (args.length == 1) {
+                        return ArrayUtil.startingWithInArray(args[0], weatherType).collect(Collectors.toList());
+                    }
+                    return Collections.emptyList();
+                })
+                .withMeta("weather", ConditionContainer.Builder.Cost.WORLD_LOW.cost)
+                .build();
     }
 
     @Override
@@ -157,4 +217,5 @@ public class Weather implements DoorCondition {
                 .add("forceState", forceState)
                 .build();
     }
+
 }

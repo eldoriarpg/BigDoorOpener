@@ -1,17 +1,21 @@
 package de.eldoria.bigdoorsopener.doors.conditions.standalone;
 
 import com.google.common.cache.Cache;
-import de.eldoria.bigdoorsopener.doors.ConditionScope;
+import de.eldoria.bigdoorsopener.core.BigDoorsOpener;
+import de.eldoria.bigdoorsopener.core.conditions.ConditionContainer;
+import de.eldoria.bigdoorsopener.core.conditions.Scope;
 import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
 import de.eldoria.bigdoorsopener.doors.conditions.ConditionType;
 import de.eldoria.bigdoorsopener.doors.conditions.DoorCondition;
 import de.eldoria.bigdoorsopener.doors.conditions.DoorState;
+import de.eldoria.bigdoorsopener.doors.conditions.location.Proximity;
 import de.eldoria.bigdoorsopener.util.C;
 import de.eldoria.bigdoorsopener.util.TextColors;
 import de.eldoria.eldoutilities.localization.Localizer;
 import de.eldoria.eldoutilities.localization.Replacement;
 import de.eldoria.eldoutilities.serialization.SerializationUtil;
 import de.eldoria.eldoutilities.serialization.TypeResolvingMap;
+import de.eldoria.eldoutilities.utils.ArgumentUtils;
 import de.eldoria.eldoutilities.utils.Parser;
 import net.kyori.adventure.text.TextComponent;
 import org.bukkit.World;
@@ -20,15 +24,19 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.concurrent.ExecutionException;
+
+import static de.eldoria.bigdoorsopener.util.ArgumentHelper.argumentsInvalid;
 
 /**
  * A key which defines the door state by current world time.
  */
 @SerializableAs("timeCondition")
-@ConditionScope(ConditionScope.Scope.WORLD)
 public class Time implements DoorCondition {
     // We use a static cache here for all time conditions.
     // The time condition is not very likely to change out of a sudden so the refresh cycle does not need to be precisely correct.
@@ -64,6 +72,78 @@ public class Time implements DoorCondition {
         openTick = resolvingMap.getValue("openTick");
         closeTick = resolvingMap.getValue("closeTick");
         forceState = resolvingMap.getValue("forceState");
+    }
+
+    public static ConditionContainer getConditionContainer() {
+        return ConditionContainer.ofClass(Proximity.class, Scope.PLAYER)
+                .withFactory((player, messageSender, conditionBag, arguments) -> {
+                    Localizer localizer = BigDoorsOpener.localizer();
+                    if (argumentsInvalid(player, messageSender, localizer, arguments, 2,
+                            "<" + localizer.getMessage("syntax.doorId") + "> <"
+                                    + localizer.getMessage("syntax.condition") + "> <"
+                                    + localizer.getMessage("syntax.openTime") + "> <"
+                                    + localizer.getMessage("syntax.closeTime") + "> ["
+                                    + localizer.getMessage("tabcomplete.forceState") + "]")) {
+                        return;
+                    }
+
+                    // parse time
+                    OptionalInt open = Parser.parseInt(arguments[0]);
+                    if (!open.isPresent()) {
+                        open = Parser.parseTimeToTicks(arguments[0]);
+                        if (!open.isPresent()) {
+                            messageSender.sendError(player, localizer.getMessage("error.invalidOpenTime"));
+                            return;
+                        }
+                    }
+
+                    OptionalInt close = Parser.parseInt(arguments[1]);
+                    if (!close.isPresent()) {
+                        close = Parser.parseTimeToTicks(arguments[1]);
+                        if (!close.isPresent()) {
+                            messageSender.sendError(player, localizer.getMessage("error.invalidCloseTime"));
+                            return;
+                        }
+                    }
+
+                    if (close.getAsInt() < 0 || close.getAsInt() > 24000
+                            || open.getAsInt() < 0 || open.getAsInt() > 24000) {
+                        messageSender.sendError(player, localizer.getMessage("error.invalidRange",
+                                Replacement.create("MIN", 0).addFormatting('6'),
+                                Replacement.create("MAX", 24000).addFormatting('6')));
+                        return;
+                    }
+
+                    // parse optional force argument.
+                    Optional<Boolean> force = ArgumentUtils.getOptionalParameter(arguments, 2, Optional.of(false), Parser::parseBoolean);
+
+                    if (!force.isPresent()) {
+                        messageSender.sendError(player, localizer.getMessage("error.invalidBoolean"));
+                        return;
+                    }
+                    conditionBag.putCondition(new Time(open.getAsInt(), close.getAsInt(), force.get()));
+                    messageSender.sendMessage(player, localizer.getMessage("setCondition.time",
+                            Replacement.create("OPEN", Parser.parseTicksToTime(open.getAsInt())),
+                            Replacement.create("CLOSE", Parser.parseTicksToTime(close.getAsInt()))));
+
+                })
+                .onTabComplete((sender, localizer, args) -> {
+                    if (args.length == 1) {
+                        return Collections.singletonList("<" + localizer.getMessage("tabcomplete.setTimed.open") + ">");
+                    }
+                    if (args.length == 2) {
+                        return Collections.singletonList("<" + localizer.getMessage("tabcomplete.setTimed.close") + ">");
+                    }
+                    if (args.length == 3) {
+                        if (args[2].isEmpty()) {
+                            return Arrays.asList("true", "false");
+                        }
+                        return Arrays.asList("[" + localizer.getMessage("tabcomplete.forceState") + "]", "true", "false");
+                    }
+                    return Collections.emptyList();
+                })
+                .withMeta("time", ConditionContainer.Builder.Cost.WORLD_LOW.cost)
+                .build();
     }
 
     @Override
@@ -151,5 +231,6 @@ public class Time implements DoorCondition {
                 .add("forceState", forceState)
                 .build();
     }
+
 
 }

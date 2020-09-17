@@ -1,10 +1,12 @@
 package de.eldoria.bigdoorsopener.doors.conditions.permission;
 
 import com.google.common.cache.Cache;
-import de.eldoria.bigdoorsopener.BigDoorsOpener;
-import de.eldoria.bigdoorsopener.doors.ConditionScope;
+import de.eldoria.bigdoorsopener.core.BigDoorsOpener;
+import de.eldoria.bigdoorsopener.core.conditions.ConditionContainer;
+import de.eldoria.bigdoorsopener.core.conditions.Scope;
 import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
 import de.eldoria.bigdoorsopener.doors.conditions.ConditionType;
+import de.eldoria.bigdoorsopener.doors.conditions.location.Proximity;
 import de.eldoria.bigdoorsopener.scheduler.BigDoorsAdapter;
 import de.eldoria.bigdoorsopener.util.C;
 import de.eldoria.bigdoorsopener.util.TextColors;
@@ -12,6 +14,7 @@ import de.eldoria.eldoutilities.localization.Localizer;
 import de.eldoria.eldoutilities.localization.Replacement;
 import de.eldoria.eldoutilities.serialization.SerializationUtil;
 import de.eldoria.eldoutilities.serialization.TypeResolvingMap;
+import de.eldoria.eldoutilities.utils.ArrayUtil;
 import net.kyori.adventure.text.TextComponent;
 import nl.pim16aap2.bigDoors.Door;
 import org.bukkit.World;
@@ -19,30 +22,76 @@ import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
+
+import static de.eldoria.bigdoorsopener.util.ArgumentHelper.argumentsInvalid;
 
 /**
  * A condition which opens the door, when a player has a access level for the door.
  */
 @SerializableAs("doorPermissionCondition")
-@ConditionScope(ConditionScope.Scope.PLAYER)
 public class DoorPermission extends BigDoorsAdapter implements Permission {
     private final int permissionLevel;
     private final Cache<UUID, Boolean> cache = C.getExpiringCache(30, TimeUnit.SECONDS);
 
     public DoorPermission(int permissionLevel) {
-        super(BigDoorsOpener.getBigDoors(), BigDoorsOpener.getLocalizer());
+        super(BigDoorsOpener.getBigDoors(), BigDoorsOpener.localizer());
         this.permissionLevel = permissionLevel;
     }
 
     public DoorPermission(Map<String, Object> map) {
-        super(BigDoorsOpener.getBigDoors(), BigDoorsOpener.getLocalizer());
+        super(BigDoorsOpener.getBigDoors(), BigDoorsOpener.localizer());
         TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
         permissionLevel = resolvingMap.getValue("permissionLevel");
+    }
+
+    public static int parsePermissionLevel(String permission) {
+        if ("owner".equalsIgnoreCase(permission)) {
+            return 0;
+        }
+        if ("editor".equalsIgnoreCase(permission)) {
+            return 1;
+        }
+        if ("user".equalsIgnoreCase(permission)) {
+            return 2;
+        }
+        return -1;
+    }
+
+    public static ConditionContainer getConditionContainer() {
+        return ConditionContainer.ofClass(Proximity.class, Scope.PLAYER)
+                .withFactory((player, messageSender, conditionBag, arguments) -> {
+                    Localizer localizer = BigDoorsOpener.localizer();
+                    if (argumentsInvalid(player, messageSender, localizer, arguments, 1,
+                            "<" + localizer.getMessage("syntax.doorId") + "> <"
+                                    + localizer.getMessage("syntax.condition") + "> <"
+                                    + localizer.getMessage("tabcomplete.doorPermission") + ">")) {
+                        return;
+                    }
+
+                    int i = DoorPermission.parsePermissionLevel(arguments[0]);
+                    if (i < 0) {
+                        messageSender.sendError(player, localizer.getMessage("error.invalidAccessLevel"));
+                        return;
+                    }
+                    conditionBag.putCondition(new DoorPermission(i));
+                    messageSender.sendMessage(player, localizer.getMessage("setCondition.doorPermission"));
+
+                })
+                .onTabComplete((sender, localizer, args) -> {
+                    if (args.length == 1) {
+                        return ArrayUtil.startingWithInArray(args[0], new String[] {"owner", "editor", "user"}).collect(Collectors.toList());
+                    }
+                    return Collections.emptyList();
+                })
+                .withMeta("doorPermission", "permission", ConditionContainer.Builder.Cost.PLAYER_MEDIUM.cost)
+                .build();
     }
 
     @Override
@@ -106,16 +155,4 @@ public class DoorPermission extends BigDoorsAdapter implements Permission {
         }
     }
 
-    public static int parsePermissionLevel(String permission) {
-        if ("owner".equalsIgnoreCase(permission)) {
-            return 0;
-        }
-        if ("editor".equalsIgnoreCase(permission)) {
-            return 1;
-        }
-        if ("user".equalsIgnoreCase(permission)) {
-            return 2;
-        }
-        return -1;
-    }
 }

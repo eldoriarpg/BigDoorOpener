@@ -12,6 +12,7 @@ import de.eldoria.eldoutilities.serialization.SerializationUtil;
 import lombok.Getter;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.HoverEvent;
+import org.bukkit.command.CommandSender;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -19,6 +20,9 @@ import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 @Getter
@@ -73,12 +77,26 @@ public abstract class Item implements DoorCondition {
         this.consumed = consumed;
     }
 
+    public static List<String> onTabComplete(CommandSender sender, Localizer localizer, String[] args) {
+        if (args.length == 1) {
+            return Collections.singletonList("<" + localizer.getMessage("syntax.amount") + ">");
+        }
+        if (args.length == 2) {
+            if (args[1].isEmpty()) {
+                return Arrays.asList("true", "false");
+            }
+            return Arrays.asList("[" + localizer.getMessage("tabcomplete.consumed") + "]", "true", "false");
+        }
+        return Collections.emptyList();
+    }
+
     /**
      * This method will be called when a door with this key was opened. Only once.
      *
      * @param player player which opened the door.
      */
-    public abstract void used(Player player);
+    @Override
+    public abstract void opened(Player player);
 
     /**
      * Checks if a player has a item in the off or main hand.

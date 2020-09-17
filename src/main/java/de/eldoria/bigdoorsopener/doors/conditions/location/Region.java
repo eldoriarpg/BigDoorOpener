@@ -2,9 +2,12 @@ package de.eldoria.bigdoorsopener.doors.conditions.location;
 
 import com.google.common.cache.Cache;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
+import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
-import de.eldoria.bigdoorsopener.BigDoorsOpener;
-import de.eldoria.bigdoorsopener.doors.ConditionScope;
+import com.sk89q.worldguard.protection.regions.RegionContainer;
+import de.eldoria.bigdoorsopener.core.BigDoorsOpener;
+import de.eldoria.bigdoorsopener.core.conditions.ConditionContainer;
+import de.eldoria.bigdoorsopener.core.conditions.Scope;
 import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
 import de.eldoria.bigdoorsopener.doors.conditions.ConditionType;
 import de.eldoria.bigdoorsopener.util.C;
@@ -20,15 +23,17 @@ import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
+
+import static de.eldoria.bigdoorsopener.util.ArgumentHelper.argumentsInvalid;
 
 /**
  * A condition which opens the door, when a player is inside a world guard region.
  */
 @SerializableAs("regionCondition")
-@ConditionScope(ConditionScope.Scope.PLAYER)
 public class Region implements Location {
     private final ProtectedRegion region;
     private final World world;
@@ -67,6 +72,51 @@ public class Region implements Location {
         world = null;
         region = null;
         BigDoorsOpener.logger().warning("A region key is used but world guard was not found.");
+    }
+
+    public static ConditionContainer getConditionContainer() {
+        return ConditionContainer.ofClass(Proximity.class, Scope.PLAYER)
+                .withFactory((player, messageSender, conditionBag, arguments) -> {
+                    final RegionContainer regionContainer = BigDoorsOpener.getRegionContainer();
+                    Localizer localizer = BigDoorsOpener.localizer();
+                    if (regionContainer == null) {
+                        messageSender.sendError(player, localizer.getMessage("error.wgNotEnabled"));
+                        return;
+                    }
+
+                    if (argumentsInvalid(player, messageSender, localizer, arguments, 1,
+                            "<" + localizer.getMessage("syntax.doorId") + "> <"
+                                    + localizer.getMessage("syntax.condition") + "> <"
+                                    + localizer.getMessage("tabcomplete.regionName") + ">")) {
+                        return;
+                    }
+
+                    if (player == null) {
+                        messageSender.sendError(null, localizer.getMessage("error.notAllowedFromConsole"));
+                        return;
+                    }
+                    RegionManager rm = regionContainer.get(BukkitAdapter.adapt(player.getWorld()));
+                    if (rm == null) {
+                        messageSender.sendError(player, localizer.getMessage("error.regionNotFound"));
+                        return;
+                    }
+                    ProtectedRegion region = rm.getRegion(arguments[0]);
+                    if (region == null) {
+                        messageSender.sendError(player, localizer.getMessage("error.regionNotFound"));
+                        return;
+                    }
+                    conditionBag.putCondition(new Region(region, player.getWorld()));
+                    messageSender.sendMessage(player, localizer.getMessage("setCondition.region"));
+
+                })
+                .onTabComplete((sender, localizer, args) -> {
+                    if (args.length == 1) {
+                        return Collections.singletonList("<" + localizer.getMessage("tabcomplete.regionName") + ">");
+                    }
+                    return Collections.emptyList();
+                })
+                .withMeta("region", "location", ConditionContainer.Builder.Cost.PLAYER_MEDIUM.cost)
+                .build();
     }
 
     @Override
@@ -119,4 +169,5 @@ public class Region implements Location {
                 .add("region", regionId)
                 .build();
     }
+
 }

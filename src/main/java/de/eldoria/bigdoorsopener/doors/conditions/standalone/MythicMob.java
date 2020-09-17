@@ -1,24 +1,34 @@
 package de.eldoria.bigdoorsopener.doors.conditions.standalone;
 
-import de.eldoria.bigdoorsopener.BigDoorsOpener;
-import de.eldoria.bigdoorsopener.doors.ConditionScope;
+import de.eldoria.bigdoorsopener.core.BigDoorsOpener;
+import de.eldoria.bigdoorsopener.core.conditions.ConditionContainer;
+import de.eldoria.bigdoorsopener.core.conditions.Scope;
 import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
 import de.eldoria.bigdoorsopener.doors.conditions.ConditionType;
 import de.eldoria.bigdoorsopener.doors.conditions.DoorCondition;
+import de.eldoria.bigdoorsopener.doors.conditions.location.Proximity;
 import de.eldoria.bigdoorsopener.util.C;
 import de.eldoria.bigdoorsopener.util.TextColors;
 import de.eldoria.eldoutilities.localization.Localizer;
 import de.eldoria.eldoutilities.localization.Replacement;
 import de.eldoria.eldoutilities.serialization.SerializationUtil;
+import de.eldoria.eldoutilities.utils.ArrayUtil;
+import io.lumine.xikage.mythicmobs.MythicMobs;
 import io.lumine.xikage.mythicmobs.api.bukkit.events.MythicMobDeathEvent;
 import net.kyori.adventure.text.TextComponent;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
+import java.util.stream.Collectors;
 
-@ConditionScope(ConditionScope.Scope.WORLD)
+import static de.eldoria.bigdoorsopener.util.ArgumentHelper.argumentsInvalid;
+
 public class MythicMob implements DoorCondition {
     private final String mobType;
     private boolean state;
@@ -29,6 +39,54 @@ public class MythicMob implements DoorCondition {
 
     public MythicMob(Map<String, Object> map) {
         mobType = SerializationUtil.mapOf(map).getValue("mobType");
+    }
+
+    public static ConditionContainer getConditionContainer() {
+        return ConditionContainer.ofClass(Proximity.class, Scope.PLAYER)
+                .withFactory((player, messageSender, conditionBag, arguments) -> {
+                    Localizer localizer = BigDoorsOpener.localizer();
+                    if (!BigDoorsOpener.isMythicMobsEnabled()) {
+                        messageSender.sendError(player, localizer.getMessage("error.mythicMob"));
+                        return;
+                    }
+
+                    if (argumentsInvalid(player, messageSender, localizer, arguments, 1,
+                            "<" + localizer.getMessage("syntax.doorId") + "> <"
+                                    + localizer.getMessage("syntax.condition") + "> <"
+                                    + localizer.getMessage("syntax.mobType") + ">")) {
+                        return;
+                    }
+
+                    String mob = arguments[0];
+
+                    boolean exists = MythicMobs.inst().getAPIHelper().getMythicMob(mob) != null;
+
+                    if (!exists) {
+                        messageSender.sendError(player, localizer.getMessage("error.invalidMob"));
+                        return;
+                    }
+
+                    conditionBag.putCondition(new MythicMob(mob));
+                    messageSender.sendMessage(player, localizer.getMessage("setCondition.mythicMob"));
+
+                })
+                .onTabComplete((sender, localizer, args) -> {
+                    if (!BigDoorsOpener.isMythicMobsEnabled()) return Collections.emptyList();
+                    List<String> mythicMobs;
+                    try {
+                        mythicMobs = (List<String>) C.PLUGIN_CACHE.get("mythicMobs", () -> MythicMobs.inst()
+                                .getMobManager().getMobTypes()
+                                .parallelStream()
+                                .map(m -> m.getInternalName())
+                                .collect(Collectors.toList()));
+                    } catch (ExecutionException e) {
+                        BigDoorsOpener.logger().log(Level.WARNING, "Could not build mob names.", e);
+                        return Collections.emptyList();
+                    }
+                    return ArrayUtil.startingWithInArray(args[3], mythicMobs.toArray(new String[0])).collect(Collectors.toList());
+                })
+                .withMeta("mythicMob", ConditionContainer.Builder.Cost.WORLD_LOW.cost)
+                .build();
     }
 
     @Override
@@ -83,4 +141,5 @@ public class MythicMob implements DoorCondition {
             state = true;
         }
     }
+
 }

@@ -1,12 +1,16 @@
 package de.eldoria.bigdoorsopener.doors.conditions.standalone;
 
-import de.eldoria.bigdoorsopener.BigDoorsOpener;
-import de.eldoria.bigdoorsopener.doors.ConditionScope;
+import de.eldoria.bigdoorsopener.core.BigDoorsOpener;
+import de.eldoria.bigdoorsopener.core.conditions.ConditionContainer;
+import de.eldoria.bigdoorsopener.core.conditions.Scope;
 import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
 import de.eldoria.bigdoorsopener.doors.conditions.ConditionType;
 import de.eldoria.bigdoorsopener.doors.conditions.DoorCondition;
+import de.eldoria.bigdoorsopener.doors.conditions.location.Proximity;
 import de.eldoria.bigdoorsopener.util.C;
+import de.eldoria.bigdoorsopener.util.JsSyntaxHelper;
 import de.eldoria.bigdoorsopener.util.TextColors;
+import de.eldoria.eldoutilities.container.Pair;
 import de.eldoria.eldoutilities.localization.Localizer;
 import de.eldoria.eldoutilities.localization.Replacement;
 import de.eldoria.eldoutilities.serialization.SerializationUtil;
@@ -18,13 +22,15 @@ import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collections;
 import java.util.Map;
+
+import static de.eldoria.bigdoorsopener.util.ArgumentHelper.argumentsInvalid;
 
 /**
  * A condition which uses the placeholder api.
  */
 @SerializableAs("placeholderCondition")
-@ConditionScope(ConditionScope.Scope.PLAYER)
 public class Placeholder implements DoorCondition {
 
     private final String evaluator;
@@ -36,6 +42,68 @@ public class Placeholder implements DoorCondition {
     public Placeholder(Map<String, Object> map) {
         TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
         evaluator = resolvingMap.getValue("evaluator");
+    }
+
+    public static ConditionContainer getConditionContainer() {
+        return ConditionContainer.ofClass(Proximity.class, Scope.PLAYER)
+                .withFactory((player, messageSender, conditionBag, arguments) -> {
+                    Localizer localizer = BigDoorsOpener.localizer();
+                    if (!BigDoorsOpener.isPlaceholderEnabled()) {
+                        messageSender.sendError(player, localizer.getMessage("error.placeholderNotFound"));
+                        return;
+                    }
+
+                    if (player == null) {
+                        messageSender.sendError(null, localizer.getMessage("error.notAllowedFromConsole"));
+                        return;
+                    }
+
+                    if (argumentsInvalid(player, messageSender, localizer, arguments, 1,
+                            "<" + localizer.getMessage("syntax.doorId") + "> <"
+                                    + localizer.getMessage("syntax.condition") + "> <"
+                                    + localizer.getMessage("syntax.customEvaluator") + ">")) {
+                        return;
+                    }
+
+                    String evaluator = String.join(" ", arguments);
+
+                    Pair<JsSyntaxHelper.ValidatorResult, String> result = JsSyntaxHelper.checkExecution(evaluator, BigDoorsOpener.JS(), player, false);
+
+                    switch (result.first) {
+                        case UNBALANCED_PARENTHESIS:
+                            messageSender.sendError(player, localizer.getMessage("error.unbalancedParenthesis"));
+                            return;
+                        case INVALID_VARIABLE:
+                            messageSender.sendError(player, localizer.getMessage("error.invalidVariable",
+                                    Replacement.create("ERROR", result.second).addFormatting('6')));
+                            return;
+                        case INVALID_OPERATOR:
+                            messageSender.sendError(player, localizer.getMessage("error.invalidOperator",
+                                    Replacement.create("ERROR", result.second).addFormatting('6')));
+                            return;
+                        case INVALID_SYNTAX:
+                            messageSender.sendError(player, localizer.getMessage("error.invalidSyntax",
+                                    Replacement.create("ERROR", result.second).addFormatting('6')));
+                            return;
+                        case EXECUTION_FAILED:
+                            messageSender.sendError(player, localizer.getMessage("error.executionFailed",
+                                    Replacement.create("ERROR", result.second).addFormatting('6')));
+                            return;
+                        case NON_BOOLEAN_RESULT:
+                            messageSender.sendError(player, localizer.getMessage("error.nonBooleanResult",
+                                    Replacement.create("ERROR", result.second).addFormatting('6')));
+                            return;
+                        case FINE:
+                            conditionBag.putCondition(new Placeholder(JsSyntaxHelper.translateEvaluator(evaluator)));
+                            break;
+                    }
+
+                    messageSender.sendMessage(player, localizer.getMessage("setCondition.placeholder"));
+
+                })
+                .onTabComplete((sender, localizer, args) -> Collections.singletonList("<" + localizer.getMessage("syntax.customEvaluator") + ">"))
+                .withMeta("placeholder", ConditionContainer.Builder.Cost.PLAYER_HIGH.cost)
+                .build();
     }
 
     @Override
@@ -85,4 +153,5 @@ public class Placeholder implements DoorCondition {
                 .add("evaluator", evaluator)
                 .build();
     }
+
 }

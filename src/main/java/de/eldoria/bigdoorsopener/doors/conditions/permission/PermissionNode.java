@@ -1,8 +1,11 @@
 package de.eldoria.bigdoorsopener.doors.conditions.permission;
 
-import de.eldoria.bigdoorsopener.doors.ConditionScope;
+import de.eldoria.bigdoorsopener.core.BigDoorsOpener;
+import de.eldoria.bigdoorsopener.core.conditions.ConditionContainer;
+import de.eldoria.bigdoorsopener.core.conditions.Scope;
 import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
 import de.eldoria.bigdoorsopener.doors.conditions.ConditionType;
+import de.eldoria.bigdoorsopener.doors.conditions.location.Proximity;
 import de.eldoria.bigdoorsopener.util.C;
 import de.eldoria.bigdoorsopener.util.TextColors;
 import de.eldoria.eldoutilities.localization.Localizer;
@@ -15,13 +18,15 @@ import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collections;
 import java.util.Map;
+
+import static de.eldoria.bigdoorsopener.util.ArgumentHelper.argumentsInvalid;
 
 /**
  * A condition which opens the door, when a player has a specific permission.
  */
 @SerializableAs("permissionCondition")
-@ConditionScope(ConditionScope.Scope.PLAYER)
 public class PermissionNode implements Permission {
     private final String permission;
 
@@ -32,6 +37,32 @@ public class PermissionNode implements Permission {
     public PermissionNode(Map<String, Object> map) {
         TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
         permission = resolvingMap.getValue("permission");
+    }
+
+    public static ConditionContainer getConditionContainer() {
+        return ConditionContainer.ofClass(Proximity.class, Scope.PLAYER)
+                .withFactory((player, messageSender, conditionBag, arguments) -> {
+                    Localizer localizer = BigDoorsOpener.localizer();
+
+                    if (argumentsInvalid(player, messageSender, localizer, arguments, 1,
+                            "<" + localizer.getMessage("syntax.doorId") + "> <"
+                                    + localizer.getMessage("syntax.condition") + "> <"
+                                    + localizer.getMessage("tabcomplete.permissionNode") + ">")) {
+                        return;
+                    }
+
+                    conditionBag.putCondition(new PermissionNode(arguments[0]));
+                    messageSender.sendMessage(player, localizer.getMessage("setCondition.permissionNode"));
+
+                })
+                .onTabComplete((sender, localizer, args) -> {
+                    if (args.length == 1) {
+                        return Collections.singletonList("<" + localizer.getMessage("tabcomplete.permissionNode") + ">");
+                    }
+                    return Collections.emptyList();
+                })
+                .withMeta("permissionNode", "permission", ConditionContainer.Builder.Cost.PLAYER_LOW.cost)
+                .build();
     }
 
     @Override
@@ -71,4 +102,5 @@ public class PermissionNode implements Permission {
                 .add("permission", permission)
                 .build();
     }
+
 }
