@@ -1,6 +1,9 @@
 package de.eldoria.bigdoorsopener.doors.conditions;
 
-import de.eldoria.bigdoorsopener.doors.Condition;
+import de.eldoria.bigdoorsopener.core.conditions.ConditionContainer;
+import de.eldoria.bigdoorsopener.core.conditions.ConditionGroup;
+import de.eldoria.bigdoorsopener.core.conditions.ConditionRegistrar;
+import de.eldoria.bigdoorsopener.core.conditions.Scope;
 import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
 import de.eldoria.eldoutilities.serialization.SerializationUtil;
 import de.eldoria.eldoutilities.serialization.TypeResolvingMap;
@@ -20,15 +23,12 @@ public class ConditionBag implements ConditionCollection {
     private final Map<String, DoorCondition> worldScope = new TreeMap<>();
 
     private ConditionBag(Collection<DoorCondition> playerScope, Collection<DoorCondition> worldScope) {
-        playerScope.forEach(c -> this.playerScope.put(ConditionHelper.getGroup(c.getClass()), c));
-        worldScope.forEach(c -> this.worldScope.put(ConditionHelper.getGroup(c.getClass()), c));
-    }
-
-    @Override
-    public @NotNull Map<String, Object> serialize() {
-        Collection<DoorCondition> values = playerScope.values();
-        values.addAll(worldScope.values());
-        return SerializationUtil.newBuilder().add("conditions", values).build();
+        playerScope.forEach(c -> {
+            ConditionRegistrar.getContainerByClass(c.getClass()).ifPresent(g -> this.playerScope.put(g.getGroup(), c));
+        });
+        worldScope.forEach(c -> {
+            ConditionRegistrar.getContainerByClass(c.getClass()).ifPresent(g -> this.worldScope.put(g.getGroup(), c));
+        });
     }
 
     public ConditionBag() {
@@ -41,44 +41,42 @@ public class ConditionBag implements ConditionCollection {
         conditions.forEach(this::putCondition);
     }
 
+    @Override
+    public @NotNull Map<String, Object> serialize() {
+        Collection<DoorCondition> values = playerScope.values();
+        values.addAll(worldScope.values());
+        return SerializationUtil.newBuilder().add("conditions", values).build();
+    }
+
     public void putCondition(DoorCondition condition) {
-        if (ConditionHelper.isCondition(condition.getClass())) return;
-        Condition.Scope scope = ConditionHelper.getScope(condition.getClass());
-        if (scope == Condition.Scope.PLAYER) {
-            playerScope.put(ConditionHelper.getGroup(condition.getClass()), condition);
+        Optional<ConditionContainer> containerByClass = ConditionRegistrar.getContainerByClass(condition.getClass());
+        if (!containerByClass.isPresent()) {
+            throw new ConditionCreationException("The requested condition is not registered");
         }
-        if (scope == Condition.Scope.WORLD) {
-            worldScope.put(ConditionHelper.getGroup(condition.getClass()), condition);
-        }
-    }
-
-    public boolean removeCondition(Class<? extends DoorCondition> clazz) {
-        if (ConditionHelper.isCondition(clazz)) return false;
-        Condition.Scope scope = ConditionHelper.getScope(clazz);
-        if (scope == Condition.Scope.PLAYER) {
-            return playerScope.remove(ConditionHelper.getGroup(clazz)) != null;
-        }
-        if (scope == Condition.Scope.WORLD) {
-            return worldScope.remove(ConditionHelper.getGroup(clazz)) != null;
-        }
-        return false;
-    }
-
-    public Optional<DoorCondition> getCondition(Class<? extends DoorCondition> clazz) {
-        if (ConditionHelper.isCondition(clazz)) return Optional.empty();
-
-        switch (ConditionHelper.getScope(clazz)) {
-            case WORLD:
-                return Optional.ofNullable(worldScope.get(ConditionHelper.getGroup(clazz)));
-            case PLAYER:
-                return Optional.ofNullable(playerScope.get(ConditionHelper.getGroup(clazz)));
-            default:
-                throw new IllegalStateException("Unexpected value: " + ConditionHelper.getScope(clazz));
+        ConditionContainer container = containerByClass.get();
+        if (container.getScope() == Scope.PLAYER) {
+            playerScope.put(container.getGroup(), condition);
+        } else {
+            worldScope.put(container.getGroup(), condition);
         }
     }
 
-    public boolean isConditionSet(Class<? extends DoorCondition> clazz) {
-        return getCondition(clazz).isPresent();
+    public boolean removeCondition(ConditionGroup container) {
+        return playerScope.remove(container.getName()) != null || worldScope.remove(container.getName()) != null;
+    }
+
+    public Optional<DoorCondition> getCondition(ConditionGroup container) {
+        return getCondition(container.getName());
+    }
+
+    public Optional<DoorCondition> getCondition(String group) {
+        Optional<DoorCondition> worldCon = Optional.ofNullable(worldScope.get(group));
+        if (worldCon.isPresent()) return worldCon;
+        return Optional.ofNullable(playerScope.get(group));
+    }
+
+    public boolean isConditionSet(ConditionGroup container) {
+        return getCondition(container).isPresent();
     }
 
     @Override
@@ -88,12 +86,18 @@ public class ConditionBag implements ConditionCollection {
         for (DoorCondition condition : getConditions()) {
             Boolean state;
 
-            if (ConditionHelper.getScope(condition.getClass()) == Condition.Scope.PLAYER && player == null) {
+            Optional<ConditionContainer> containerByClass = ConditionRegistrar.getContainerByClass(condition.getClass());
+            if (!containerByClass.isPresent()) {
+                throw new ConditionCreationException("The requested condition is not registered");
+            }
+            ConditionContainer container = containerByClass.get();
+
+            if (container.getScope() == Scope.PLAYER && player == null) {
                 state = false;
             } else {
                 state = condition.isOpen(player, world, door, currentState);
             }
-            evaluationString = evaluationString.replaceAll("(?i)" + ConditionHelper.getGroup(condition.getClass()),
+            evaluationString = evaluationString.replaceAll("(?i)" + container.getGroup(),
                     String.valueOf(state));
         }
 
