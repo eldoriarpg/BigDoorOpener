@@ -1,6 +1,6 @@
 package de.eldoria.bigdoorsopener.scheduler;
 
-import de.eldoria.bigdoorsopener.BigDoorsOpener;
+import de.eldoria.bigdoorsopener.core.conditions.BigDoorsOpener;
 import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
 import de.eldoria.eldoutilities.localization.Localizer;
 import de.eldoria.eldoutilities.localization.Replacement;

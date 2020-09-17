@@ -1,7 +1,6 @@
 package de.eldoria.bigdoorsopener.doors.conditions;
 
-import de.eldoria.bigdoorsopener.BigDoorsOpener;
-import de.eldoria.bigdoorsopener.doors.Condition;
+import de.eldoria.bigdoorsopener.core.conditions.BigDoorsOpener;
 import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
 import de.eldoria.bigdoorsopener.doors.conditions.item.Item;
 import de.eldoria.bigdoorsopener.doors.conditions.location.Location;
@@ -92,7 +91,8 @@ public class ConditionChain implements ConditionCollection {
      * @param door         door which is checked
      * @param currentState the current state of the door
      * @return result of the conditions.
-     */    @Override
+     */
+    @Override
 
     public boolean and(Player player, World world, ConditionalDoor door, boolean currentState) {
         // the conditions should be evaluated from the simpelest to the most expensive computation.
@@ -109,7 +109,8 @@ public class ConditionChain implements ConditionCollection {
      * @param door         door which is checked
      * @param currentState the current state of the door
      * @return string with the values replaced.
-     */    @Override
+     */
+    @Override
 
     public String custom(String string, Player player, World world, ConditionalDoor door, boolean currentState) {
         String evaluationString = string;
@@ -152,7 +153,8 @@ public class ConditionChain implements ConditionCollection {
      * Checks if a key is present which needs a player lookup.
      *
      * @return true if a player key is present.
-     */    @Override
+     */
+    @Override
 
     public boolean requiresPlayerEvaluation() {
         return item != null || permission != null || location != null || placeholder != null;
@@ -160,7 +162,8 @@ public class ConditionChain implements ConditionCollection {
 
     /**
      * Called when the door was evaluated and a new evaluation cycle begins.
-     */    @Override
+     */
+    @Override
 
     public void evaluated() {
         if (item != null) {
@@ -172,7 +175,8 @@ public class ConditionChain implements ConditionCollection {
      * Called when the chain was true and the door was opened.
      *
      * @param player player which opened the door.
-     */    @Override
+     */
+    @Override
 
     public void opened(Player player) {
         if (item != null) {
@@ -198,7 +202,8 @@ public class ConditionChain implements ConditionCollection {
      * Checks if all conditions are null.
      *
      * @return true if all conditions are nulkl
-     */    @Override
+     */
+    @Override
 
     public boolean isEmpty() {
         for (DoorCondition condition : getConditions()) {
@@ -211,7 +216,8 @@ public class ConditionChain implements ConditionCollection {
      * Get a mutable new condition chain with the same conditions like this condition chain.
      *
      * @return new condition chain.
-     */    @Override
+     */
+    @Override
 
     public ConditionChain copy() {
         return new ConditionChain(C.nonNullOrElse(item, Item::clone, null), C.nonNullOrElse(location, Location::clone, null),
@@ -225,7 +231,8 @@ public class ConditionChain implements ConditionCollection {
      * Get the conditions in a order from the less expensive to the most expensive computation time
      *
      * @return array of conditions. May contain null values.
-     */    @Override
+     */
+    @Override
 
     public Collection<DoorCondition> getConditions() {
         return Arrays.asList(location, time, weather, mythicMob, permission, item, placeholder);

@@ -1,6 +1,6 @@
 package de.eldoria.bigdoorsopener.config;
 
-import de.eldoria.bigdoorsopener.BigDoorsOpener;
+import de.eldoria.bigdoorsopener.core.conditions.BigDoorsOpener;
 import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
 import de.eldoria.bigdoorsopener.doors.conditions.ConditionChain;
 import de.eldoria.bigdoorsopener.doors.conditions.location.Proximity;

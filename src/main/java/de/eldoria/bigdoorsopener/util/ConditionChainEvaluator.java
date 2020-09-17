@@ -1,6 +1,5 @@
 package de.eldoria.bigdoorsopener.util;
 
-import de.eldoria.bigdoorsopener.doors.Condition;
 import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
 import de.eldoria.bigdoorsopener.doors.conditions.ConditionHelper;
 import de.eldoria.bigdoorsopener.doors.conditions.DoorCondition;

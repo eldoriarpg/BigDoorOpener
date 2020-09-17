@@ -1,8 +1,8 @@
 package de.eldoria.bigdoorsopener.scheduler;
 
 import com.google.common.cache.Cache;
-import de.eldoria.bigdoorsopener.BigDoorsOpener;
 import de.eldoria.bigdoorsopener.config.Config;
+import de.eldoria.bigdoorsopener.core.conditions.BigDoorsOpener;
 import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
 import de.eldoria.bigdoorsopener.doors.conditions.location.Proximity;
 import de.eldoria.bigdoorsopener.util.C;
@@ -37,8 +37,8 @@ public class DoorChecker extends BigDoorsAdapter implements Runnable {
     private final Set<ConditionalDoor> evaluated = new HashSet<>();
     private final Cache<String, List<Player>> worldPlayers = C.getShortExpiringCache();
     private final Cache<Long, Boolean> chunkStateCache = C.getShortExpiringCache();
-    private double doorUpdateInterval;
     private final TriFunction<Vector, Vector, Vector, Boolean> proximity = Proximity.ProximityForm.CUBOID.check;
+    private double doorUpdateInterval;
 
     public DoorChecker(Config config, BigDoors bigDoors, Localizer localizer) {
         super(bigDoors, localizer);

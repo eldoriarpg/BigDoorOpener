@@ -18,7 +18,7 @@ public interface ConditionCollection extends ConfigurationSerializable, Cloneabl
      * @param currentState the current state of the door
      * @return result of the conditions.
      */
-    default boolean or(Player player, World world, ConditionalDoor door, boolean currentState){
+    default boolean or(Player player, World world, ConditionalDoor door, boolean currentState) {
         return ConditionChainEvaluator.or(player, world, door, currentState, getConditions());
     }
 
@@ -31,7 +31,7 @@ public interface ConditionCollection extends ConfigurationSerializable, Cloneabl
      * @param currentState the current state of the door
      * @return result of the conditions.
      */
-    default boolean and(Player player, World world, ConditionalDoor door, boolean currentState){
+    default boolean and(Player player, World world, ConditionalDoor door, boolean currentState) {
         return ConditionChainEvaluator.and(player, world, door, currentState, getConditions());
     }
 

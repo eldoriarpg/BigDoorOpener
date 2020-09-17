@@ -4,7 +4,6 @@ import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
 import de.eldoria.bigdoorsopener.doors.conditions.item.Item;
 import de.eldoria.bigdoorsopener.doors.conditions.location.Location;
 import de.eldoria.bigdoorsopener.doors.conditions.permission.Permission;
-import de.eldoria.bigdoorsopener.doors.conditions.permission.PermissionNode;
 import de.eldoria.bigdoorsopener.doors.conditions.standalone.MythicMob;
 import de.eldoria.bigdoorsopener.doors.conditions.standalone.Placeholder;
 import de.eldoria.bigdoorsopener.doors.conditions.standalone.Time;

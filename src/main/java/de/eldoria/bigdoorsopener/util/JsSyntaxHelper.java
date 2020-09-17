@@ -1,6 +1,6 @@
 package de.eldoria.bigdoorsopener.util;
 
-import de.eldoria.bigdoorsopener.BigDoorsOpener;
+import de.eldoria.bigdoorsopener.core.conditions.BigDoorsOpener;
 import de.eldoria.bigdoorsopener.doors.conditions.ConditionType;
 import de.eldoria.eldoutilities.container.Pair;
 import de.eldoria.eldoutilities.utils.TextUtil;
