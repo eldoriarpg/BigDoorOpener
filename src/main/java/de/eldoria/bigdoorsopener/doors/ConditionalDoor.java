@@ -1,7 +1,7 @@
 package de.eldoria.bigdoorsopener.doors;
 
 import com.google.common.base.Objects;
-import de.eldoria.bigdoorsopener.BigDoorsOpener;
+import de.eldoria.bigdoorsopener.core.BigDoorsOpener;
 import de.eldoria.bigdoorsopener.doors.conditions.ConditionBag;
 import de.eldoria.bigdoorsopener.doors.conditions.ConditionChain;
 import de.eldoria.eldoutilities.serialization.SerializationUtil;
