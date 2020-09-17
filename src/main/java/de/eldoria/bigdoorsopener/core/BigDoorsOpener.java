@@ -1,10 +1,11 @@
-package de.eldoria.bigdoorsopener;
+package de.eldoria.bigdoorsopener.core;
 
 import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.protection.regions.RegionContainer;
 import de.eldoria.bigdoorsopener.commands.BigDoorsOpenerCommand;
 import de.eldoria.bigdoorsopener.config.Config;
 import de.eldoria.bigdoorsopener.config.TimedDoor;
+import de.eldoria.bigdoorsopener.core.conditions.ConditionRegistrar;
 import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
 import de.eldoria.bigdoorsopener.doors.conditions.ConditionChain;
 import de.eldoria.bigdoorsopener.doors.conditions.item.ItemHolding;
@@ -15,8 +16,8 @@ import de.eldoria.bigdoorsopener.doors.conditions.location.Proximity;
 import de.eldoria.bigdoorsopener.doors.conditions.location.Region;
 import de.eldoria.bigdoorsopener.doors.conditions.location.SimpleRegion;
 import de.eldoria.bigdoorsopener.doors.conditions.permission.DoorPermission;
-import de.eldoria.bigdoorsopener.doors.conditions.standalone.MythicMob;
 import de.eldoria.bigdoorsopener.doors.conditions.permission.PermissionNode;
+import de.eldoria.bigdoorsopener.doors.conditions.standalone.MythicMob;
 import de.eldoria.bigdoorsopener.doors.conditions.standalone.Placeholder;
 import de.eldoria.bigdoorsopener.doors.conditions.standalone.Time;
 import de.eldoria.bigdoorsopener.doors.conditions.standalone.Weather;
@@ -63,6 +64,7 @@ public class BigDoorsOpener extends JavaPlugin {
     private static boolean mythicMobsEnabled;
     @Getter
     private static RegionContainer regionContainer = null;
+    private static BigDoorsOpener instance;
     private final BukkitScheduler scheduler = Bukkit.getScheduler();
     private Config config;
     private boolean initialized;
@@ -70,14 +72,11 @@ public class BigDoorsOpener extends JavaPlugin {
     // External instances.
     private BigDoors doors;
     private Commander commander;
-
     // scheduler
     private DoorChecker doorChecker;
-
     // listener
     private WeatherListener weatherListener;
     private RegisterInteraction registerInteraction;
-    private static BigDoorsOpener instance;
 
     /**
      * Get the plugin logger instance.
@@ -109,7 +108,7 @@ public class BigDoorsOpener extends JavaPlugin {
         return instance.doors;
     }
 
-    public static Localizer getLocalizer() {
+    public static Localizer localizer() {
         return instance.localizer;
     }
 
@@ -184,7 +183,7 @@ public class BigDoorsOpener extends JavaPlugin {
         weatherListener = new WeatherListener();
         PluginManager pm = Bukkit.getPluginManager();
         pm.registerEvents(weatherListener, this);
-        registerInteraction = new RegisterInteraction();
+        registerInteraction = new RegisterInteraction(MessageSender.get(this), config);
         pm.registerEvents(registerInteraction, this);
         pm.registerEvents(new ItemConditionListener(doors, localizer, config), this);
         pm.registerEvents(new DoorOpenedListener(config), this);
@@ -257,19 +256,19 @@ public class BigDoorsOpener extends JavaPlugin {
         ConfigurationSerialization.registerClass(TimedDoor.class, "timedDoor");
         ConfigurationSerialization.registerClass(ConditionChain.class, "conditionChain");
         ConfigurationSerialization.registerClass(ConditionalDoor.class, "conditionalDoor");
-        ConfigurationSerialization.registerClass(ItemBlock.class, "itemBlockCondition");
-        ConfigurationSerialization.registerClass(ItemClick.class, "itemClickCondition");
-        ConfigurationSerialization.registerClass(ItemHolding.class, "itemHoldingCondition");
-        ConfigurationSerialization.registerClass(ItemOwning.class, "itemOwningCondition");
-        ConfigurationSerialization.registerClass(Proximity.class, "proximityCondition");
-        ConfigurationSerialization.registerClass(Region.class, "regionCondition");
-        ConfigurationSerialization.registerClass(SimpleRegion.class, "simpleRegionCondition");
-        ConfigurationSerialization.registerClass(PermissionNode.class, "permissionCondition");
-        ConfigurationSerialization.registerClass(DoorPermission.class, "doorPermissionCondition");
-        ConfigurationSerialization.registerClass(Time.class, "timeCondition");
-        ConfigurationSerialization.registerClass(Weather.class, "weatherCondition");
-        ConfigurationSerialization.registerClass(Placeholder.class, "placeholderCondition");
-        ConfigurationSerialization.registerClass(MythicMob.class, "mythicMobsCondition");
+        ConditionRegistrar.registerCondition(ItemBlock.getConditionContainer());
+        ConditionRegistrar.registerCondition(ItemClick.getConditionContainer());
+        ConditionRegistrar.registerCondition(ItemHolding.getConditionContainer());
+        ConditionRegistrar.registerCondition(ItemOwning.getConditionContainer());
+        ConditionRegistrar.registerCondition(Proximity.getConditionContainer());
+        ConditionRegistrar.registerCondition(Region.getConditionContainer());
+        ConditionRegistrar.registerCondition(SimpleRegion.getConditionContainer());
+        ConditionRegistrar.registerCondition(PermissionNode.getConditionContainer());
+        ConditionRegistrar.registerCondition(DoorPermission.getConditionContainer());
+        ConditionRegistrar.registerCondition(Time.getConditionContainer());
+        ConditionRegistrar.registerCondition(Weather.getConditionContainer());
+        ConditionRegistrar.registerCondition(Placeholder.getConditionContainer());
+        ConditionRegistrar.registerCondition(MythicMob.getConditionContainer());
     }
 
     /**
@@ -305,12 +304,10 @@ public class BigDoorsOpener extends JavaPlugin {
         metrics.addCustomChart(new Metrics.AdvancedPie("condition_types", () -> {
             Map<String, Integer> counts = new HashMap<>();
             Collection<ConditionalDoor> values = config.getDoors().values();
-            counts.put("item", (int) values.parallelStream().filter(d -> d.getConditionChain().getItem() != null).count());
-            counts.put("location", (int) values.parallelStream().filter(d -> d.getConditionChain().getLocation() != null).count());
-            counts.put("permission", (int) values.parallelStream().filter(d -> d.getConditionChain().getPermission() != null).count());
-            counts.put("time", (int) values.parallelStream().filter(d -> d.getConditionChain().getTime() != null).count());
-            counts.put("weather", (int) values.parallelStream().filter(d -> d.getConditionChain().getWeather() != null).count());
-            counts.put("mythicMobs", (int) values.parallelStream().filter(d -> d.getConditionChain().getMythicMob() != null).count());
+            for (String group : ConditionRegistrar.getGroups()) {
+                ConditionRegistrar.getConditionGroup(group).ifPresent(g ->
+                        counts.put(group, (int) values.parallelStream().filter(d -> d.getConditionBag().isConditionSet(g)).count()));
+            }
             return counts;
         }));
     }

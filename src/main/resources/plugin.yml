@@ -2,7 +2,7 @@ name: ${project.name}
 description: ${project.description}
 author: Hadde
 version: ${project.version}
-main: de.eldoria.bigdoorsopener.BigDoorsOpener
+main: de.eldoria.bigdoorsopener.core.BigDoorsOpener
 website: www.spigotmc.org/resources/80805/
 api-version: 1.13
 depend: [BigDoors]
