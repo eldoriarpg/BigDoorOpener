@@ -1,7 +1,8 @@
 package de.eldoria.bigdoorsopener.core.conditions;
 
-import de.eldoria.bigdoorsopener.core.BigDoorsOpener;
 import de.eldoria.bigdoorsopener.conditions.DoorCondition;
+import de.eldoria.bigdoorsopener.core.BigDoorsOpener;
+import de.eldoria.bigdoorsopener.core.conditions.exceptions.ConditionRegistrationException;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.configuration.serialization.SerializableAs;
@@ -27,15 +28,23 @@ public final class ConditionRegistrar {
      * <p>The provided class in the container requires the {@link SerializableAs} annotation.
      *
      * @param conditionContainer condition container to register
+     * @throws ConditionRegistrationException when the condition or its serialized name is already implemented
+     * @throws IllegalStateException          when the annotation {@link SerializableAs} is not present
      */
-    public static void registerCondition(ConditionContainer conditionContainer) {
+    public static void registerCondition(ConditionContainer conditionContainer) throws ConditionRegistrationException, IllegalStateException {
         GROUPS.computeIfAbsent(conditionContainer.getGroup(), ConditionGroup::new).addCondition(conditionContainer);
+
+        if (CONTAINER.containsKey(conditionContainer.getClazz())) {
+            throw new ConditionRegistrationException(conditionContainer.getClazz());
+        }
+
         CONTAINER.put(conditionContainer.getClazz(), conditionContainer);
         Class<? extends ConfigurationSerializable> clazz = ConfigurationSerialization.getClassByAlias(serializedName(conditionContainer.getClazz()));
         if (clazz != null) {
             BigDoorsOpener.logger().warning("Could not register class "
                     + conditionContainer.getClazz().getPackage() + conditionContainer.getClazz().getPackage()
                     + ".\nThe serialized name is already used by " + clazz.getPackage() + clazz.getPackage());
+            throw new ConditionRegistrationException(clazz);
         }
 
         ConfigurationSerialization.registerClass(conditionContainer.getClazz());
