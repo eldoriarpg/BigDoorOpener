@@ -70,7 +70,6 @@ public class BigDoorsOpenerCommand extends BigDoorsAdapter implements TabExecuto
     private static final String[] CONDITION_TYPES;
     private static final String[] CONDITION_GROUPS;
     private static final String[] PROXIMITY_FORM;
-    private static final String[] WEATHER_TYPE;
     private static final String[] EVALUATOR_TYPES;
     private final BigDoorsOpener plugin;
     private final Config config;
@@ -92,9 +91,6 @@ public class BigDoorsOpenerCommand extends BigDoorsAdapter implements TabExecuto
                 .map(v -> v.name().toLowerCase().replace("_", ""))
                 .toArray(String[]::new);
         PROXIMITY_FORM = Arrays.stream(Proximity.ProximityForm.values())
-                .map(v -> v.name().toLowerCase())
-                .toArray(String[]::new);
-        WEATHER_TYPE = Arrays.stream(WeatherType.values())
                 .map(v -> v.name().toLowerCase())
                 .toArray(String[]::new);
         EVALUATOR_TYPES = Arrays.stream(ConditionalDoor.EvaluationType.values())
