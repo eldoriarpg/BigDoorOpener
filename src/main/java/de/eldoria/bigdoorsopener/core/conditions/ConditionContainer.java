@@ -1,7 +1,7 @@
 package de.eldoria.bigdoorsopener.core.conditions;
 
-import de.eldoria.bigdoorsopener.doors.conditions.ConditionBag;
-import de.eldoria.bigdoorsopener.doors.conditions.DoorCondition;
+import de.eldoria.bigdoorsopener.door.conditioncollections.ConditionBag;
+import de.eldoria.bigdoorsopener.conditions.DoorCondition;
 import de.eldoria.eldoutilities.consumer.QuadConsumer;
 import de.eldoria.eldoutilities.functions.TriFunction;
 import de.eldoria.eldoutilities.localization.Localizer;

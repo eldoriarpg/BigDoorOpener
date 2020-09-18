@@ -1,7 +1,7 @@
 package de.eldoria.bigdoorsopener.listener;
 
 import de.eldoria.bigdoorsopener.config.Config;
-import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
+import de.eldoria.bigdoorsopener.door.ConditionalDoor;
 import nl.pim16aap2.bigDoors.Door;
 import nl.pim16aap2.bigDoors.events.DoorEventToggle;
 import nl.pim16aap2.bigDoors.events.DoorEventToggleEnd;
@@ -18,7 +18,7 @@ public class DoorOpenedListener implements Listener {
     @EventHandler
     public void doorOpened(DoorEventToggleEnd toggleEnd) {
         Door toggledDoor = toggleEnd.getDoor();
-        ConditionalDoor conDoor = config.getDoors().get(toggledDoor.getDoorUID());
+        ConditionalDoor conDoor = config.getDoor(toggledDoor.getDoorUID());
         if (conDoor == null) return;
 
         if (toggleEnd.getToggleType() == DoorEventToggle.ToggleType.STATIC) return;

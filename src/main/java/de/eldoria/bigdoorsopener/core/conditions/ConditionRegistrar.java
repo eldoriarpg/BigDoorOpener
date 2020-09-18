@@ -1,7 +1,7 @@
 package de.eldoria.bigdoorsopener.core.conditions;
 
 import de.eldoria.bigdoorsopener.core.BigDoorsOpener;
-import de.eldoria.bigdoorsopener.doors.conditions.DoorCondition;
+import de.eldoria.bigdoorsopener.conditions.DoorCondition;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.configuration.serialization.SerializableAs;
@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import static de.eldoria.bigdoorsopener.doors.conditions.ConditionHelper.serializedName;
+import static de.eldoria.bigdoorsopener.conditions.ConditionHelper.serializedName;
 
 public final class ConditionRegistrar {
     private static final Map<String, ConditionGroup> GROUPS = new HashMap<>();

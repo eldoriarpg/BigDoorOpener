@@ -1,12 +1,17 @@
 package de.eldoria.bigdoorsopener.util;
 
-import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
-import de.eldoria.bigdoorsopener.doors.conditions.ConditionHelper;
-import de.eldoria.bigdoorsopener.doors.conditions.DoorCondition;
+import de.eldoria.bigdoorsopener.core.BigDoorsOpener;
+import de.eldoria.bigdoorsopener.core.conditions.ConditionContainer;
+import de.eldoria.bigdoorsopener.core.conditions.ConditionRegistrar;
+import de.eldoria.bigdoorsopener.core.conditions.Scope;
+import de.eldoria.bigdoorsopener.door.ConditionalDoor;
+import de.eldoria.bigdoorsopener.conditions.DoorCondition;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 
 import java.util.Collection;
+import java.util.Optional;
+import java.util.logging.Level;
 
 public class ConditionChainEvaluator {
     private Boolean current;
@@ -64,9 +69,16 @@ public class ConditionChainEvaluator {
 
         if (current != null && current) return this;
 
+        Optional<ConditionContainer> containerByClass = ConditionRegistrar.getContainerByClass(doorCondition.getClass());
+        if (!containerByClass.isPresent()) {
+            BigDoorsOpener.logger().log(Level.WARNING, "Condition " + doorCondition.getClass() + " is requested but not registered.");
+            return this;
+        }
+        ConditionContainer container = containerByClass.get();
+
         Boolean open;
 
-        if (ConditionHelper.getScope(doorCondition.getClass()) == Condition.Scope.PLAYER && player == null) {
+        if (container.getScope() == Scope.PLAYER && player == null) {
             open = false;
         } else {
             open = doorCondition.isOpen(player, world, door, currentState);
@@ -102,9 +114,16 @@ public class ConditionChainEvaluator {
 
         if (current != null && !current) return this;
 
+        Optional<ConditionContainer> containerByClass = ConditionRegistrar.getContainerByClass(doorCondition.getClass());
+        if (!containerByClass.isPresent()) {
+            BigDoorsOpener.logger().log(Level.WARNING, "Condition " + doorCondition.getClass() + " is requested but not registered.");
+            return this;
+        }
+        ConditionContainer container = containerByClass.get();
+
         Boolean open;
 
-        if (ConditionHelper.getScope(doorCondition.getClass()) == Condition.Scope.PLAYER && player == null) {
+        if (container.getScope() == Scope.PLAYER && player == null) {
             open = false;
         } else {
             open = doorCondition.isOpen(player, world, door, currentState);

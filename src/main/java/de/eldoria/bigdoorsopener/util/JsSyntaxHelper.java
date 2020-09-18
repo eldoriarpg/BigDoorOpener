@@ -1,18 +1,16 @@
 package de.eldoria.bigdoorsopener.util;
 
-import de.eldoria.bigdoorsopener.core.conditions.BigDoorsOpener;
-import de.eldoria.bigdoorsopener.doors.conditions.ConditionType;
+import de.eldoria.bigdoorsopener.core.BigDoorsOpener;
+import de.eldoria.bigdoorsopener.core.conditions.ConditionRegistrar;
 import de.eldoria.eldoutilities.container.Pair;
 import de.eldoria.eldoutilities.utils.TextUtil;
 import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.entity.Player;
 
 import javax.script.ScriptException;
-import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 public final class JsSyntaxHelper {
 
@@ -20,9 +18,6 @@ public final class JsSyntaxHelper {
     private static final Pattern ALLOWED_OPERATORS = Pattern.compile("&&|\\|\\||!=|==|!");
     private static final Pattern UNALLOWED_OPERATORS = Pattern.compile("&|\\||=");
     private static final Pattern SYNTAX = Pattern.compile("(\\||&|!|=|\\(|\\)|\\s|\\{|}|;)*");
-    private static final String PLACEHOLDER = Arrays.stream(ConditionType.ConditionGroup.values())
-            .map(ConditionType.ConditionGroup::name)
-            .collect(Collectors.joining("|"));
 
 
     private JsSyntaxHelper() {
@@ -65,7 +60,7 @@ public final class JsSyntaxHelper {
         }
 
 
-        String cleaned = evaluator.replaceAll("(?i)if|true|false|" + PLACEHOLDER + "|currentState|null|else", "");
+        String cleaned = evaluator.replaceAll("(?i)if|true|false|" + getPlaceholder() + "|currentState|null|else", "");
         Matcher matcher = VARIABLE.matcher(cleaned);
         if (matcher.find()) {
             return new Pair<>(ValidatorResult.INVALID_VARIABLE, matcher.group());
@@ -98,7 +93,7 @@ public final class JsSyntaxHelper {
     public static Pair<ValidatorResult, String> checkExecution(String evaluator, CachingJSEngine engine, Player player, boolean vanilla) {
         evaluator = translateEvaluator(evaluator);
 
-        evaluator = evaluator.replaceAll("(?i)currentState|" + PLACEHOLDER, "true");
+        evaluator = evaluator.replaceAll("(?i)currentState|" + getPlaceholder(), "true");
 
         if (BigDoorsOpener.isPlaceholderEnabled() && player != null && !vanilla) {
             evaluator = PlaceholderAPI.setPlaceholders(player, evaluator);
@@ -149,5 +144,10 @@ public final class JsSyntaxHelper {
          * Indicates that the syntax is valid and can be used.
          */
         FINE
+    }
+
+    private static String getPlaceholder(){
+        return String.join("|", ConditionRegistrar.getGroups());
+
     }
 }
