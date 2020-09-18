@@ -1,13 +1,16 @@
-package de.eldoria.bigdoorsopener.doors.conditions;
+package de.eldoria.bigdoorsopener.door.conditioncollections;
 
 import de.eldoria.bigdoorsopener.core.conditions.ConditionContainer;
 import de.eldoria.bigdoorsopener.core.conditions.ConditionGroup;
 import de.eldoria.bigdoorsopener.core.conditions.ConditionRegistrar;
 import de.eldoria.bigdoorsopener.core.conditions.Scope;
-import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
+import de.eldoria.bigdoorsopener.core.events.ConditionBagModifiedEvent;
+import de.eldoria.bigdoorsopener.door.ConditionalDoor;
 import de.eldoria.eldoutilities.serialization.SerializationUtil;
 import de.eldoria.eldoutilities.serialization.TypeResolvingMap;
+import org.bukkit.Bukkit;
 import org.bukkit.World;
+import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
@@ -18,6 +21,7 @@ import java.util.Optional;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
+@SerializableAs("bdoConditionBag")
 public class ConditionBag implements ConditionCollection {
     private final Map<String, DoorCondition> playerScope = new TreeMap<>();
     private final Map<String, DoorCondition> worldScope = new TreeMap<>();
@@ -59,10 +63,13 @@ public class ConditionBag implements ConditionCollection {
         } else {
             worldScope.put(container.getGroup(), condition);
         }
+        Bukkit.getPluginManager().callEvent(new ConditionBagModifiedEvent(this));
     }
 
     public boolean removeCondition(ConditionGroup container) {
-        return playerScope.remove(container.getName()) != null || worldScope.remove(container.getName()) != null;
+        boolean result = playerScope.remove(container.getName()) != null || worldScope.remove(container.getName()) != null;
+        Bukkit.getPluginManager().callEvent(new ConditionBagModifiedEvent(this));
+        return result;
     }
 
     public Optional<DoorCondition> getCondition(ConditionGroup container) {

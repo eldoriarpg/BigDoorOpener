@@ -1,17 +1,15 @@
-package de.eldoria.bigdoorsopener.doors.conditions;
+package de.eldoria.bigdoorsopener.door.conditioncollections;
 
-import de.eldoria.bigdoorsopener.core.conditions.BigDoorsOpener;
-import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
-import de.eldoria.bigdoorsopener.doors.conditions.item.Item;
-import de.eldoria.bigdoorsopener.doors.conditions.location.Location;
-import de.eldoria.bigdoorsopener.doors.conditions.permission.Permission;
-import de.eldoria.bigdoorsopener.doors.conditions.standalone.MythicMob;
-import de.eldoria.bigdoorsopener.doors.conditions.standalone.Placeholder;
-import de.eldoria.bigdoorsopener.doors.conditions.standalone.Time;
-import de.eldoria.bigdoorsopener.doors.conditions.standalone.Weather;
+import de.eldoria.bigdoorsopener.conditions.item.Item;
+import de.eldoria.bigdoorsopener.conditions.location.Location;
+import de.eldoria.bigdoorsopener.conditions.permission.Permission;
+import de.eldoria.bigdoorsopener.conditions.standalone.MythicMob;
+import de.eldoria.bigdoorsopener.conditions.standalone.Placeholder;
+import de.eldoria.bigdoorsopener.conditions.standalone.Time;
+import de.eldoria.bigdoorsopener.conditions.standalone.Weather;
+import de.eldoria.bigdoorsopener.door.ConditionalDoor;
 import de.eldoria.bigdoorsopener.util.C;
 import de.eldoria.bigdoorsopener.util.ConditionChainEvaluator;
-import de.eldoria.eldoutilities.container.Pair;
 import de.eldoria.eldoutilities.serialization.SerializationUtil;
 import de.eldoria.eldoutilities.serialization.TypeResolvingMap;
 import lombok.Getter;
@@ -20,11 +18,9 @@ import org.bukkit.World;
 import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -113,40 +109,7 @@ public class ConditionChain implements ConditionCollection {
     @Override
 
     public String custom(String string, Player player, World world, ConditionalDoor door, boolean currentState) {
-        String evaluationString = string;
-
-        for (DoorCondition doorCondition : getConditions()) {
-            if (doorCondition == null) {
-                continue;
-            }
-            ConditionType.ConditionGroup condition = ConditionType.getType(doorCondition.getClass());
-            if (condition == null) {
-                BigDoorsOpener.logger().warning("Class " + doorCondition.getClass().getSimpleName() + " is not registered as condition type."
-                        + doorCondition.getClass().getSimpleName());
-                continue;
-            }
-            Boolean state;
-
-            if (ConditionHelper.getScope(doorCondition.getClass()) == Condition.Scope.PLAYER
-                    && player == null) {
-                state = false;
-            } else {
-                state = doorCondition.isOpen(player, world, door, currentState);
-            }
-            evaluationString = evaluationString.replaceAll("(?i)" + condition.conditionParameter,
-                    String.valueOf(state));
-        }
-
-        evaluationString = evaluationString.replaceAll("(?i)currentState",
-                String.valueOf(currentState));
-
-        // make sure that calculation does not fail even when the condition is not set.
-        for (ConditionType.ConditionGroup value : ConditionType.ConditionGroup.values()) {
-            evaluationString = evaluationString.replaceAll("(?i)" + value.conditionParameter,
-                    "null");
-        }
-
-        return evaluationString;
+        return "null";
     }
 
     /**
@@ -236,120 +199,5 @@ public class ConditionChain implements ConditionCollection {
 
     public Collection<DoorCondition> getConditions() {
         return Arrays.asList(location, time, weather, mythicMob, permission, item, placeholder);
-    }
-
-    /**
-     * Get the conditions wrapped to identify them.
-     *
-     * @return List of wrappet conditions. conditions may be null.
-     */
-    public List<Pair<DoorCondition, ConditionType.ConditionGroup>> getConditionsWrapped() {
-        return Arrays.asList(
-                new Pair<>(location, ConditionType.ConditionGroup.LOCATION),
-                new Pair<>(permission, ConditionType.ConditionGroup.PERMISSION),
-                new Pair<>(time, ConditionType.ConditionGroup.TIME),
-                new Pair<>(weather, ConditionType.ConditionGroup.WEATHER),
-                new Pair<>(item, ConditionType.ConditionGroup.ITEM),
-                new Pair<>(placeholder, ConditionType.ConditionGroup.PLACEHOLDER),
-                new Pair<>(mythicMob, ConditionType.ConditionGroup.MYTHIC_MOB));
-    }
-
-    /**
-     * Get a condition via enum value
-     *
-     * @param group group to get
-     * @return condition
-     */
-    public DoorCondition getCondition(ConditionType.ConditionGroup group) {
-        switch (group) {
-            case ITEM:
-                return item;
-            case LOCATION:
-                return location;
-            case PERMISSION:
-                return permission;
-            case TIME:
-                return time;
-            case WEATHER:
-                return weather;
-            case PLACEHOLDER:
-                return placeholder;
-            case MYTHIC_MOB:
-                return mythicMob;
-            default:
-                throw new IllegalStateException("Unexpected value: " + group);
-        }
-    }
-
-    /**
-     * Set a condition via enum value.
-     *
-     * @param group     group to set
-     * @param condition condition to set
-     */
-    public void setCondition(ConditionType.ConditionGroup group, @Nullable DoorCondition condition) {
-        if (condition == null) {
-            removeCondition(group);
-            return;
-        }
-
-        switch (group) {
-            case ITEM:
-                item = (Item) condition;
-                break;
-            case LOCATION:
-                location = (Location) condition;
-                break;
-            case PERMISSION:
-                permission = (Permission) condition;
-                break;
-            case TIME:
-                time = (Time) condition;
-                break;
-            case WEATHER:
-                weather = (Weather) condition;
-                break;
-            case PLACEHOLDER:
-                placeholder = (Placeholder) condition;
-                break;
-            case MYTHIC_MOB:
-                mythicMob = (MythicMob) condition;
-                break;
-            default:
-                throw new IllegalStateException("Unexpected value: " + group);
-        }
-    }
-
-    /**
-     * Remove a condition by enum value.
-     *
-     * @param group condition group to remove
-     */
-    public void removeCondition(ConditionType.ConditionGroup group) {
-        switch (group) {
-            case ITEM:
-                item = null;
-                break;
-            case LOCATION:
-                location = null;
-                break;
-            case PERMISSION:
-                permission = null;
-                break;
-            case TIME:
-                time = null;
-                break;
-            case WEATHER:
-                weather = null;
-                break;
-            case PLACEHOLDER:
-                placeholder = null;
-                break;
-            case MYTHIC_MOB:
-                mythicMob = null;
-                break;
-            default:
-                throw new IllegalStateException("Unexpected value: " + group);
-        }
     }
 }

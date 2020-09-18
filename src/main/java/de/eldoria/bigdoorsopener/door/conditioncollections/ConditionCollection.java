@@ -1,6 +1,6 @@
-package de.eldoria.bigdoorsopener.doors.conditions;
+package de.eldoria.bigdoorsopener.door.conditioncollections;
 
-import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
+import de.eldoria.bigdoorsopener.door.ConditionalDoor;
 import de.eldoria.bigdoorsopener.util.ConditionChainEvaluator;
 import org.bukkit.World;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
