@@ -1,10 +1,13 @@
-package de.eldoria.bigdoorsopener.scheduler;
+package de.eldoria.bigdoorsopener.core.scheduler;
 
 import com.google.common.cache.Cache;
 import de.eldoria.bigdoorsopener.config.Config;
-import de.eldoria.bigdoorsopener.core.conditions.BigDoorsOpener;
-import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
-import de.eldoria.bigdoorsopener.doors.conditions.location.Proximity;
+import de.eldoria.bigdoorsopener.core.BigDoorsOpener;
+import de.eldoria.bigdoorsopener.core.adapter.BigDoorsAdapter;
+import de.eldoria.bigdoorsopener.core.events.DoorRegisteredEvent;
+import de.eldoria.bigdoorsopener.core.events.DoorUnregisteredEvent;
+import de.eldoria.bigdoorsopener.door.ConditionalDoor;
+import de.eldoria.bigdoorsopener.conditions.location.Proximity;
 import de.eldoria.bigdoorsopener.util.C;
 import de.eldoria.eldoutilities.functions.TriFunction;
 import de.eldoria.eldoutilities.localization.Localizer;
@@ -13,6 +16,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.Server;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.util.Vector;
 
 import java.util.HashMap;
@@ -25,7 +30,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 
-public class DoorChecker extends BigDoorsAdapter implements Runnable {
+public class DoorChecker extends BigDoorsAdapter implements Runnable, Listener {
 
     private final Queue<ConditionalDoor> doors = new LinkedList<>();
     private final Server server = Bukkit.getServer();
@@ -41,22 +46,21 @@ public class DoorChecker extends BigDoorsAdapter implements Runnable {
     private double doorUpdateInterval;
 
     public DoorChecker(Config config, BigDoors bigDoors, Localizer localizer) {
-        super(bigDoors, localizer);
+        super(bigDoors);
         this.config = config;
-        doors.addAll(config.getDoors().values());
+        doors.addAll(config.getDoors());
     }
 
-    /**
-     * Registers a new door at the door checker.
-     * Only registered doors will do anything.
-     * The door will only be registered if its not yet registered.
-     *
-     * @param door door to register.
-     */
-    public void register(ConditionalDoor door) {
-        if (!doors.contains(door)) {
-            doors.add(door);
+    @EventHandler
+    public void onDoorRegister(DoorRegisteredEvent event){
+        if (!doors.contains(event.getDoor())) {
+            doors.add(event.getDoor());
         }
+    }
+
+    @EventHandler
+    public void onDoorUnregister(DoorUnregisteredEvent event) {
+        doors.remove(event.getDoor());
     }
 
     /**
@@ -64,6 +68,7 @@ public class DoorChecker extends BigDoorsAdapter implements Runnable {
      *
      * @param door door to unregister.
      */
+    @Deprecated
     public void unregister(ConditionalDoor door) {
         doors.remove(door);
     }
@@ -75,7 +80,7 @@ public class DoorChecker extends BigDoorsAdapter implements Runnable {
     public void reload() {
         synchronized (doors) {
             doors.clear();
-            doors.addAll(config.getDoors().values());
+            doors.addAll(config.getDoors());
         }
     }
 

@@ -1,14 +1,15 @@
-package de.eldoria.bigdoorsopener.doors;
+package de.eldoria.bigdoorsopener.door;
 
 import com.google.common.base.Objects;
 import de.eldoria.bigdoorsopener.core.BigDoorsOpener;
-import de.eldoria.bigdoorsopener.doors.conditions.ConditionBag;
-import de.eldoria.bigdoorsopener.doors.conditions.ConditionChain;
+import de.eldoria.bigdoorsopener.core.events.DoorModifiedEvent;
+import de.eldoria.bigdoorsopener.door.conditioncollections.ConditionBag;
+import de.eldoria.bigdoorsopener.door.conditioncollections.ConditionChain;
 import de.eldoria.eldoutilities.serialization.SerializationUtil;
 import de.eldoria.eldoutilities.serialization.TypeResolvingMap;
 import de.eldoria.eldoutilities.utils.EnumUtil;
 import lombok.Getter;
-import lombok.Setter;
+import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.SerializableAs;
@@ -59,7 +60,6 @@ public class ConditionalDoor implements ConfigurationSerializable {
     private EvaluationType evaluationType = EvaluationType.OR;
 
     @Getter
-    @Setter
     @Nonnull
     private ConditionBag conditionBag;
 
@@ -74,7 +74,6 @@ public class ConditionalDoor implements ConfigurationSerializable {
     /**
      * True if the door was registered in open state.
      */
-    @Setter
     @Getter
     private boolean invertOpen = false;
 
@@ -186,11 +185,13 @@ public class ConditionalDoor implements ConfigurationSerializable {
         if (evaluationType == EvaluationType.OR || evaluationType == EvaluationType.AND) {
             evaluator = "";
         }
+        Bukkit.getPluginManager().callEvent(new DoorModifiedEvent(this));
     }
 
     public void setEvaluator(String evaluator) {
         this.evaluator = evaluator;
         evaluationType = EvaluationType.CUSTOM;
+        Bukkit.getPluginManager().callEvent(new DoorModifiedEvent(this));
     }
 
     /**
@@ -201,6 +202,7 @@ public class ConditionalDoor implements ConfigurationSerializable {
      */
     public void setStayOpen(int stayOpen) {
         this.stayOpen = stayOpen;
+        Bukkit.getPluginManager().callEvent(new DoorModifiedEvent(this));
     }
 
     /**
@@ -208,6 +210,7 @@ public class ConditionalDoor implements ConfigurationSerializable {
      */
     public void invertOpen() {
         invertOpen = !invertOpen;
+        Bukkit.getPluginManager().callEvent(new DoorModifiedEvent(this));
     }
 
     @Override
@@ -224,6 +227,15 @@ public class ConditionalDoor implements ConfigurationSerializable {
                 .build();
     }
 
+    public void setConditionBag(@Nonnull ConditionBag conditionBag) {
+        this.conditionBag = conditionBag;
+        Bukkit.getPluginManager().callEvent(new DoorModifiedEvent(this));
+    }
+
+    public void setInvertOpen(boolean invertOpen) {
+        this.invertOpen = invertOpen;
+        Bukkit.getPluginManager().callEvent(new DoorModifiedEvent(this));
+    }
 
     public enum EvaluationType {
         CUSTOM, AND, OR
