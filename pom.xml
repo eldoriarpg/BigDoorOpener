@@ -5,8 +5,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>de.eldoria</groupId>
-    <artifactId>BigDoorsOpener</artifactId>
-    <version>2.0-BETA</version>
+    <artifactId>bigdoorsopener</artifactId>
+    <version>2.2.3</version>
     <name>BigDoorsOpener</name>
     <url>https://github.com/eldoriarpg/BigDoorOpener</url>
     <description>Open and close doors automatically on certain conditions</description>
@@ -82,6 +82,16 @@
             <id>sonatype</id>
             <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
         </repository>
+        <repository>
+            <id>placeholderapi</id>
+            <url>https://repo.extendedclip.com/content/repositories/placeholderapi/</url>
+        </repository>
+        <repository>
+            <id>nexus</id>
+            <name>Lumine Releases</name>
+            <url>https://mvn.lumine.io/repository/maven-public/</url>
+        </repository>
+
     </repositories>
 
     <dependencies>
@@ -93,7 +103,7 @@
         </dependency>
         <dependency>
             <groupId>org.spigotmc</groupId>
-            <artifactId>spigot</artifactId>
+            <artifactId>spigot-api</artifactId>
             <version>1.15.2-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
@@ -102,7 +112,7 @@
             <artifactId>BigDoors</artifactId>
             <version>1.0.0</version>
             <scope>system</scope>
-            <systemPath>${project.basedir}/dependency/BigDoors.jar</systemPath>
+            <systemPath>${project.basedir}/../dependency/BigDoors.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>org.jetbrains</groupId>
@@ -125,20 +135,8 @@
         <dependency>
             <groupId>de.eldoria</groupId>
             <artifactId>EldoUtilities</artifactId>
-            <version>v1.0.11</version>
+            <version>v1.0.12</version>
             <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.sk89q.worldguard</groupId>
-            <artifactId>worldguard-bukkit</artifactId>
-            <version>7.0.4-SNAPSHOT</version>
-            <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.destroystokyo.paper</groupId>
-                    <artifactId>paper-api</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>net.kyori</groupId>
@@ -171,6 +169,33 @@
                     <artifactId>gson</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+
+        <!-- Some third party dependencies which are optional -->
+        <dependency>
+            <groupId>com.sk89q.worldguard</groupId>
+            <artifactId>worldguard-bukkit</artifactId>
+            <version>7.0.4-SNAPSHOT</version>
+            <scope>provided</scope>
+            <exclusions>
+                <!-- Why the hell do they have a paper api provided... -->
+                <exclusion>
+                    <groupId>com.destroystokyo.paper</groupId>
+                    <artifactId>paper-api</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>me.clip</groupId>
+            <artifactId>placeholderapi</artifactId>
+            <version>2.10.6</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.lumine.xikage</groupId>
+            <artifactId>MythicMobs</artifactId>
+            <version>4.9.1</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 </project>

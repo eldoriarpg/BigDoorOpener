@@ -4,10 +4,12 @@ author: Hadde
 version: ${project.version}
 main: de.eldoria.bigdoorsopener.BigDoorsOpener
 website: www.spigotmc.org/resources/80805/
-api-version: 1.15
+api-version: 1.13
 depend: [BigDoors]
 softdepend:
   - WorldGuard
+  - PlaceholderAPI
+  - MythicMobs
 
 commands:
   bigdoorsopener:

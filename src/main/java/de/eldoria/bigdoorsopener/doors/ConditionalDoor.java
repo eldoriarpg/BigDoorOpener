@@ -3,7 +3,6 @@ package de.eldoria.bigdoorsopener.doors;
 import com.google.common.base.Objects;
 import de.eldoria.bigdoorsopener.BigDoorsOpener;
 import de.eldoria.bigdoorsopener.doors.conditions.ConditionChain;
-import de.eldoria.bigdoorsopener.util.CachingJSEngine;
 import de.eldoria.eldoutilities.serialization.SerializationUtil;
 import de.eldoria.eldoutilities.serialization.TypeResolvingMap;
 import de.eldoria.eldoutilities.utils.EnumUtil;
@@ -15,6 +14,7 @@ import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.Nonnull;
 import java.time.Instant;
@@ -67,6 +67,8 @@ public class ConditionalDoor implements ConfigurationSerializable {
      */
     private int stayOpen = 0;
 
+    private boolean waitForOpen = false;
+
 
     /**
      * True if the door was registered in open state.
@@ -75,11 +77,6 @@ public class ConditionalDoor implements ConfigurationSerializable {
     @Getter
     private boolean invertOpen = false;
 
-    private static final CachingJSEngine JS;
-
-    static {
-        JS = BigDoorsOpener.JS();
-    }
 
     public ConditionalDoor(long doorUID, String world, Vector position, ConditionChain conditionChain) {
         this.doorUID = doorUID;
@@ -101,6 +98,19 @@ public class ConditionalDoor implements ConfigurationSerializable {
         this.stayOpen = stayOpen;
     }
 
+    public ConditionalDoor(Map<String, Object> map) {
+        TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
+        int doorUID = resolvingMap.getValue("doorUID");
+        this.doorUID = doorUID;
+        world = resolvingMap.getValue("world");
+        position = resolvingMap.getValue("position");
+        invertOpen = resolvingMap.getValue("invertOpen");
+        evaluator = resolvingMap.getValue("evaluator");
+        evaluationType = EnumUtil.parse(resolvingMap.getValue("evaluationType"), EvaluationType.class);
+        conditionChain = resolvingMap.getValue("conditionChain");
+        stayOpen = resolvingMap.getValue("stayOpen");
+    }
+
     /**
      * Get the state of the door.
      *
@@ -112,10 +122,14 @@ public class ConditionalDoor implements ConfigurationSerializable {
     public boolean getState(Player player, World world, boolean currentState) {
         if (openTill != null && openTill.isAfter(Instant.now())) return true;
 
+        if (waitForOpen) {
+            return true;
+        }
+
         switch (evaluationType) {
             case CUSTOM:
                 String custom = conditionChain.custom(evaluator, player, world, this, currentState);
-                return JS.eval(custom, currentState);
+                return BigDoorsOpener.JS().eval(custom, currentState);
             case AND:
                 return conditionChain.and(player, world, this, currentState);
             case OR:
@@ -144,44 +158,26 @@ public class ConditionalDoor implements ConfigurationSerializable {
     }
 
     /**
-     * This method is called when a door changes its state from closed to open.
+     * This method is called when a door is toggled to change its state from closed to open.
      *
      * @param player player which opened the door.
      */
-    public void opened(Player player) {
-        openTill = Instant.now().plus(stayOpen, SECONDS);
+    public void opened(@Nullable Player player) {
+        waitForOpen = true;
+        if (player == null) return;
         conditionChain.opened(player);
+    }
+
+    /**
+     * Called when a door is fully opened.
+     */
+    public void opened() {
+        waitForOpen = false;
+        openTill = Instant.now().plus(stayOpen, SECONDS);
     }
 
     public void evaluated() {
         conditionChain.evaluated();
-    }
-
-    @Override
-    public @NotNull Map<String, Object> serialize() {
-        return SerializationUtil.newBuilder()
-                .add("doorUID", doorUID)
-                .add("world", world)
-                .add("position", position)
-                .add("invertOpen", invertOpen)
-                .add("evaluator", evaluator)
-                .add("evaluationType", evaluationType)
-                .add("stayOpen", stayOpen)
-                .add("conditionChain", conditionChain)
-                .build();
-    }
-
-    public static ConditionalDoor deserialize(Map<String, Object> map) {
-        TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
-        int doorUID = resolvingMap.getValue("doorUID");
-        String world = resolvingMap.getValue("world");
-        Vector position = resolvingMap.getValue("position");
-        boolean invertOpen = resolvingMap.getValue("invertOpen");
-        String evaluator = resolvingMap.getValue("evaluator");
-        EvaluationType evaluationType = EnumUtil.parse(resolvingMap.getValue("evaluationType"), EvaluationType.class);
-        ConditionChain conditionChain = resolvingMap.getValue("conditionChain");
-        int stayOpen = resolvingMap.getValue("stayOpen");
-        return new ConditionalDoor(doorUID, world, position, invertOpen, evaluator, evaluationType, conditionChain, stayOpen);
     }
 
     public boolean requiresPlayerEvaluation() {
@@ -216,6 +212,22 @@ public class ConditionalDoor implements ConfigurationSerializable {
     public void invertOpen() {
         invertOpen = !invertOpen;
     }
+
+    @Override
+    public @NotNull Map<String, Object> serialize() {
+        return SerializationUtil.newBuilder()
+                .add("doorUID", doorUID)
+                .add("world", world)
+                .add("position", position)
+                .add("invertOpen", invertOpen)
+                .add("evaluator", evaluator)
+                .add("evaluationType", evaluationType)
+                .add("stayOpen", stayOpen)
+                .add("conditionChain", conditionChain)
+                .build();
+    }
+
+
 
     public enum EvaluationType {
         CUSTOM, AND, OR

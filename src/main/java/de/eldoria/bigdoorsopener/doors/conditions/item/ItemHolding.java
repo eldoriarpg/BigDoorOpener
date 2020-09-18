@@ -1,8 +1,8 @@
 package de.eldoria.bigdoorsopener.doors.conditions.item;
 
+import de.eldoria.bigdoorsopener.doors.ConditionScope;
 import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
 import de.eldoria.bigdoorsopener.doors.conditions.ConditionType;
-import de.eldoria.bigdoorsopener.doors.conditions.item.interacting.ItemClick;
 import de.eldoria.bigdoorsopener.util.TextColors;
 import de.eldoria.eldoutilities.localization.Localizer;
 import de.eldoria.eldoutilities.localization.Replacement;
@@ -20,9 +20,17 @@ import java.util.Map;
  * A key which will be open when the player is holding a key in his hand.
  */
 @SerializableAs("itemHoldingCondition")
+@ConditionScope(ConditionScope.Scope.PLAYER)
 public class ItemHolding extends Item {
     public ItemHolding(ItemStack item, boolean consumed) {
         super(item, consumed);
+    }
+
+    public static ItemHolding deserialize(Map<String, Object> map) {
+        TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
+        ItemStack stack = resolvingMap.getValue("item");
+        boolean consumed = resolvingMap.getValue("consumed");
+        return new ItemHolding(stack, consumed);
     }
 
     @Override
@@ -48,13 +56,11 @@ public class ItemHolding extends Item {
 
     @Override
     public String getCreationCommand(ConditionalDoor door) {
-        return COMMAND + door.getDoorUID() + " itemHolding " + getItem().getAmount() + " " + isConsumed();
+        return SET_COMMAND + door.getDoorUID() + " itemHolding " + getItem().getAmount() + " " + isConsumed();
     }
 
-    public static ItemClick deserialize(Map<String, Object> map) {
-        TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
-        ItemStack stack = resolvingMap.getValue("item");
-        boolean consumed = resolvingMap.getValue("consumed");
-        return new ItemClick(stack, consumed);
+    @Override
+    public void evaluated() {
+
     }
 }

@@ -1,14 +1,14 @@
-package de.eldoria.bigdoorsopener.doors.conditions.location;
+package de.eldoria.bigdoorsopener.doors.conditions.permission;
 
 import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
 import de.eldoria.bigdoorsopener.doors.conditions.DoorCondition;
 
-public interface Location extends DoorCondition {
+public interface Permission extends DoorCondition {
     @Override
     default String getRemoveCommand(ConditionalDoor door) {
-        return REMOVE_COMMAND + door.getDoorUID() + " location";
+        return REMOVE_COMMAND + door.getDoorUID() + " permission";
     }
 
     @Override
-    Location clone();
+    Permission clone();
 }

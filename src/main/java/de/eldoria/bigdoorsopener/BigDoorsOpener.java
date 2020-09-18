@@ -13,23 +13,33 @@ import de.eldoria.bigdoorsopener.doors.conditions.item.interacting.ItemBlock;
 import de.eldoria.bigdoorsopener.doors.conditions.item.interacting.ItemClick;
 import de.eldoria.bigdoorsopener.doors.conditions.location.Proximity;
 import de.eldoria.bigdoorsopener.doors.conditions.location.Region;
-import de.eldoria.bigdoorsopener.doors.conditions.standalone.Permission;
+import de.eldoria.bigdoorsopener.doors.conditions.location.SimpleRegion;
+import de.eldoria.bigdoorsopener.doors.conditions.permission.DoorPermission;
+import de.eldoria.bigdoorsopener.doors.conditions.standalone.MythicMob;
+import de.eldoria.bigdoorsopener.doors.conditions.permission.PermissionNode;
+import de.eldoria.bigdoorsopener.doors.conditions.standalone.Placeholder;
 import de.eldoria.bigdoorsopener.doors.conditions.standalone.Time;
 import de.eldoria.bigdoorsopener.doors.conditions.standalone.Weather;
+import de.eldoria.bigdoorsopener.listener.DoorOpenedListener;
 import de.eldoria.bigdoorsopener.listener.ItemConditionListener;
+import de.eldoria.bigdoorsopener.listener.MythicMobsListener;
 import de.eldoria.bigdoorsopener.listener.WeatherListener;
 import de.eldoria.bigdoorsopener.listener.registration.RegisterInteraction;
 import de.eldoria.bigdoorsopener.scheduler.DoorChecker;
 import de.eldoria.bigdoorsopener.util.CachingJSEngine;
 import de.eldoria.eldoutilities.container.Pair;
+import de.eldoria.eldoutilities.crossversion.ServerVersion;
 import de.eldoria.eldoutilities.localization.Localizer;
 import de.eldoria.eldoutilities.messages.MessageSender;
 import de.eldoria.eldoutilities.updater.UpdateChecker;
 import lombok.Getter;
+import lombok.SneakyThrows;
 import nl.pim16aap2.bigDoors.BigDoors;
 import nl.pim16aap2.bigDoors.Commander;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
+import org.bukkit.command.PluginCommand;
+import org.bukkit.command.TabExecutor;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
@@ -48,17 +58,17 @@ import java.util.regex.Pattern;
 public class BigDoorsOpener extends JavaPlugin {
 
     private static Logger logger;
+    private static CachingJSEngine JS;
+    private static boolean placeholderEnabled = false;
+    private static boolean mythicMobsEnabled;
+    @Getter
+    private static RegionContainer regionContainer = null;
     private final BukkitScheduler scheduler = Bukkit.getScheduler();
     private Config config;
     private boolean initialized;
     private Localizer localizer;
-    private static CachingJSEngine JS;
-
-
     // External instances.
     private BigDoors doors;
-    @Getter
-    private static RegionContainer regionContainer = null;
     private Commander commander;
 
     // scheduler
@@ -67,45 +77,79 @@ public class BigDoorsOpener extends JavaPlugin {
     // listener
     private WeatherListener weatherListener;
     private RegisterInteraction registerInteraction;
+    private static BigDoorsOpener instance;
+
+    /**
+     * Get the plugin logger instance.
+     *
+     * @return plugin logger instance
+     */
+    @SuppressWarnings("StaticVariableUsedBeforeInitialization")
+    @NotNull
+    public static Logger logger() {
+        return logger;
+    }
+
+    @SuppressWarnings("StaticVariableUsedBeforeInitialization")
+    public static CachingJSEngine JS() {
+        return JS;
+    }
+
+    public static boolean isPlaceholderEnabled() {
+        return placeholderEnabled;
+    }
+
+    @SuppressWarnings("StaticVariableUsedBeforeInitialization")
+    @NotNull
+    public static boolean isMythicMobsEnabled() {
+        return mythicMobsEnabled;
+    }
+
+    public static BigDoors getBigDoors() {
+        return instance.doors;
+    }
+
+    public static Localizer getLocalizer() {
+        return instance.localizer;
+    }
 
     @Override
     public void onDisable() {
         super.onDisable();
     }
 
+    @SuppressWarnings("AssignmentToStaticFieldFromInstanceMethod")
+    @SneakyThrows
     @Override
     public void onEnable() {
+
+        ServerVersion.forceVersion(ServerVersion.MC_1_8, ServerVersion.MC_1_16);
+
         PluginManager pm = Bukkit.getPluginManager();
         if (!initialized) {
+            instance = this;
             logger = this.getLogger();
-            JS = new CachingJSEngine(200);
 
             buildSerializer();
-
-            if (!pm.isPluginEnabled("BigDoors")) {
-                logger().warning("Big Doors is disabled.");
-                pm.disablePlugin(this);
-                return;
-            }
-
-            // Load external resources before world guard.
-            loadExternalSources();
 
             // create config
             config = new Config(this);
 
+            JS = new CachingJSEngine(config.getJsCacheSize());
 
             // Check for updates
             if (config.isCheckUpdates()) {
                 UpdateChecker.performAndNotifyUpdateCheck(this, 80805, true);
             }
 
-
             localizer = new Localizer(this, config.getLanguage(), "messages",
                     "messages", Locale.US, "de_DE", "en_US");
 
             //enable metrics
             enableMetrics();
+
+            // Load external resources.
+            loadExternalSources();
 
             registerListener();
 
@@ -116,16 +160,24 @@ public class BigDoorsOpener extends JavaPlugin {
             doorChecker = new DoorChecker(config, doors, localizer);
             scheduler.scheduleSyncRepeatingTask(this, doorChecker, 100, 1);
 
-            getCommand("bigdoorsopener")
-                    .setExecutor(new BigDoorsOpenerCommand(this, commander, config, localizer, doorChecker, registerInteraction));
+            registerCommand("bigdoorsopener",
+                    new BigDoorsOpenerCommand(this, doors, config, localizer, doorChecker, registerInteraction));
         }
 
         if (initialized) {
             localizer.setLocale(config.getLanguage());
-            scheduler.cancelTasks(this);
             doorChecker.reload();
         }
         initialized = true;
+    }
+
+    private void registerCommand(String command, TabExecutor executor) {
+        PluginCommand cmd = getCommand("bigdoorsopener");
+        if (cmd != null) {
+            cmd.setExecutor(executor);
+            return;
+        }
+        logger().warning("Command " + command + " not found!");
     }
 
     private void registerListener() {
@@ -135,26 +187,63 @@ public class BigDoorsOpener extends JavaPlugin {
         registerInteraction = new RegisterInteraction();
         pm.registerEvents(registerInteraction, this);
         pm.registerEvents(new ItemConditionListener(doors, localizer, config), this);
+        pm.registerEvents(new DoorOpenedListener(config), this);
     }
 
-    private void loadExternalSources() {
+    @SuppressWarnings( {"AssignmentToStaticFieldFromInstanceMethod", "VariableNotUsedInsideIf"})
+    private void loadExternalSources() throws InstantiationException {
         PluginManager pm = Bukkit.getPluginManager();
+
+        if (!pm.isPluginEnabled("BigDoors")) {
+            logger().warning("Big Doors is disabled.");
+            pm.disablePlugin(this);
+            throw new InstantiationException("Big Doors is not enabled");
+        }
 
         Plugin bigDoorsPlugin = pm.getPlugin("BigDoors");
         doors = (BigDoors) bigDoorsPlugin;
         commander = doors.getCommander();
 
+        if (commander != null) {
+            logger().info("Hooked into Big Doors successfully.");
+        } else {
+            logger().warning("Big Doors is not ready or not loaded properly");
+            throw new InstantiationException("Big Doors is not enabled");
+        }
+
         // check if world guard is loaded
         if (Bukkit.getPluginManager().isPluginEnabled("WorldGuard")) {
             logger().info("World Guard found. Trying to get a hook.");
-            regionContainer = WorldGuard.getInstance().getPlatform().getRegionContainer();
-            if (regionContainer != null) {
-                logger().info("Hooked into world guard successfully.");
+
+            String worldGuard = Bukkit.getPluginManager().getPlugin("WorldGuard").getDescription().getVersion();
+            if (worldGuard.startsWith("7")) {
+                regionContainer = WorldGuard.getInstance().getPlatform().getRegionContainer();
+                if (regionContainer != null) {
+                    logger().info("Hooked into world guard successfully.");
+                } else {
+                    logger().warning("Failed to hook into world guard.");
+                }
             } else {
-                logger().warning("Failed to hook into world guard.");
+                logger().info("Found legacy World Guard Version. Region conditions can't be used.");
             }
         } else {
-            logger().info("World guard not found. Region conditions cant be used.");
+            logger().info("World guard not found. Region conditions can't be used.");
+        }
+
+        // check if placeholder api is present.
+        if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
+            placeholderEnabled = true;
+            logger().info("Placeholder API found. Enabling placeholder usage.");
+        } else {
+            logger().info("Placeholder API not found. Placeholder usage is disabled.");
+        }
+
+        if (Bukkit.getPluginManager().isPluginEnabled("MythicMobs")) {
+            mythicMobsEnabled = true;
+            logger().info("MythicMobs found. Enabling mythic mobs listener.");
+            pm.registerEvents(new MythicMobsListener(doors, localizer, config), this);
+        } else {
+            logger().info("MythicMobs not found. MythicMobs conditions are disabled.");
         }
     }
 
@@ -174,19 +263,13 @@ public class BigDoorsOpener extends JavaPlugin {
         ConfigurationSerialization.registerClass(ItemOwning.class, "itemOwningCondition");
         ConfigurationSerialization.registerClass(Proximity.class, "proximityCondition");
         ConfigurationSerialization.registerClass(Region.class, "regionCondition");
-        ConfigurationSerialization.registerClass(Permission.class, "permissionCondition");
+        ConfigurationSerialization.registerClass(SimpleRegion.class, "simpleRegionCondition");
+        ConfigurationSerialization.registerClass(PermissionNode.class, "permissionCondition");
+        ConfigurationSerialization.registerClass(DoorPermission.class, "doorPermissionCondition");
         ConfigurationSerialization.registerClass(Time.class, "timeCondition");
         ConfigurationSerialization.registerClass(Weather.class, "weatherCondition");
-    }
-
-    /**
-     * Get the plugin logger instance.
-     *
-     * @return plugin logger instance
-     */
-    @NotNull
-    public static Logger logger() {
-        return logger;
+        ConfigurationSerialization.registerClass(Placeholder.class, "placeholderCondition");
+        ConfigurationSerialization.registerClass(MythicMob.class, "mythicMobsCondition");
     }
 
     /**
@@ -212,8 +295,8 @@ public class BigDoorsOpener extends JavaPlugin {
             Map<String, Map<String, Integer>> map = new HashMap<>();
             Pair<String, String> doorsVersion = getDoorsVersion(ver);
             Map<String, Integer> versionMap = new HashMap<>();
-            versionMap.put(doorsVersion.first, 1);
-            map.put(doorsVersion.second, versionMap);
+            versionMap.put(doorsVersion.second, 1);
+            map.put(doorsVersion.first, versionMap);
             return map;
         }));
 
@@ -227,12 +310,9 @@ public class BigDoorsOpener extends JavaPlugin {
             counts.put("permission", (int) values.parallelStream().filter(d -> d.getConditionChain().getPermission() != null).count());
             counts.put("time", (int) values.parallelStream().filter(d -> d.getConditionChain().getTime() != null).count());
             counts.put("weather", (int) values.parallelStream().filter(d -> d.getConditionChain().getWeather() != null).count());
+            counts.put("mythicMobs", (int) values.parallelStream().filter(d -> d.getConditionChain().getMythicMob() != null).count());
             return counts;
         }));
-    }
-
-    public static CachingJSEngine JS() {
-        return JS;
     }
 
     private Pair<String, String> getDoorsVersion(String ver) {

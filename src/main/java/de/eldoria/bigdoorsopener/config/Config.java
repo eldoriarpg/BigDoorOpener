@@ -4,7 +4,7 @@ import de.eldoria.bigdoorsopener.BigDoorsOpener;
 import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
 import de.eldoria.bigdoorsopener.doors.conditions.ConditionChain;
 import de.eldoria.bigdoorsopener.doors.conditions.location.Proximity;
-import de.eldoria.bigdoorsopener.doors.conditions.standalone.Permission;
+import de.eldoria.bigdoorsopener.doors.conditions.permission.PermissionNode;
 import de.eldoria.bigdoorsopener.doors.conditions.standalone.Time;
 import lombok.Getter;
 import org.bukkit.configuration.ConfigurationSection;
@@ -28,10 +28,32 @@ public class Config {
     private String language;
     private int refreshRate;
     private boolean checkUpdates;
+    private int jsCacheSize;
+    private Vector playerCheckRadius;
 
     public Config(Plugin plugin) {
         this.plugin = plugin;
         loadConfig();
+    }
+
+    private static void setIfAbsent(FileConfiguration config, String path, Object value) {
+        if (!config.isSet(path)) {
+            config.set(path, value);
+        }
+    }
+
+    private static void setIfAbsent(ConfigurationSection section, String path, Object value) {
+        if (!section.isSet(path)) {
+            section.set(path, value);
+        }
+    }
+
+    private static ConfigurationSection createSectionIfAbsent(FileConfiguration config, String path) {
+        ConfigurationSection section = config.getConfigurationSection(path);
+        if (section == null) {
+            return config.createSection(path);
+        }
+        return section;
     }
 
     public void loadConfig() {
@@ -86,7 +108,7 @@ public class Config {
                 ConditionChain conditionChain = cD.getConditionChain();
 
                 if (tD.getPermission() != null && !tD.getPermission().isEmpty()) {
-                    conditionChain.setPermission(new Permission(tD.getPermission()));
+                    conditionChain.setPermission(new PermissionNode(tD.getPermission()));
                     log.info("Adding permission condition.");
                 }
 
@@ -126,7 +148,7 @@ public class Config {
      * Forces the current actual config values.
      * Must be always executed after {@link #updateConfig()}
      */
-    private void forceConfigConsitency() {
+    private void forceConfigConsistency() {
         plugin.saveDefaultConfig();
         plugin.reloadConfig();
 
@@ -138,6 +160,9 @@ public class Config {
         setIfAbsent(config, "enableMetrics", true);
         setIfAbsent(config, "language", "en_US");
         setIfAbsent(config, "checkUpdates", true);
+        setIfAbsent(config, "jsCacheSize", 400);
+        setIfAbsent(config, "playerCheckRadius", 200);
+
 
         // never set the version here.
     }
@@ -148,7 +173,7 @@ public class Config {
      */
     @SuppressWarnings("unchecked")
     public void reloadConfig() {
-        forceConfigConsitency();
+        forceConfigConsistency();
         FileConfiguration config = plugin.getConfig();
 
         List<ConditionalDoor> configDoors = (List<ConditionalDoor>) config.getList("doors");
@@ -165,6 +190,17 @@ public class Config {
         enableMetrics = config.getBoolean("enableMetrics", true);
         language = config.getString("language", "en_US");
         checkUpdates = config.getBoolean("checkUpdates", true);
+        jsCacheSize = config.getInt("jsCacheSize", 400);
+        int radius = config.getInt("playerCheckRadius", 200);
+        playerCheckRadius = new Vector(radius, radius, radius);
+
+        // ensure that js cache size is not too small
+        if (jsCacheSize < 200) {
+            BigDoorsOpener.logger().warning("Js cache is small. This may cause performance issues. We recommend at least a size of 200");
+            jsCacheSize = Math.max(jsCacheSize, 10);
+        }
+
+        safeConfig();
 
         BigDoorsOpener.logger().info("Config loaded!");
     }
@@ -176,26 +212,6 @@ public class Config {
         FileConfiguration config = plugin.getConfig();
         config.set("doors", new ArrayList<>(doors.values()));
         plugin.saveConfig();
-    }
-
-    private static void setIfAbsent(FileConfiguration config, String path, Object value) {
-        if (!config.isSet(path)) {
-            config.set(path, value);
-        }
-    }
-
-    private static void setIfAbsent(ConfigurationSection section, String path, Object value) {
-        if (!section.isSet(path)) {
-            section.set(path, value);
-        }
-    }
-
-    private static ConfigurationSection createSectionIfAbsent(FileConfiguration config, String path) {
-        ConfigurationSection section = config.getConfigurationSection(path);
-        if (section == null) {
-            return config.createSection(path);
-        }
-        return section;
     }
 
 }

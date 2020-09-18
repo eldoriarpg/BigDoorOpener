@@ -1,5 +1,9 @@
 package de.eldoria.bigdoorsopener.doors.conditions.location;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import de.eldoria.bigdoorsopener.BigDoorsOpener;
+import de.eldoria.bigdoorsopener.doors.ConditionScope;
 import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
 import de.eldoria.bigdoorsopener.doors.conditions.ConditionType;
 import de.eldoria.bigdoorsopener.util.C;
@@ -18,24 +22,36 @@ import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A condition which opens the door when the player is within a specific range of defined by geometric form
  */
 @SerializableAs("proximityCondition")
+@ConditionScope(ConditionScope.Scope.PLAYER)
 public class Proximity implements Location {
     private final Vector dimensions;
     private final ProximityForm proximityForm;
-
 
     public Proximity(Vector dimensions, ProximityForm proximityForm) {
         this.dimensions = dimensions;
         this.proximityForm = proximityForm;
     }
 
+    public Proximity(Map<String, Object> map) {
+        TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
+        dimensions = resolvingMap.getValue("dimensions");
+        String formString = resolvingMap.getValue("proximityForm");
+        formString = formString.replaceAll("(?i)elipsoid", "ellipsoid");
+        proximityForm = EnumUtil.parse(formString, ProximityForm.class);
+    }
+
     @Override
     public Boolean isOpen(Player player, World world, ConditionalDoor door, boolean currentState) {
-        return proximityForm.check.apply(door.getPosition(), player.getLocation().toVector(), dimensions);
+        Vector vector = player.getLocation().toVector();
+        return proximityForm.check.apply(door.getPosition(),
+                new Vector(vector.getBlockX(), vector.getBlockY(), vector.getBlockZ()),
+                dimensions);
     }
 
     @Override
@@ -54,9 +70,18 @@ public class Proximity implements Location {
 
     @Override
     public String getCreationCommand(ConditionalDoor door) {
-        return COMMAND + door.getDoorUID() + " proximity "
+        return SET_COMMAND + door.getDoorUID() + " proximity "
                 + dimensions.getX() + "," + dimensions.getY() + "," + dimensions.getZ()
                 + " " + proximityForm.name().toLowerCase();
+    }
+
+    @Override
+    public void evaluated() {
+    }
+
+    @Override
+    public Proximity clone() {
+        return new Proximity(dimensions, proximityForm);
     }
 
     @Override
@@ -67,22 +92,12 @@ public class Proximity implements Location {
                 .build();
     }
 
-    public static Proximity deserialize(Map<String, Object> map) {
-        TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
-        Vector vector = resolvingMap.getValue("dimensions");
-        String formString = resolvingMap.getValue("proximityForm");
-        formString = formString.replaceAll("(?i)elipsoid", "ellipsoid");
-        ProximityForm proximityForm = EnumUtil.parse(formString, ProximityForm.class);
-        return new Proximity(vector, proximityForm);
-    }
-
     public enum ProximityForm {
         CUBOID("conditionDesc.proximityForm.cuboid",
                 (point, target, dimensions) -> {
                     if (Math.abs(point.getX() - target.getX()) > dimensions.getX()) return false;
                     if (Math.abs(point.getY() - target.getY()) > dimensions.getY()) return false;
-                    if (Math.abs(point.getZ() - target.getZ()) > dimensions.getZ()) return false;
-                    return true;
+                    return !(Math.abs(point.getZ() - target.getZ()) > dimensions.getZ());
                 }),
         ELLIPSOID("conditionDesc.proximityForm.ellipsoid",
                 (point, target, dimensions) ->
@@ -96,8 +111,11 @@ public class Proximity implements Location {
                             + Math.pow(target.getZ() - point.getZ(), 2) / Math.pow(dimensions.getZ(), 2) <= 1;
                 });
 
-        public final String localKey;
+        /**
+         * point, target, dimension
+         */
         public TriFunction<Vector, Vector, Vector, Boolean> check;
+        public final String localKey;
 
         ProximityForm(String localKey, TriFunction<Vector, Vector, Vector, Boolean> check) {
             this.localKey = localKey;
