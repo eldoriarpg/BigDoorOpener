@@ -1,16 +1,13 @@
-package de.eldoria.bigdoorsopener.doors.conditions;
+package de.eldoria.bigdoorsopener.conditions;
 
-import de.eldoria.bigdoorsopener.doors.Condition;
-import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
+import de.eldoria.bigdoorsopener.core.conditions.ConditionContainer;
+import de.eldoria.bigdoorsopener.core.conditions.Scope;
+import de.eldoria.bigdoorsopener.door.ConditionalDoor;
 import de.eldoria.eldoutilities.localization.Localizer;
-import de.eldoria.eldoutilities.messages.MessageSender;
 import net.kyori.adventure.text.TextComponent;
-import org.apache.commons.lang.NotImplementedException;
 import org.bukkit.World;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.entity.Player;
-
-import java.util.List;
 
 /**
  * A interface which represents a condition which opens a door under specific circumstances.
@@ -65,22 +62,10 @@ public interface DoorCondition extends ConfigurationSerializable, Cloneable {
 
     /**
      * This method will be called when a door with this key was opened. Only once.
-     * This method will only be called, when the {@link Condition.Scope} is set to {@link Condition.Scope#PLAYER}.
+     * This method will only be called, when the {@link ConditionContainer#getScope()} is set to {@link Scope#PLAYER}.
      *
      * @param player player which opened the door.
      */
     default void opened(Player player) {
-    }
-
-    default String getPermission() {
-        return "bdo.condition." + ConditionHelper.getGroup(getClass());
-    }
-
-    static void create(Player player, MessageSender messageSender, ConditionBag bag, String[] args) {
-        throw new CreationNotImplemented();
-    }
-
-    static List<String> onTabComplete(String[] args) {
-        throw new NotImplementedException("Tabcompletion is not implemented.");
     }
 }
