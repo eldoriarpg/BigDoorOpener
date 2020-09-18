@@ -1,4 +1,4 @@
-package de.eldoria.bigdoorsopener.listener;
+package de.eldoria.bigdoorsopener.conditions.listener;
 
 import org.bukkit.World;
 import org.bukkit.event.EventHandler;

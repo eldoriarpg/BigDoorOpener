@@ -9,7 +9,7 @@ import de.eldoria.bigdoorsopener.door.ConditionalDoor;
 import de.eldoria.bigdoorsopener.conditions.DoorCondition;
 import de.eldoria.bigdoorsopener.conditions.DoorState;
 import de.eldoria.bigdoorsopener.conditions.location.Proximity;
-import de.eldoria.bigdoorsopener.listener.WeatherListener;
+import de.eldoria.bigdoorsopener.conditions.listener.WeatherListener;
 import de.eldoria.bigdoorsopener.util.C;
 import de.eldoria.bigdoorsopener.util.TextColors;
 import de.eldoria.eldoutilities.localization.Localizer;
