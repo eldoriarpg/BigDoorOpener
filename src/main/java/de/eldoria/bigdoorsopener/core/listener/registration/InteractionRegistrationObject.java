@@ -1,4 +1,4 @@
-package de.eldoria.bigdoorsopener.listener.registration;
+package de.eldoria.bigdoorsopener.core.listener.registration;
 
 import de.eldoria.eldoutilities.messages.MessageSender;
 import org.bukkit.event.player.PlayerInteractEvent;

@@ -1,13 +1,13 @@
-package de.eldoria.bigdoorsopener.doors.conditions.permission;
+package de.eldoria.bigdoorsopener.conditions.permission;
 
 import com.google.common.cache.Cache;
 import de.eldoria.bigdoorsopener.core.BigDoorsOpener;
+import de.eldoria.bigdoorsopener.core.adapter.BigDoorsAdapter;
 import de.eldoria.bigdoorsopener.core.conditions.ConditionContainer;
+import de.eldoria.bigdoorsopener.core.conditions.ConditionRegistrar;
 import de.eldoria.bigdoorsopener.core.conditions.Scope;
-import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
-import de.eldoria.bigdoorsopener.doors.conditions.ConditionType;
-import de.eldoria.bigdoorsopener.doors.conditions.location.Proximity;
-import de.eldoria.bigdoorsopener.scheduler.BigDoorsAdapter;
+import de.eldoria.bigdoorsopener.door.ConditionalDoor;
+import de.eldoria.bigdoorsopener.conditions.location.Proximity;
 import de.eldoria.bigdoorsopener.util.C;
 import de.eldoria.bigdoorsopener.util.TextColors;
 import de.eldoria.eldoutilities.localization.Localizer;
@@ -24,13 +24,14 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
-import static de.eldoria.bigdoorsopener.util.ArgumentHelper.argumentsInvalid;
+import static de.eldoria.bigdoorsopener.commands.CommandHelper.argumentsInvalid;
 
 /**
  * A condition which opens the door, when a player has a access level for the door.
@@ -41,12 +42,12 @@ public class DoorPermission extends BigDoorsAdapter implements Permission {
     private final Cache<UUID, Boolean> cache = C.getExpiringCache(30, TimeUnit.SECONDS);
 
     public DoorPermission(int permissionLevel) {
-        super(BigDoorsOpener.getBigDoors(), BigDoorsOpener.localizer());
+        super(BigDoorsOpener.getBigDoors());
         this.permissionLevel = permissionLevel;
     }
 
     public DoorPermission(Map<String, Object> map) {
-        super(BigDoorsOpener.getBigDoors(), BigDoorsOpener.localizer());
+        super(BigDoorsOpener.getBigDoors());
         TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
         permissionLevel = resolvingMap.getValue("permissionLevel");
     }
@@ -111,9 +112,12 @@ public class DoorPermission extends BigDoorsAdapter implements Permission {
 
     @Override
     public TextComponent getDescription(Localizer localizer) {
+        Optional<ConditionContainer> containerByClass = ConditionRegistrar.getContainerByClass(getClass());
+
         return TextComponent.builder(
                 localizer.getMessage("conditionDesc.type.permission",
-                        Replacement.create("NAME", ConditionType.PERMISSION_NODE.conditionName))).color(TextColors.AQUA)
+                        Replacement.create("NAME", containerByClass
+                                .map(ConditionContainer::getName).orElse("undefined")))).color(TextColors.AQUA)
                 .append(TextComponent.newline())
                 .append(TextComponent.builder(localizer.getMessage("conditionDesc.doorPermission") + " ").color(C.baseColor))
                 .append(TextComponent.builder(localizer.getMessage(getPermString())).color(C.highlightColor))

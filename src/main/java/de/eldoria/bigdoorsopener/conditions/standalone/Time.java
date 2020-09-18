@@ -1,14 +1,14 @@
-package de.eldoria.bigdoorsopener.doors.conditions.standalone;
+package de.eldoria.bigdoorsopener.conditions.standalone;
 
 import com.google.common.cache.Cache;
 import de.eldoria.bigdoorsopener.core.BigDoorsOpener;
 import de.eldoria.bigdoorsopener.core.conditions.ConditionContainer;
+import de.eldoria.bigdoorsopener.core.conditions.ConditionRegistrar;
 import de.eldoria.bigdoorsopener.core.conditions.Scope;
-import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
-import de.eldoria.bigdoorsopener.doors.conditions.ConditionType;
-import de.eldoria.bigdoorsopener.doors.conditions.DoorCondition;
-import de.eldoria.bigdoorsopener.doors.conditions.DoorState;
-import de.eldoria.bigdoorsopener.doors.conditions.location.Proximity;
+import de.eldoria.bigdoorsopener.door.ConditionalDoor;
+import de.eldoria.bigdoorsopener.conditions.DoorCondition;
+import de.eldoria.bigdoorsopener.conditions.DoorState;
+import de.eldoria.bigdoorsopener.conditions.location.Proximity;
 import de.eldoria.bigdoorsopener.util.C;
 import de.eldoria.bigdoorsopener.util.TextColors;
 import de.eldoria.eldoutilities.localization.Localizer;
@@ -31,7 +31,7 @@ import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.concurrent.ExecutionException;
 
-import static de.eldoria.bigdoorsopener.util.ArgumentHelper.argumentsInvalid;
+import static de.eldoria.bigdoorsopener.commands.CommandHelper.argumentsInvalid;
 
 /**
  * A key which defines the door state by current world time.
@@ -157,9 +157,12 @@ public class Time implements DoorCondition {
 
     @Override
     public TextComponent getDescription(Localizer localizer) {
+        Optional<ConditionContainer> containerByClass = ConditionRegistrar.getContainerByClass(getClass());
+
         return TextComponent.builder(
                 localizer.getMessage("conditionDesc.type.time",
-                        Replacement.create("NAME", ConditionType.TIME.conditionName))).color(TextColors.AQUA)
+                        Replacement.create("NAME", containerByClass
+                                .map(ConditionContainer::getName).orElse("undefined")))).color(TextColors.AQUA)
                 .append(TextComponent.newline())
                 .append(TextComponent.builder(localizer.getMessage("conditionDesc.open") + " ").color(C.baseColor))
                 .append(TextComponent.builder(Parser.parseTicksToTime(openTick)).color(C.highlightColor))

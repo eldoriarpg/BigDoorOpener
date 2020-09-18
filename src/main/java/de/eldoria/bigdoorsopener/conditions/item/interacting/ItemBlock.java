@@ -1,12 +1,12 @@
-package de.eldoria.bigdoorsopener.doors.conditions.item.interacting;
+package de.eldoria.bigdoorsopener.conditions.item.interacting;
 
 import de.eldoria.bigdoorsopener.core.BigDoorsOpener;
 import de.eldoria.bigdoorsopener.core.conditions.ConditionContainer;
+import de.eldoria.bigdoorsopener.core.conditions.ConditionRegistrar;
 import de.eldoria.bigdoorsopener.core.conditions.Scope;
-import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
-import de.eldoria.bigdoorsopener.doors.conditions.ConditionType;
-import de.eldoria.bigdoorsopener.doors.conditions.item.Item;
-import de.eldoria.bigdoorsopener.listener.registration.RegisterInteraction;
+import de.eldoria.bigdoorsopener.door.ConditionalDoor;
+import de.eldoria.bigdoorsopener.conditions.item.Item;
+import de.eldoria.bigdoorsopener.core.listener.registration.RegisterInteraction;
 import de.eldoria.bigdoorsopener.util.C;
 import de.eldoria.bigdoorsopener.util.TextColors;
 import de.eldoria.eldoutilities.localization.Localizer;
@@ -30,7 +30,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
 
-import static de.eldoria.bigdoorsopener.util.ArgumentHelper.argumentsInvalid;
+import static de.eldoria.bigdoorsopener.commands.CommandHelper.argumentsInvalid;
 
 /**
  * A key which opens a door, when the player is clicking at a specific block
@@ -81,7 +81,7 @@ public class ItemBlock extends ItemInteraction {
                         return;
                     }
 
-                    if (argumentsInvalid(player, messageSender, localizer, arguments, 1,
+                    if (argumentsInvalid(player, arguments, 1,
                             "<" + localizer.getMessage("syntax.doorId") + "> <"
                                     + localizer.getMessage("syntax.condition") + "> <"
                                     + localizer.getMessage("syntax.amount") + "> ["
@@ -165,9 +165,12 @@ public class ItemBlock extends ItemInteraction {
 
     @Override
     public TextComponent getDescription(Localizer localizer) {
+        Optional<ConditionContainer> containerByClass = ConditionRegistrar.getContainerByClass(getClass());
+
         return TextComponent.builder(
                 localizer.getMessage("conditionDesc.type.itemBlock",
-                        Replacement.create("NAME", ConditionType.ITEM_BLOCK.conditionName))).color(TextColors.AQUA)
+                        Replacement.create("NAME", containerByClass
+                                .map(ConditionContainer::getName).orElse("undefined")))).color(TextColors.AQUA)
                 .append(TextComponent.newline())
                 .append(TextComponent.builder(localizer.getMessage("conditionDesc.keyhole") + " ").color(C.baseColor))
                 .append(TextComponent.builder(position.toString()).color(C.highlightColor))

@@ -1,7 +1,7 @@
-package de.eldoria.bigdoorsopener.doors.conditions.location;
+package de.eldoria.bigdoorsopener.conditions.location;
 
-import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
-import de.eldoria.bigdoorsopener.doors.conditions.DoorCondition;
+import de.eldoria.bigdoorsopener.door.ConditionalDoor;
+import de.eldoria.bigdoorsopener.conditions.DoorCondition;
 
 public interface Location extends DoorCondition {
     @Override

@@ -1,7 +1,7 @@
-package de.eldoria.bigdoorsopener.doors.conditions.item.interacting;
+package de.eldoria.bigdoorsopener.conditions.item.interacting;
 
-import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
-import de.eldoria.bigdoorsopener.doors.conditions.item.Item;
+import de.eldoria.bigdoorsopener.door.ConditionalDoor;
+import de.eldoria.bigdoorsopener.conditions.item.Item;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerInteractEvent;

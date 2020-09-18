@@ -1,10 +1,10 @@
-package de.eldoria.bigdoorsopener.doors.conditions.item;
+package de.eldoria.bigdoorsopener.conditions.item;
 
 import de.eldoria.bigdoorsopener.core.BigDoorsOpener;
 import de.eldoria.bigdoorsopener.core.conditions.ConditionContainer;
+import de.eldoria.bigdoorsopener.core.conditions.ConditionRegistrar;
 import de.eldoria.bigdoorsopener.core.conditions.Scope;
-import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
-import de.eldoria.bigdoorsopener.doors.conditions.ConditionType;
+import de.eldoria.bigdoorsopener.door.ConditionalDoor;
 import de.eldoria.bigdoorsopener.util.TextColors;
 import de.eldoria.eldoutilities.localization.Localizer;
 import de.eldoria.eldoutilities.localization.Replacement;
@@ -22,19 +22,26 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
 
-import static de.eldoria.bigdoorsopener.util.ArgumentHelper.argumentsInvalid;
+import static de.eldoria.bigdoorsopener.commands.CommandHelper.argumentsInvalid;
 
 /**
- * A key which opens a doow, when the player has it in his inventory.
+ * A key which will be open when the player is holding a key in his hand.
  */
-@SerializableAs("itemOwningCondition")
-public class ItemOwning extends Item {
-    public ItemOwning(ItemStack item, boolean consumed) {
+@SerializableAs("itemHoldingCondition")
+public class ItemHolding extends Item {
+    public ItemHolding(ItemStack item, boolean consumed) {
         super(item, consumed);
     }
 
+    public static ItemHolding deserialize(Map<String, Object> map) {
+        TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
+        ItemStack stack = resolvingMap.getValue("item");
+        boolean consumed = resolvingMap.getValue("consumed");
+        return new ItemHolding(stack, consumed);
+    }
+
     public static ConditionContainer getConditionContainer() {
-        return ConditionContainer.ofClass(ItemOwning.class, Scope.PLAYER)
+        return ConditionContainer.ofClass(ItemHolding.class, Scope.PLAYER)
                 .withFactory((player, messageSender, conditionBag, arguments) -> {
                     Localizer localizer = BigDoorsOpener.localizer();
                     if (player == null) {
@@ -42,7 +49,7 @@ public class ItemOwning extends Item {
                         return;
                     }
 
-                    if (argumentsInvalid(player, messageSender, localizer, arguments, 1,
+                    if (argumentsInvalid(player, arguments, 1,
                             "<" + localizer.getMessage("syntax.doorId") + "> <"
                                     + localizer.getMessage("syntax.condition") + "> <"
                                     + localizer.getMessage("syntax.amount") + "> ["
@@ -73,37 +80,33 @@ public class ItemOwning extends Item {
                     ItemStack itemInMainHand = player.getInventory().getItemInMainHand().clone();
 
                     itemInMainHand.setAmount(amount.getAsInt());
-                    conditionBag.putCondition(new ItemOwning(itemInMainHand, consume.get()));
-                    messageSender.sendMessage(player, localizer.getMessage("setCondition.itemOwning"));
+                    conditionBag.putCondition(new ItemHolding(itemInMainHand, consume.get()));
+                    messageSender.sendMessage(player, localizer.getMessage("setCondition.itemHolding"));
+
                 })
                 .onTabComplete(Item::onTabComplete)
-                .withMeta("itemOwning", "item", ConditionContainer.Builder.Cost.PLAYER_MEDIUM.cost)
+                .withMeta("itemHolding", "item", ConditionContainer.Builder.Cost.PLAYER_MEDIUM.cost)
                 .build();
     }
 
     @Override
     public void opened(Player player) {
         if (!isConsumed()) return;
-        takeFromInventory(player);
+        tryTakeFromHands(player);
     }
 
     @Override
     public Boolean isOpen(Player player, World world, ConditionalDoor door, boolean currentState) {
-        return hasPlayerItemInInventory(player);
-    }
-
-    public ItemOwning deserialize(Map<String, Object> map) {
-        TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
-        ItemStack stack = resolvingMap.getValue("item");
-        boolean consumed = resolvingMap.getValue("consumed");
-        return new ItemOwning(stack, consumed);
+        return hasPlayerItemInHand(player);
     }
 
     @Override
     public TextComponent getDescription(Localizer localizer) {
+        Optional<ConditionContainer> containerByClass = ConditionRegistrar.getContainerByClass(getClass());
         return TextComponent.builder(
-                localizer.getMessage("conditionDesc.type.itemOwning",
-                        Replacement.create("NAME", ConditionType.ITEM_OWNING.conditionName))).color(TextColors.AQUA)
+                localizer.getMessage("conditionDesc.type.itemHolding",
+                        Replacement.create("NAME", containerByClass
+                                .map(ConditionContainer::getName).orElse("undefined")))).color(TextColors.AQUA)
                 .append(TextComponent.newline())
                 .append(super.getDescription(localizer))
                 .build();
@@ -111,6 +114,12 @@ public class ItemOwning extends Item {
 
     @Override
     public String getCreationCommand(ConditionalDoor door) {
-        return SET_COMMAND + door.getDoorUID() + " itemOwning " + getItem().getAmount() + " " + isConsumed();
+        return SET_COMMAND + door.getDoorUID() + " itemHolding " + getItem().getAmount() + " " + isConsumed();
     }
+
+    @Override
+    public void evaluated() {
+
+    }
+
 }

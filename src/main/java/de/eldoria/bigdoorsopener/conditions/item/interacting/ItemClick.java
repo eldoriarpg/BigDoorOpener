@@ -1,11 +1,11 @@
-package de.eldoria.bigdoorsopener.doors.conditions.item.interacting;
+package de.eldoria.bigdoorsopener.conditions.item.interacting;
 
 import de.eldoria.bigdoorsopener.core.BigDoorsOpener;
 import de.eldoria.bigdoorsopener.core.conditions.ConditionContainer;
+import de.eldoria.bigdoorsopener.core.conditions.ConditionRegistrar;
 import de.eldoria.bigdoorsopener.core.conditions.Scope;
-import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
-import de.eldoria.bigdoorsopener.doors.conditions.ConditionType;
-import de.eldoria.bigdoorsopener.doors.conditions.item.Item;
+import de.eldoria.bigdoorsopener.door.ConditionalDoor;
+import de.eldoria.bigdoorsopener.conditions.item.Item;
 import de.eldoria.bigdoorsopener.util.TextColors;
 import de.eldoria.eldoutilities.localization.Localizer;
 import de.eldoria.eldoutilities.localization.Replacement;
@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
 
-import static de.eldoria.bigdoorsopener.util.ArgumentHelper.argumentsInvalid;
+import static de.eldoria.bigdoorsopener.commands.CommandHelper.argumentsInvalid;
 
 /**
  * A key which open the door, when right clicked.
@@ -50,7 +50,7 @@ public class ItemClick extends ItemInteraction {
                         return;
                     }
 
-                    if (argumentsInvalid(player, messageSender, localizer, arguments, 1,
+                    if (argumentsInvalid(player, arguments, 1,
                             "<" + localizer.getMessage("syntax.doorId") + "> <"
                                     + localizer.getMessage("syntax.condition") + "> <"
                                     + localizer.getMessage("syntax.amount") + "> ["
@@ -105,9 +105,13 @@ public class ItemClick extends ItemInteraction {
 
     @Override
     public TextComponent getDescription(Localizer localizer) {
+        Optional<ConditionContainer> containerByClass = ConditionRegistrar.getContainerByClass(getClass());
+
+
         return TextComponent.builder(
                 localizer.getMessage("conditionDesc.type.itemClick",
-                        Replacement.create("NAME", ConditionType.ITEM_CLICK.conditionName))).color(TextColors.AQUA)
+                        Replacement.create("NAME", containerByClass
+                                .map(ConditionContainer::getName).orElse("undefined")))).color(TextColors.AQUA)
                 .append(TextComponent.newline())
                 .append(super.getDescription(localizer))
                 .build();

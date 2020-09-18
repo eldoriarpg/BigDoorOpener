@@ -2,7 +2,7 @@ package de.eldoria.bigdoorsopener.util;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import de.eldoria.bigdoorsopener.core.conditions.BigDoorsOpener;
+import de.eldoria.bigdoorsopener.core.BigDoorsOpener;
 import jdk.nashorn.api.scripting.NashornScriptEngineFactory;
 
 import javax.script.ScriptEngine;

@@ -1,7 +1,7 @@
-package de.eldoria.bigdoorsopener.doors.conditions.item;
+package de.eldoria.bigdoorsopener.conditions.item;
 
-import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
-import de.eldoria.bigdoorsopener.doors.conditions.DoorCondition;
+import de.eldoria.bigdoorsopener.door.ConditionalDoor;
+import de.eldoria.bigdoorsopener.conditions.DoorCondition;
 import de.eldoria.bigdoorsopener.util.C;
 import de.eldoria.bigdoorsopener.util.TextColors;
 import de.eldoria.eldoutilities.crossversion.ServerVersion;

@@ -6,6 +6,7 @@ import de.eldoria.bigdoorsopener.core.scheduler.DoorChecker;
 import de.eldoria.bigdoorsopener.util.Permissions;
 import de.eldoria.eldoutilities.localization.Localizer;
 import de.eldoria.eldoutilities.messages.MessageSender;
+import de.eldoria.eldoutilities.simplecommands.EldoCommand;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.Plugin;
@@ -17,7 +18,7 @@ import java.util.List;
 
 import static de.eldoria.bigdoorsopener.commands.CommandHelper.denyAccess;
 
-public class Reload extends de.eldoria.eldoutilities.simplecommands.EldoCommand {
+public class Reload extends EldoCommand {
     private final Config config;
     private final DoorChecker doorChecker;
     private final Plugin plugin;
