@@ -1,4 +1,4 @@
-package de.eldoria.bigdoorsopener.listener;
+package de.eldoria.bigdoorsopener.core.listener;
 
 import de.eldoria.bigdoorsopener.config.Config;
 import de.eldoria.bigdoorsopener.door.ConditionalDoor;
