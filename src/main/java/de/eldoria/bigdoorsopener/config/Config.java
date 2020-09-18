@@ -4,7 +4,7 @@ import de.eldoria.bigdoorsopener.BigDoorsOpener;
 import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
 import de.eldoria.bigdoorsopener.doors.conditions.ConditionChain;
 import de.eldoria.bigdoorsopener.doors.conditions.location.Proximity;
-import de.eldoria.bigdoorsopener.doors.conditions.standalone.Permission;
+import de.eldoria.bigdoorsopener.doors.conditions.permission.PermissionNode;
 import de.eldoria.bigdoorsopener.doors.conditions.standalone.Time;
 import lombok.Getter;
 import org.bukkit.configuration.ConfigurationSection;
@@ -108,7 +108,7 @@ public class Config {
                 ConditionChain conditionChain = cD.getConditionChain();
 
                 if (tD.getPermission() != null && !tD.getPermission().isEmpty()) {
-                    conditionChain.setPermission(new Permission(tD.getPermission()));
+                    conditionChain.setPermission(new PermissionNode(tD.getPermission()));
                     log.info("Adding permission condition.");
                 }
 

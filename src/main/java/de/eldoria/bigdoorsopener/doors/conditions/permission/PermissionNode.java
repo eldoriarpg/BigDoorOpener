@@ -1,9 +1,8 @@
-package de.eldoria.bigdoorsopener.doors.conditions.standalone;
+package de.eldoria.bigdoorsopener.doors.conditions.permission;
 
 import de.eldoria.bigdoorsopener.doors.ConditionScope;
 import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
 import de.eldoria.bigdoorsopener.doors.conditions.ConditionType;
-import de.eldoria.bigdoorsopener.doors.conditions.DoorCondition;
 import de.eldoria.bigdoorsopener.util.C;
 import de.eldoria.bigdoorsopener.util.TextColors;
 import de.eldoria.eldoutilities.localization.Localizer;
@@ -19,18 +18,18 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Map;
 
 /**
- * A condition which opens the door, when a player has a specifid permission.
+ * A condition which opens the door, when a player has a specific permission.
  */
 @SerializableAs("permissionCondition")
 @ConditionScope(ConditionScope.Scope.PLAYER)
-public class Permission implements DoorCondition {
+public class PermissionNode implements Permission {
     private final String permission;
 
-    public Permission(String permission) {
+    public PermissionNode(String permission) {
         this.permission = permission;
     }
 
-    public Permission(Map<String, Object> map) {
+    public PermissionNode(Map<String, Object> map) {
         TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
         permission = resolvingMap.getValue("permission");
     }
@@ -44,21 +43,16 @@ public class Permission implements DoorCondition {
     public TextComponent getDescription(Localizer localizer) {
         return TextComponent.builder(
                 localizer.getMessage("conditionDesc.type.permission",
-                        Replacement.create("NAME", ConditionType.PERMISSION.conditionName))).color(TextColors.AQUA)
+                        Replacement.create("NAME", ConditionType.PERMISSION_NODE.conditionName))).color(TextColors.AQUA)
                 .append(TextComponent.newline())
-                .append(TextComponent.builder(localizer.getMessage("conditionDesc.permission") + " ").color(C.baseColor))
+                .append(TextComponent.builder(localizer.getMessage("conditionDesc.permissionNode") + " ").color(C.baseColor))
                 .append(TextComponent.builder(permission).color(C.highlightColor))
                 .build();
     }
 
     @Override
     public String getCreationCommand(ConditionalDoor door) {
-        return SET_COMMAND + door.getDoorUID() + " permission " + permission;
-    }
-
-    @Override
-    public String getRemoveCommand(ConditionalDoor door) {
-        return REMOVE_COMMAND + door.getDoorUID() + " permission";
+        return SET_COMMAND + door.getDoorUID() + " permNode " + permission;
     }
 
     @Override
@@ -67,8 +61,8 @@ public class Permission implements DoorCondition {
     }
 
     @Override
-    public Permission clone() {
-        return new Permission(permission);
+    public PermissionNode clone() {
+        return new PermissionNode(permission);
     }
 
     @Override
