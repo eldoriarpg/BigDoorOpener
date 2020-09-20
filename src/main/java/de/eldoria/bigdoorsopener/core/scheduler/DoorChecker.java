@@ -1,13 +1,13 @@
 package de.eldoria.bigdoorsopener.core.scheduler;
 
 import com.google.common.cache.Cache;
+import de.eldoria.bigdoorsopener.conditions.location.Proximity;
 import de.eldoria.bigdoorsopener.config.Config;
 import de.eldoria.bigdoorsopener.core.BigDoorsOpener;
 import de.eldoria.bigdoorsopener.core.adapter.BigDoorsAdapter;
 import de.eldoria.bigdoorsopener.core.events.DoorRegisteredEvent;
 import de.eldoria.bigdoorsopener.core.events.DoorUnregisteredEvent;
 import de.eldoria.bigdoorsopener.door.ConditionalDoor;
-import de.eldoria.bigdoorsopener.conditions.location.Proximity;
 import de.eldoria.bigdoorsopener.util.C;
 import de.eldoria.eldoutilities.functions.TriFunction;
 import de.eldoria.eldoutilities.localization.Localizer;
@@ -52,7 +52,7 @@ public class DoorChecker extends BigDoorsAdapter implements Runnable, Listener {
     }
 
     @EventHandler
-    public void onDoorRegister(DoorRegisteredEvent event){
+    public void onDoorRegister(DoorRegisteredEvent event) {
         if (!doors.contains(event.getDoor())) {
             doors.add(event.getDoor());
         }
@@ -61,16 +61,6 @@ public class DoorChecker extends BigDoorsAdapter implements Runnable, Listener {
     @EventHandler
     public void onDoorUnregister(DoorUnregisteredEvent event) {
         doors.remove(event.getDoor());
-    }
-
-    /**
-     * Unregister a door.
-     *
-     * @param door door to unregister.
-     */
-    @Deprecated
-    public void unregister(ConditionalDoor door) {
-        doors.remove(door);
     }
 
     /**
@@ -104,9 +94,8 @@ public class DoorChecker extends BigDoorsAdapter implements Runnable, Listener {
             assert door != null : "Door is null. How could this happen?";
 
             if (!doorExists(door)) {
-                config.getDoors().remove(door.getDoorUID());
+                config.removeDoor(door.getDoorUID());
                 BigDoorsOpener.logger().info("Door with id " + door.getDoorUID() + " has been deleted. Removing.");
-                config.safeConfig();
                 continue;
             }
 
@@ -124,12 +113,12 @@ public class DoorChecker extends BigDoorsAdapter implements Runnable, Listener {
                 }
             } catch (ExecutionException e) {
                 BigDoorsOpener.logger().log(Level.WARNING,
-                        "A error occured while calculating the chunk cache state. Please report this.", e);
+                        "An error occured while calculating the chunk cache state. Please report this.", e);
                 continue;
             }
 
             // skip busy doors. bcs why should we try to open/close a door we cant open/close
-            if (getCommander().isDoorBusy(door.getDoorUID())) {
+            if (getCommander().isDoorBusy(door.getDoorUID()) || !door.isEnabled()) {
                 continue;
             }
 

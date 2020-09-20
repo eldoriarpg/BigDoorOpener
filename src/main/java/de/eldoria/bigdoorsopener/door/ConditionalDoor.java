@@ -47,6 +47,8 @@ public class ConditionalDoor implements ConfigurationSerializable {
      */
     private final Vector position;
 
+    private boolean enabled = true;
+
     private Instant openTill;
 
     /**
@@ -59,7 +61,6 @@ public class ConditionalDoor implements ConfigurationSerializable {
      */
     private EvaluationType evaluationType = EvaluationType.AND;
 
-    @Getter
     @Nonnull
     private ConditionBag conditionBag;
 
@@ -74,7 +75,6 @@ public class ConditionalDoor implements ConfigurationSerializable {
     /**
      * True if the door was registered in open state.
      */
-    @Getter
     private boolean invertOpen = false;
 
 
@@ -91,9 +91,10 @@ public class ConditionalDoor implements ConfigurationSerializable {
 
     public ConditionalDoor(Map<String, Object> map) {
         TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
-        doorUID = resolvingMap.getValue("doorUID");
+        doorUID = (int) resolvingMap.getValue("doorUID");
         world = resolvingMap.getValue("world");
         position = resolvingMap.getValue("position");
+        enabled = resolvingMap.getValueOrDefault("enabled", true);
         invertOpen = resolvingMap.getValue("invertOpen");
         evaluator = resolvingMap.getValue("evaluator");
         evaluationType = EnumUtil.parse(resolvingMap.getValue("evaluationType"), EvaluationType.class);
@@ -219,6 +220,7 @@ public class ConditionalDoor implements ConfigurationSerializable {
                 .add("doorUID", doorUID)
                 .add("world", world)
                 .add("position", position)
+                .add("enabled", enabled)
                 .add("invertOpen", invertOpen)
                 .add("evaluator", evaluator)
                 .add("evaluationType", evaluationType)
@@ -234,6 +236,11 @@ public class ConditionalDoor implements ConfigurationSerializable {
 
     public void setInvertOpen(boolean invertOpen) {
         this.invertOpen = invertOpen;
+        Bukkit.getPluginManager().callEvent(new DoorModifiedEvent(this));
+    }
+
+    public void setEnabled(Boolean state) {
+        enabled = state;
         Bukkit.getPluginManager().callEvent(new DoorModifiedEvent(this));
     }
 
