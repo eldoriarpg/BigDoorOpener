@@ -1,12 +1,13 @@
 package de.eldoria.bigdoorsopener.door.conditioncollections;
 
+import de.eldoria.bigdoorsopener.conditions.DoorCondition;
 import de.eldoria.bigdoorsopener.conditions.item.Item;
 import de.eldoria.bigdoorsopener.conditions.location.Location;
 import de.eldoria.bigdoorsopener.conditions.permission.Permission;
-import de.eldoria.bigdoorsopener.conditions.standalone.MythicMob;
 import de.eldoria.bigdoorsopener.conditions.standalone.Placeholder;
 import de.eldoria.bigdoorsopener.conditions.standalone.Time;
-import de.eldoria.bigdoorsopener.conditions.standalone.Weather;
+import de.eldoria.bigdoorsopener.conditions.standalone.mythicmobs.MythicMob;
+import de.eldoria.bigdoorsopener.conditions.standalone.weather.Weather;
 import de.eldoria.bigdoorsopener.door.ConditionalDoor;
 import de.eldoria.bigdoorsopener.util.C;
 import de.eldoria.bigdoorsopener.util.ConditionChainEvaluator;
@@ -25,6 +26,9 @@ import java.util.Map;
 
 /**
  * A condition chain represents a set of multiple conditions.
+ *
+ * @deprecated This class is only present for serialization reasons and will be removed in the next major release.
+ * Use {@link ConditionBag} instead
  */
 @Setter
 @Getter
