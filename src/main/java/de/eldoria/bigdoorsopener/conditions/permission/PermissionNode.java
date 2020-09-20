@@ -41,7 +41,7 @@ public class PermissionNode implements Permission {
     }
 
     public static ConditionContainer getConditionContainer() {
-        return ConditionContainer.ofClass(Proximity.class, Scope.PLAYER)
+        return ConditionContainer.ofClass(PermissionNode.class, Scope.PLAYER)
                 .withFactory((player, messageSender, conditionBag, arguments) -> {
                     Localizer localizer = BigDoorsOpener.localizer();
 
@@ -62,7 +62,7 @@ public class PermissionNode implements Permission {
                     }
                     return Collections.emptyList();
                 })
-                .withMeta("permissionNode", "permission", ConditionContainer.Builder.Cost.PLAYER_LOW.cost)
+                .withMeta("permNode", "permission", ConditionContainer.Builder.Cost.PLAYER_LOW.cost)
                 .build();
     }
 

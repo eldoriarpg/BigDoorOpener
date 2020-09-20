@@ -54,7 +54,7 @@ public class SimpleRegion implements Location {
     }
 
     public static ConditionContainer getConditionContainer() {
-        return ConditionContainer.ofClass(Proximity.class, Scope.PLAYER)
+        return ConditionContainer.ofClass(SimpleRegion.class, Scope.PLAYER)
                 .withFactory((player, messageSender, conditionBag, arguments) -> {
                     Localizer localizer = BigDoorsOpener.localizer();
                     messageSender.sendMessage(player, localizer.getMessage("setCondition.firstPoint"));
@@ -127,11 +127,6 @@ public class SimpleRegion implements Location {
     @Override
     public String getCreationCommand(ConditionalDoor door) {
         return SET_COMMAND + door.getDoorUID() + " simpleRegion";
-    }
-
-    @Override
-    public void evaluated() {
-
     }
 
     @Override

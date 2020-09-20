@@ -46,7 +46,7 @@ public class Placeholder implements DoorCondition {
     }
 
     public static ConditionContainer getConditionContainer() {
-        return ConditionContainer.ofClass(Proximity.class, Scope.PLAYER)
+        return ConditionContainer.ofClass(Placeholder.class, Scope.PLAYER)
                 .withFactory((player, messageSender, conditionBag, arguments) -> {
                     Localizer localizer = BigDoorsOpener.localizer();
                     if (!BigDoorsOpener.isPlaceholderEnabled()) {

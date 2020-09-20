@@ -76,7 +76,7 @@ public class Region implements Location {
     }
 
     public static ConditionContainer getConditionContainer() {
-        return ConditionContainer.ofClass(Proximity.class, Scope.PLAYER)
+        return ConditionContainer.ofClass(Region.class, Scope.PLAYER)
                 .withFactory((player, messageSender, conditionBag, arguments) -> {
                     final RegionContainer regionContainer = BigDoorsOpener.getRegionContainer();
                     Localizer localizer = BigDoorsOpener.localizer();
@@ -154,11 +154,6 @@ public class Region implements Location {
     @Override
     public String getCreationCommand(ConditionalDoor door) {
         return SET_COMMAND + door.getDoorUID() + " region " + regionId;
-    }
-
-    @Override
-    public void evaluated() {
-
     }
 
     @Override

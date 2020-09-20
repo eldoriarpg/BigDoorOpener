@@ -1,4 +1,4 @@
-package de.eldoria.bigdoorsopener.conditions.standalone;
+package de.eldoria.bigdoorsopener.conditions.standalone.mythicmobs;
 
 import de.eldoria.bigdoorsopener.core.BigDoorsOpener;
 import de.eldoria.bigdoorsopener.core.conditions.ConditionContainer;
@@ -17,6 +17,7 @@ import io.lumine.xikage.mythicmobs.MythicMobs;
 import io.lumine.xikage.mythicmobs.api.bukkit.events.MythicMobDeathEvent;
 import net.kyori.adventure.text.TextComponent;
 import org.bukkit.World;
+import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
@@ -30,6 +31,7 @@ import java.util.stream.Collectors;
 
 import static de.eldoria.bigdoorsopener.commands.CommandHelper.argumentsInvalid;
 
+@SerializableAs("mythicMobsCondition")
 public class MythicMob implements DoorCondition {
     private final String mobType;
     private boolean state;
@@ -43,7 +45,7 @@ public class MythicMob implements DoorCondition {
     }
 
     public static ConditionContainer getConditionContainer() {
-        return ConditionContainer.ofClass(Proximity.class, Scope.PLAYER)
+        return ConditionContainer.ofClass(MythicMob.class, Scope.PLAYER)
                 .withFactory((player, messageSender, conditionBag, arguments) -> {
                     Localizer localizer = BigDoorsOpener.localizer();
                     if (!BigDoorsOpener.isMythicMobsEnabled()) {

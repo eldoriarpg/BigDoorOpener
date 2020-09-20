@@ -1,4 +1,4 @@
-package de.eldoria.bigdoorsopener.conditions.standalone;
+package de.eldoria.bigdoorsopener.conditions.standalone.weather;
 
 import com.google.common.cache.Cache;
 import de.eldoria.bigdoorsopener.core.BigDoorsOpener;
@@ -9,7 +9,6 @@ import de.eldoria.bigdoorsopener.door.ConditionalDoor;
 import de.eldoria.bigdoorsopener.conditions.DoorCondition;
 import de.eldoria.bigdoorsopener.conditions.DoorState;
 import de.eldoria.bigdoorsopener.conditions.location.Proximity;
-import de.eldoria.bigdoorsopener.conditions.listener.WeatherListener;
 import de.eldoria.bigdoorsopener.util.C;
 import de.eldoria.bigdoorsopener.util.TextColors;
 import de.eldoria.eldoutilities.localization.Localizer;
@@ -62,7 +61,7 @@ public class Weather implements DoorCondition {
     }
 
     public static ConditionContainer getConditionContainer() {
-        return ConditionContainer.ofClass(Proximity.class, Scope.PLAYER)
+        return ConditionContainer.ofClass(Weather.class, Scope.PLAYER)
                 .withFactory((player, messageSender, conditionBag, arguments) -> {
                     Localizer localizer = BigDoorsOpener.localizer();
                     if (argumentsInvalid(player, messageSender, localizer, arguments, 1,

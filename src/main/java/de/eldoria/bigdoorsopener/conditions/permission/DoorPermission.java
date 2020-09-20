@@ -66,7 +66,7 @@ public class DoorPermission extends BigDoorsAdapter implements Permission {
     }
 
     public static ConditionContainer getConditionContainer() {
-        return ConditionContainer.ofClass(Proximity.class, Scope.PLAYER)
+        return ConditionContainer.ofClass(DoorPermission.class, Scope.PLAYER)
                 .withFactory((player, messageSender, conditionBag, arguments) -> {
                     Localizer localizer = BigDoorsOpener.localizer();
                     if (argumentsInvalid(player, messageSender, localizer, arguments, 1,
@@ -91,7 +91,7 @@ public class DoorPermission extends BigDoorsAdapter implements Permission {
                     }
                     return Collections.emptyList();
                 })
-                .withMeta("doorPermission", "permission", ConditionContainer.Builder.Cost.PLAYER_MEDIUM.cost)
+                .withMeta("doorPerm", "permission", ConditionContainer.Builder.Cost.PLAYER_MEDIUM.cost)
                 .build();
     }
 

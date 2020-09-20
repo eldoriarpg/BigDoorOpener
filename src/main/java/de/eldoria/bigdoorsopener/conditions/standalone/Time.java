@@ -75,7 +75,7 @@ public class Time implements DoorCondition {
     }
 
     public static ConditionContainer getConditionContainer() {
-        return ConditionContainer.ofClass(Proximity.class, Scope.PLAYER)
+        return ConditionContainer.ofClass(Time.class, Scope.PLAYER)
                 .withFactory((player, messageSender, conditionBag, arguments) -> {
                     Localizer localizer = BigDoorsOpener.localizer();
                     if (argumentsInvalid(player, messageSender, localizer, arguments, 2,
@@ -147,7 +147,7 @@ public class Time implements DoorCondition {
     }
 
     @Override
-    public Boolean isOpen(@Nullable Player player, World world, @Nullable ConditionalDoor door, boolean currentState) {
+    public Boolean isOpen(@Nullable Player player, World world, ConditionalDoor door, boolean currentState) {
         try {
             return STATE_CACHE.get(door.getDoorUID(), () -> Optional.ofNullable(shouldBeOpen(world.getFullTime()))).orElse(null);
         } catch (ExecutionException e) {

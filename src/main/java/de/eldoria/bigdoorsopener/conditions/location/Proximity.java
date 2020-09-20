@@ -164,10 +164,6 @@ public class Proximity implements Location {
     }
 
     @Override
-    public void evaluated() {
-    }
-
-    @Override
     public Proximity clone() {
         return new Proximity(dimensions, proximityForm);
     }
