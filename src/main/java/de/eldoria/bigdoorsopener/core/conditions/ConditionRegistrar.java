@@ -13,6 +13,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.logging.Level;
 
 import static de.eldoria.bigdoorsopener.conditions.ConditionHelper.serializedName;
 
@@ -39,13 +40,6 @@ public final class ConditionRegistrar {
         }
 
         CONTAINER.put(conditionContainer.getClazz(), conditionContainer);
-        Class<? extends ConfigurationSerializable> clazz = ConfigurationSerialization.getClassByAlias(serializedName(conditionContainer.getClazz()));
-        if (clazz != null) {
-            BigDoorsOpener.logger().warning("Could not register class "
-                    + conditionContainer.getClazz().getPackage() + conditionContainer.getClazz().getPackage()
-                    + ".\nThe serialized name is already used by " + clazz.getPackage() + clazz.getPackage());
-            throw new ConditionRegistrationException(clazz);
-        }
 
         ConfigurationSerialization.registerClass(conditionContainer.getClazz());
     }
