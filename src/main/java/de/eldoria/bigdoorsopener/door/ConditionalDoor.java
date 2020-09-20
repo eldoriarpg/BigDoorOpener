@@ -57,7 +57,7 @@ public class ConditionalDoor implements ConfigurationSerializable {
     /**
      * the type the condition chain uses to evaluate the conditions
      */
-    private EvaluationType evaluationType = EvaluationType.OR;
+    private EvaluationType evaluationType = EvaluationType.AND;
 
     @Getter
     @Nonnull
