@@ -1,12 +1,11 @@
 package de.eldoria.bigdoorsopener.conditions.standalone;
 
+import de.eldoria.bigdoorsopener.conditions.DoorCondition;
 import de.eldoria.bigdoorsopener.core.BigDoorsOpener;
 import de.eldoria.bigdoorsopener.core.conditions.ConditionContainer;
 import de.eldoria.bigdoorsopener.core.conditions.ConditionRegistrar;
 import de.eldoria.bigdoorsopener.core.conditions.Scope;
 import de.eldoria.bigdoorsopener.door.ConditionalDoor;
-import de.eldoria.bigdoorsopener.conditions.DoorCondition;
-import de.eldoria.bigdoorsopener.conditions.location.Proximity;
 import de.eldoria.bigdoorsopener.util.C;
 import de.eldoria.bigdoorsopener.util.JsSyntaxHelper;
 import de.eldoria.bigdoorsopener.util.TextColors;

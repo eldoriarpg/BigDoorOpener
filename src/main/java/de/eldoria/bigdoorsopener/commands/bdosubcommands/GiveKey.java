@@ -1,11 +1,11 @@
 package de.eldoria.bigdoorsopener.commands.bdosubcommands;
 
+import de.eldoria.bigdoorsopener.conditions.DoorCondition;
+import de.eldoria.bigdoorsopener.conditions.item.Item;
 import de.eldoria.bigdoorsopener.config.Config;
 import de.eldoria.bigdoorsopener.core.BigDoorsOpener;
 import de.eldoria.bigdoorsopener.core.adapter.BigDoorsAdapterCommand;
 import de.eldoria.bigdoorsopener.door.ConditionalDoor;
-import de.eldoria.bigdoorsopener.conditions.DoorCondition;
-import de.eldoria.bigdoorsopener.conditions.item.Item;
 import de.eldoria.bigdoorsopener.util.Permissions;
 import de.eldoria.eldoutilities.container.Pair;
 import de.eldoria.eldoutilities.localization.Localizer;

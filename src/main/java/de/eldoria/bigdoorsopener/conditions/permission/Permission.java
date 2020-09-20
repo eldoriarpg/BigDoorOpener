@@ -1,7 +1,7 @@
 package de.eldoria.bigdoorsopener.conditions.permission;
 
-import de.eldoria.bigdoorsopener.door.ConditionalDoor;
 import de.eldoria.bigdoorsopener.conditions.DoorCondition;
+import de.eldoria.bigdoorsopener.door.ConditionalDoor;
 
 public interface Permission extends DoorCondition {
     @Override

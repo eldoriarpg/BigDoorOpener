@@ -1,14 +1,13 @@
 package de.eldoria.bigdoorsopener.conditions.standalone.weather;
 
 import com.google.common.cache.Cache;
+import de.eldoria.bigdoorsopener.conditions.DoorCondition;
+import de.eldoria.bigdoorsopener.conditions.DoorState;
 import de.eldoria.bigdoorsopener.core.BigDoorsOpener;
 import de.eldoria.bigdoorsopener.core.conditions.ConditionContainer;
 import de.eldoria.bigdoorsopener.core.conditions.ConditionRegistrar;
 import de.eldoria.bigdoorsopener.core.conditions.Scope;
 import de.eldoria.bigdoorsopener.door.ConditionalDoor;
-import de.eldoria.bigdoorsopener.conditions.DoorCondition;
-import de.eldoria.bigdoorsopener.conditions.DoorState;
-import de.eldoria.bigdoorsopener.conditions.location.Proximity;
 import de.eldoria.bigdoorsopener.util.C;
 import de.eldoria.bigdoorsopener.util.TextColors;
 import de.eldoria.eldoutilities.localization.Localizer;

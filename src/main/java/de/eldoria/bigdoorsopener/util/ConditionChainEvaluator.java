@@ -1,11 +1,11 @@
 package de.eldoria.bigdoorsopener.util;
 
+import de.eldoria.bigdoorsopener.conditions.DoorCondition;
 import de.eldoria.bigdoorsopener.core.BigDoorsOpener;
 import de.eldoria.bigdoorsopener.core.conditions.ConditionContainer;
 import de.eldoria.bigdoorsopener.core.conditions.ConditionRegistrar;
 import de.eldoria.bigdoorsopener.core.conditions.Scope;
 import de.eldoria.bigdoorsopener.door.ConditionalDoor;
-import de.eldoria.bigdoorsopener.conditions.DoorCondition;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 

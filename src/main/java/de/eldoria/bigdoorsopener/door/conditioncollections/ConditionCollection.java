@@ -1,5 +1,6 @@
 package de.eldoria.bigdoorsopener.door.conditioncollections;
 
+import de.eldoria.bigdoorsopener.conditions.DoorCondition;
 import de.eldoria.bigdoorsopener.door.ConditionalDoor;
 import de.eldoria.bigdoorsopener.util.ConditionChainEvaluator;
 import org.bukkit.World;

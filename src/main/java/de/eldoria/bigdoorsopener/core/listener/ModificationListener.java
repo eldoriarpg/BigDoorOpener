@@ -24,10 +24,12 @@ public class ModificationListener implements Listener {
     public void onDoorModifiedEvent(DoorModifiedEvent event) {
         config.safeConfig();
     }
+
     @EventHandler
     public void onDoorRegisteredEvent(DoorRegisteredEvent event) {
         config.safeConfig();
     }
+
     @EventHandler
     public void onDoorUnregisteredEvent(DoorUnregisteredEvent event) {
         config.safeConfig();

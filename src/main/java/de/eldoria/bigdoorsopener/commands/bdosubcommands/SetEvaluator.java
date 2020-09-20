@@ -33,17 +33,9 @@ import static de.eldoria.bigdoorsopener.commands.CommandHelper.getPlayerFromSend
 
 public class SetEvaluator extends BigDoorsAdapterCommand {
 
+    private static final String[] EVALUATOR_TYPES;
     private final Localizer localizer;
     private final MessageSender messageSender;
-
-    private static final String[] EVALUATOR_TYPES;
-
-
-    public SetEvaluator(BigDoors bigDoors, Config config) {
-        super(bigDoors, config);
-        this.localizer = BigDoorsOpener.localizer();
-        messageSender = BigDoorsOpener.getPluginMessageSender();
-    }
 
     static {
         EVALUATOR_TYPES = Arrays.stream(ConditionalDoor.EvaluationType.values())
@@ -51,6 +43,11 @@ public class SetEvaluator extends BigDoorsAdapterCommand {
                 .toArray(String[]::new);
     }
 
+    public SetEvaluator(BigDoors bigDoors, Config config) {
+        super(bigDoors, config);
+        this.localizer = BigDoorsOpener.localizer();
+        messageSender = BigDoorsOpener.getPluginMessageSender();
+    }
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {

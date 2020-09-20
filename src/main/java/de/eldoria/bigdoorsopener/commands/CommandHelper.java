@@ -1,32 +1,20 @@
 package de.eldoria.bigdoorsopener.commands;
 
 import de.eldoria.bigdoorsopener.core.BigDoorsOpener;
-import de.eldoria.bigdoorsopener.core.adapter.BigDoorsAdapterCommand;
-import de.eldoria.bigdoorsopener.util.C;
-import de.eldoria.bigdoorsopener.util.Permissions;
 import de.eldoria.eldoutilities.localization.Localizer;
 import de.eldoria.eldoutilities.localization.Replacement;
 import de.eldoria.eldoutilities.messages.MessageSender;
-import de.eldoria.eldoutilities.utils.ArrayUtil;
-import nl.pim16aap2.bigDoors.Door;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.logging.Level;
-import java.util.stream.Collectors;
 
 public final class CommandHelper {
     private static final Localizer LOCALIZER;
 
-    private CommandHelper() {
-    }
-
     static {
         LOCALIZER = BigDoorsOpener.localizer();
+    }
+
+    private CommandHelper() {
     }
 
     /**

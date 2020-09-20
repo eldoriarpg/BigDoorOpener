@@ -1,8 +1,7 @@
 package de.eldoria.bigdoorsopener.conditions.standalone.mythicmobs;
 
-import de.eldoria.bigdoorsopener.config.Config;
 import de.eldoria.bigdoorsopener.conditions.DoorCondition;
-import de.eldoria.bigdoorsopener.conditions.standalone.mythicmobs.MythicMob;
+import de.eldoria.bigdoorsopener.config.Config;
 import de.eldoria.bigdoorsopener.core.adapter.BigDoorsAdapter;
 import de.eldoria.eldoutilities.localization.Localizer;
 import io.lumine.xikage.mythicmobs.api.bukkit.events.MythicMobDeathEvent;

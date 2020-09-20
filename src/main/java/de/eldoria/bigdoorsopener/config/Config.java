@@ -1,13 +1,13 @@
 package de.eldoria.bigdoorsopener.config;
 
+import de.eldoria.bigdoorsopener.conditions.location.Proximity;
+import de.eldoria.bigdoorsopener.conditions.permission.PermissionNode;
+import de.eldoria.bigdoorsopener.conditions.standalone.Time;
 import de.eldoria.bigdoorsopener.core.BigDoorsOpener;
 import de.eldoria.bigdoorsopener.core.events.DoorRegisteredEvent;
 import de.eldoria.bigdoorsopener.core.events.DoorUnregisteredEvent;
 import de.eldoria.bigdoorsopener.door.ConditionalDoor;
 import de.eldoria.bigdoorsopener.door.conditioncollections.ConditionBag;
-import de.eldoria.bigdoorsopener.conditions.location.Proximity;
-import de.eldoria.bigdoorsopener.conditions.permission.PermissionNode;
-import de.eldoria.bigdoorsopener.conditions.standalone.Time;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
@@ -258,7 +258,7 @@ public class Config {
     }
 
     public ConditionalDoor computeDoorIfAbsent(Long key, @NotNull Function<? super Long, ? extends ConditionalDoor> mappingFunction) {
-        if(doors.containsKey(key)){
+        if (doors.containsKey(key)) {
             return doors.get(key);
         }
         ConditionalDoor conditionalDoor = doors.computeIfAbsent(key, mappingFunction);

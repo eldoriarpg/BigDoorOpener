@@ -110,6 +110,11 @@ public final class JsSyntaxHelper {
         return new Pair<>(ValidatorResult.FINE, evaluator);
     }
 
+    private static String getPlaceholder() {
+        return String.join("|", ConditionRegistrar.getGroups());
+
+    }
+
     public enum ValidatorResult {
         /**
          * Indicates that the parenthesis on the string are not balanced
@@ -144,10 +149,5 @@ public final class JsSyntaxHelper {
          * Indicates that the syntax is valid and can be used.
          */
         FINE
-    }
-
-    private static String getPlaceholder(){
-        return String.join("|", ConditionRegistrar.getGroups());
-
     }
 }
