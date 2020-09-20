@@ -1,6 +1,7 @@
 package de.eldoria.bigdoorsopener.config;
 
 import de.eldoria.bigdoorsopener.core.BigDoorsOpener;
+import de.eldoria.bigdoorsopener.core.events.DoorRegisteredEvent;
 import de.eldoria.bigdoorsopener.core.events.DoorUnregisteredEvent;
 import de.eldoria.bigdoorsopener.door.ConditionalDoor;
 import de.eldoria.bigdoorsopener.door.conditioncollections.ConditionBag;
@@ -245,15 +246,10 @@ public class Config {
 
     public ConditionalDoor putDoorIfAbsent(Long key, ConditionalDoor value) {
         ConditionalDoor conditionalDoor = doors.putIfAbsent(key, value);
-        safeConfig();
+        Bukkit.getPluginManager().callEvent(new DoorUnregisteredEvent(conditionalDoor));
         return conditionalDoor;
     }
 
-    public boolean removeDoor(Long key, ConditionalDoor value) {
-        boolean remove = doors.remove(key, value);
-        safeConfig();
-        return remove;
-    }
     public boolean removeDoor(Long key) {
         ConditionalDoor remove = doors.remove(key);
         safeConfig();
@@ -262,7 +258,12 @@ public class Config {
     }
 
     public ConditionalDoor computeDoorIfAbsent(Long key, @NotNull Function<? super Long, ? extends ConditionalDoor> mappingFunction) {
-        return doors.computeIfAbsent(key, mappingFunction);
+        if(doors.containsKey(key)){
+            return doors.get(key);
+        }
+        ConditionalDoor conditionalDoor = doors.computeIfAbsent(key, mappingFunction);
+        Bukkit.getPluginManager().callEvent(new DoorRegisteredEvent(conditionalDoor));
+        return conditionalDoor;
     }
 
     public boolean containsDoor(long key) {
