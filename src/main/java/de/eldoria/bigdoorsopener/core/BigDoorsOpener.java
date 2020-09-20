@@ -3,13 +3,7 @@ package de.eldoria.bigdoorsopener.core;
 import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.protection.regions.RegionContainer;
 import de.eldoria.bigdoorsopener.commands.BDOCommand;
-import de.eldoria.bigdoorsopener.config.Config;
-import de.eldoria.bigdoorsopener.config.TimedDoor;
-import de.eldoria.bigdoorsopener.core.conditions.ConditionRegistrar;
-import de.eldoria.bigdoorsopener.core.listener.ModificationListener;
-import de.eldoria.bigdoorsopener.door.ConditionalDoor;
-import de.eldoria.bigdoorsopener.door.conditioncollections.ConditionBag;
-import de.eldoria.bigdoorsopener.door.conditioncollections.ConditionChain;
+import de.eldoria.bigdoorsopener.conditions.item.ItemConditionListener;
 import de.eldoria.bigdoorsopener.conditions.item.ItemHolding;
 import de.eldoria.bigdoorsopener.conditions.item.ItemOwning;
 import de.eldoria.bigdoorsopener.conditions.item.interacting.ItemBlock;
@@ -19,16 +13,22 @@ import de.eldoria.bigdoorsopener.conditions.location.Region;
 import de.eldoria.bigdoorsopener.conditions.location.SimpleRegion;
 import de.eldoria.bigdoorsopener.conditions.permission.DoorPermission;
 import de.eldoria.bigdoorsopener.conditions.permission.PermissionNode;
-import de.eldoria.bigdoorsopener.conditions.standalone.MythicMob;
 import de.eldoria.bigdoorsopener.conditions.standalone.Placeholder;
 import de.eldoria.bigdoorsopener.conditions.standalone.Time;
-import de.eldoria.bigdoorsopener.conditions.standalone.Weather;
+import de.eldoria.bigdoorsopener.conditions.standalone.mythicmobs.MythicMob;
+import de.eldoria.bigdoorsopener.conditions.standalone.mythicmobs.MythicMobsListener;
+import de.eldoria.bigdoorsopener.conditions.standalone.weather.Weather;
+import de.eldoria.bigdoorsopener.conditions.standalone.weather.WeatherListener;
+import de.eldoria.bigdoorsopener.config.Config;
+import de.eldoria.bigdoorsopener.config.TimedDoor;
+import de.eldoria.bigdoorsopener.core.conditions.ConditionRegistrar;
 import de.eldoria.bigdoorsopener.core.listener.DoorOpenedListener;
-import de.eldoria.bigdoorsopener.conditions.listener.ItemConditionListener;
-import de.eldoria.bigdoorsopener.conditions.listener.MythicMobsListener;
-import de.eldoria.bigdoorsopener.conditions.listener.WeatherListener;
+import de.eldoria.bigdoorsopener.core.listener.ModificationListener;
 import de.eldoria.bigdoorsopener.core.listener.registration.RegisterInteraction;
 import de.eldoria.bigdoorsopener.core.scheduler.DoorChecker;
+import de.eldoria.bigdoorsopener.door.ConditionalDoor;
+import de.eldoria.bigdoorsopener.door.conditioncollections.ConditionBag;
+import de.eldoria.bigdoorsopener.door.conditioncollections.ConditionChain;
 import de.eldoria.bigdoorsopener.util.CachingJSEngine;
 import de.eldoria.eldoutilities.container.Pair;
 import de.eldoria.eldoutilities.crossversion.ServerVersion;
@@ -135,6 +135,9 @@ public class BigDoorsOpener extends JavaPlugin {
             instance = this;
             logger = this.getLogger();
 
+            // Load external resources. Must be loaded first.
+            loadExternalSources();
+
             buildSerializer();
 
             // create config
@@ -152,10 +155,6 @@ public class BigDoorsOpener extends JavaPlugin {
 
             //enable metrics
             enableMetrics();
-
-            // Load external resources.
-            loadExternalSources();
-
 
 
             MessageSender.create(this, "§6[BDO] ", '2', 'c');
@@ -196,6 +195,9 @@ public class BigDoorsOpener extends JavaPlugin {
         pm.registerEvents(new DoorOpenedListener(config), this);
         pm.registerEvents(doorChecker, this);
         pm.registerEvents(new ModificationListener(config), this);
+        if (isMythicMobsEnabled()) {
+            pm.registerEvents(new MythicMobsListener(doors, localizer, config), this);
+        }
     }
 
     @SuppressWarnings( {"AssignmentToStaticFieldFromInstanceMethod", "VariableNotUsedInsideIf"})
@@ -249,7 +251,6 @@ public class BigDoorsOpener extends JavaPlugin {
         if (Bukkit.getPluginManager().isPluginEnabled("MythicMobs")) {
             mythicMobsEnabled = true;
             logger().info("MythicMobs found. Enabling mythic mobs listener.");
-            pm.registerEvents(new MythicMobsListener(doors, localizer, config), this);
         } else {
             logger().info("MythicMobs not found. MythicMobs conditions are disabled.");
         }
