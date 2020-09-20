@@ -1,10 +1,12 @@
 package de.eldoria.bigdoorsopener.door.conditioncollections;
 
+import de.eldoria.bigdoorsopener.conditions.DoorCondition;
 import de.eldoria.bigdoorsopener.core.conditions.ConditionContainer;
 import de.eldoria.bigdoorsopener.core.conditions.ConditionGroup;
 import de.eldoria.bigdoorsopener.core.conditions.ConditionRegistrar;
 import de.eldoria.bigdoorsopener.core.conditions.Scope;
 import de.eldoria.bigdoorsopener.core.events.ConditionBagModifiedEvent;
+import de.eldoria.bigdoorsopener.core.exceptions.ConditionCreationException;
 import de.eldoria.bigdoorsopener.door.ConditionalDoor;
 import de.eldoria.eldoutilities.serialization.SerializationUtil;
 import de.eldoria.eldoutilities.serialization.TypeResolvingMap;
@@ -55,7 +57,7 @@ public class ConditionBag implements ConditionCollection {
     public void putCondition(DoorCondition condition) {
         Optional<ConditionContainer> containerByClass = ConditionRegistrar.getContainerByClass(condition.getClass());
         if (!containerByClass.isPresent()) {
-            throw new ConditionCreationException("The requested condition is not registered");
+            throw new ConditionCreationException("The requested condition " + condition.getClass().getName() + "is not registered");
         }
         ConditionContainer container = containerByClass.get();
         if (container.getScope() == Scope.PLAYER) {
