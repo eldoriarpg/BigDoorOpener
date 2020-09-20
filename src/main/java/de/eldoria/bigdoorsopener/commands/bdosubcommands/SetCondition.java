@@ -110,7 +110,7 @@ public class SetCondition extends BigDoorsAdapterCommand {
             return ArrayUtil.startingWithInArray(args[1], ConditionRegistrar.getConditions().toArray(new String[0])).collect(Collectors.toList());
         }
 
-        Optional<ConditionContainer> conditionByName = ConditionRegistrar.getConditionByName(args[2]);
+        Optional<ConditionContainer> conditionByName = ConditionRegistrar.getConditionByName(args[1]);
 
         if (!conditionByName.isPresent()) {
             return Collections.singletonList(localizer.getMessage("error.invalidConditionType"));
@@ -122,6 +122,6 @@ public class SetCondition extends BigDoorsAdapterCommand {
             return Collections.singletonList(localizer.getMessage("error.permission",
                     Replacement.create("PERMISSION", Permissions.getConditionPermission(container.getGroup()) + ", " + Permissions.ALL_CONDITION)));
         }
-        return Collections.emptyList();
+        return container.onTabComplete(sender, localizer, Arrays.copyOfRange(args, 2, args.length));
     }
 }

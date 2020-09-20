@@ -13,6 +13,7 @@ import de.eldoria.bigdoorsopener.commands.bdosubcommands.Reload;
 import de.eldoria.bigdoorsopener.commands.bdosubcommands.RemoveCondition;
 import de.eldoria.bigdoorsopener.commands.bdosubcommands.SetCondition;
 import de.eldoria.bigdoorsopener.commands.bdosubcommands.SetEvaluator;
+import de.eldoria.bigdoorsopener.commands.bdosubcommands.SetState;
 import de.eldoria.bigdoorsopener.commands.bdosubcommands.StayOpen;
 import de.eldoria.bigdoorsopener.commands.bdosubcommands.Unregister;
 import de.eldoria.bigdoorsopener.config.Config;
@@ -55,6 +56,7 @@ public class BDOCommand extends de.eldoria.eldoutilities.simplecommands.EldoComm
         registerCommand("setEvaluator", new SetEvaluator(doors, config));
         registerCommand("stayOpen", new StayOpen(doors, config));
         registerCommand("unregister", new Unregister(doors, config));
+        registerCommand("setState", new SetState(doors, config));
     }
 
     @Override

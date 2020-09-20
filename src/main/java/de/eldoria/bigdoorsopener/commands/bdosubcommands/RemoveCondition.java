@@ -111,8 +111,8 @@ public class RemoveCondition extends BigDoorsAdapterCommand {
         if (args.length == 1) {
             return getDoorCompletion(sender, args[0]);
         }
-        if (args.length == 3) {
-            return ArrayUtil.startingWithInArray(args[2], ConditionRegistrar.getGroups().toArray(new String[0])).collect(Collectors.toList());
+        if (args.length == 2) {
+            return ArrayUtil.startingWithInArray(args[1], ConditionRegistrar.getGroups().toArray(new String[0])).collect(Collectors.toList());
         }
         return Collections.emptyList();
     }

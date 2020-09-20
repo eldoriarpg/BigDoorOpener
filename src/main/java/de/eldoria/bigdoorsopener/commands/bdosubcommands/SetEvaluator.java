@@ -142,7 +142,7 @@ public class SetEvaluator extends BigDoorsAdapterCommand {
             return ArrayUtil.startingWithInArray(args[1], EVALUATOR_TYPES).collect(Collectors.toList());
         }
 
-        ConditionalDoor.EvaluationType parse = EnumUtil.parse(args[2], ConditionalDoor.EvaluationType.class);
+        ConditionalDoor.EvaluationType parse = EnumUtil.parse(args[1], ConditionalDoor.EvaluationType.class);
 
         if (parse == null) {
             return Collections.singletonList(localizer.getMessage("error.invalidEvaluationType"));
@@ -154,8 +154,8 @@ public class SetEvaluator extends BigDoorsAdapterCommand {
                         Replacement.create("PERMISSION", Permissions.CUSTOM_EVALUATOR)));
             }
             ArrayList<String> list = new ArrayList<>(ConditionRegistrar.getGroups());
-            list.add("<" + localizer.getMessage("tabcomplete.validValues") + ">");
             list.add("currentState");
+            list.add("<" + localizer.getMessage("tabcomplete.validValues") + ">");
             return list;
         }
         return Collections.emptyList();
