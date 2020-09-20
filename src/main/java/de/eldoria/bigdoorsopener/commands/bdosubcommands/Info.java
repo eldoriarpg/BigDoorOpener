@@ -11,6 +11,7 @@ import de.eldoria.bigdoorsopener.util.Permissions;
 import de.eldoria.bigdoorsopener.util.TextColors;
 import de.eldoria.eldoutilities.container.Pair;
 import de.eldoria.eldoutilities.localization.Localizer;
+import de.eldoria.eldoutilities.utils.Parser;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
@@ -65,6 +66,9 @@ public class Info extends BigDoorsAdapterCommand {
                 .append(TextComponent.builder("(Id:" + door.second.getDoorUID() + ") ").decoration(TextDecoration.BOLD, true)).color(C.highlightColor)
                 .append(TextComponent.builder(localizer.getMessage("info.info")).color(C.baseColor).decoration(TextDecoration.BOLD, true))
                 .append(TextComponent.newline()).decoration(TextDecoration.BOLD, false)
+                .append(TextComponent.builder(localizer.getMessage("info.state") + " ").color(C.baseColor))
+                .append(TextComponent.builder(localizer.getMessage(cDoor.isEnabled() ? "info.state.enabled" : "info.state.disabled")).color(C.highlightColor))
+                .append(TextComponent.newline())
                 .append(TextComponent.builder(localizer.getMessage("info.world") + " ").color(C.baseColor))
                 .append(TextComponent.builder(cDoor.getWorld()).color(C.highlightColor))
                 .append(TextComponent.newline()
