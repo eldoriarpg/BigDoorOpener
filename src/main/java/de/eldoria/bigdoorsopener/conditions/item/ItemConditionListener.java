@@ -1,8 +1,8 @@
-package de.eldoria.bigdoorsopener.conditions.listener;
+package de.eldoria.bigdoorsopener.conditions.item;
 
-import de.eldoria.bigdoorsopener.config.Config;
 import de.eldoria.bigdoorsopener.conditions.DoorCondition;
 import de.eldoria.bigdoorsopener.conditions.item.interacting.ItemInteraction;
+import de.eldoria.bigdoorsopener.config.Config;
 import de.eldoria.bigdoorsopener.core.adapter.BigDoorsAdapter;
 import de.eldoria.eldoutilities.localization.Localizer;
 import nl.pim16aap2.bigDoors.BigDoors;
@@ -26,6 +26,7 @@ public class ItemConditionListener extends BigDoorsAdapter implements Listener {
     @EventHandler
     public void onItemInteract(PlayerInteractEvent event) {
         config.getDoors().forEach(d -> {
+            if (!d.isEnabled()) return;
             Optional<DoorCondition> item = d.getConditionBag().getCondition("item");
             if ((!item.isPresent())) return;
             if (item.get() instanceof ItemInteraction) {

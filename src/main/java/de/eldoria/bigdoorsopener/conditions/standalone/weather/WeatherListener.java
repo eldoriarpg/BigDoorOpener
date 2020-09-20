@@ -1,4 +1,4 @@
-package de.eldoria.bigdoorsopener.conditions.listener;
+package de.eldoria.bigdoorsopener.conditions.standalone.weather;
 
 import org.bukkit.World;
 import org.bukkit.event.EventHandler;
