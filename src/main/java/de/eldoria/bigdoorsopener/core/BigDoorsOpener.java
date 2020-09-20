@@ -2,31 +2,33 @@ package de.eldoria.bigdoorsopener.core;
 
 import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.protection.regions.RegionContainer;
-import de.eldoria.bigdoorsopener.commands.BigDoorsOpenerCommand;
+import de.eldoria.bigdoorsopener.commands.BDOCommand;
 import de.eldoria.bigdoorsopener.config.Config;
 import de.eldoria.bigdoorsopener.config.TimedDoor;
 import de.eldoria.bigdoorsopener.core.conditions.ConditionRegistrar;
-import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
-import de.eldoria.bigdoorsopener.doors.conditions.ConditionChain;
-import de.eldoria.bigdoorsopener.doors.conditions.item.ItemHolding;
-import de.eldoria.bigdoorsopener.doors.conditions.item.ItemOwning;
-import de.eldoria.bigdoorsopener.doors.conditions.item.interacting.ItemBlock;
-import de.eldoria.bigdoorsopener.doors.conditions.item.interacting.ItemClick;
-import de.eldoria.bigdoorsopener.doors.conditions.location.Proximity;
-import de.eldoria.bigdoorsopener.doors.conditions.location.Region;
-import de.eldoria.bigdoorsopener.doors.conditions.location.SimpleRegion;
-import de.eldoria.bigdoorsopener.doors.conditions.permission.DoorPermission;
-import de.eldoria.bigdoorsopener.doors.conditions.permission.PermissionNode;
-import de.eldoria.bigdoorsopener.doors.conditions.standalone.MythicMob;
-import de.eldoria.bigdoorsopener.doors.conditions.standalone.Placeholder;
-import de.eldoria.bigdoorsopener.doors.conditions.standalone.Time;
-import de.eldoria.bigdoorsopener.doors.conditions.standalone.Weather;
-import de.eldoria.bigdoorsopener.listener.DoorOpenedListener;
-import de.eldoria.bigdoorsopener.listener.ItemConditionListener;
-import de.eldoria.bigdoorsopener.listener.MythicMobsListener;
-import de.eldoria.bigdoorsopener.listener.WeatherListener;
-import de.eldoria.bigdoorsopener.listener.registration.RegisterInteraction;
-import de.eldoria.bigdoorsopener.scheduler.DoorChecker;
+import de.eldoria.bigdoorsopener.core.listener.ModificationListener;
+import de.eldoria.bigdoorsopener.door.ConditionalDoor;
+import de.eldoria.bigdoorsopener.door.conditioncollections.ConditionBag;
+import de.eldoria.bigdoorsopener.door.conditioncollections.ConditionChain;
+import de.eldoria.bigdoorsopener.conditions.item.ItemHolding;
+import de.eldoria.bigdoorsopener.conditions.item.ItemOwning;
+import de.eldoria.bigdoorsopener.conditions.item.interacting.ItemBlock;
+import de.eldoria.bigdoorsopener.conditions.item.interacting.ItemClick;
+import de.eldoria.bigdoorsopener.conditions.location.Proximity;
+import de.eldoria.bigdoorsopener.conditions.location.Region;
+import de.eldoria.bigdoorsopener.conditions.location.SimpleRegion;
+import de.eldoria.bigdoorsopener.conditions.permission.DoorPermission;
+import de.eldoria.bigdoorsopener.conditions.permission.PermissionNode;
+import de.eldoria.bigdoorsopener.conditions.standalone.MythicMob;
+import de.eldoria.bigdoorsopener.conditions.standalone.Placeholder;
+import de.eldoria.bigdoorsopener.conditions.standalone.Time;
+import de.eldoria.bigdoorsopener.conditions.standalone.Weather;
+import de.eldoria.bigdoorsopener.core.listener.DoorOpenedListener;
+import de.eldoria.bigdoorsopener.conditions.listener.ItemConditionListener;
+import de.eldoria.bigdoorsopener.conditions.listener.MythicMobsListener;
+import de.eldoria.bigdoorsopener.conditions.listener.WeatherListener;
+import de.eldoria.bigdoorsopener.core.listener.registration.RegisterInteraction;
+import de.eldoria.bigdoorsopener.core.scheduler.DoorChecker;
 import de.eldoria.bigdoorsopener.util.CachingJSEngine;
 import de.eldoria.eldoutilities.container.Pair;
 import de.eldoria.eldoutilities.crossversion.ServerVersion;
@@ -112,6 +114,10 @@ public class BigDoorsOpener extends JavaPlugin {
         return instance.localizer;
     }
 
+    public static MessageSender getPluginMessageSender() {
+        return MessageSender.get(instance);
+    }
+
     @Override
     public void onDisable() {
         super.onDisable();
@@ -150,7 +156,6 @@ public class BigDoorsOpener extends JavaPlugin {
             // Load external resources.
             loadExternalSources();
 
-            registerListener();
 
 
             MessageSender.create(this, "§6[BDO] ", '2', 'c');
@@ -159,8 +164,10 @@ public class BigDoorsOpener extends JavaPlugin {
             doorChecker = new DoorChecker(config, doors, localizer);
             scheduler.scheduleSyncRepeatingTask(this, doorChecker, 100, 1);
 
+            registerListener();
+
             registerCommand("bigdoorsopener",
-                    new BigDoorsOpenerCommand(this, doors, config, localizer, doorChecker, registerInteraction));
+                    new BDOCommand(this, doors, config, doorChecker));
         }
 
         if (initialized) {
@@ -187,6 +194,8 @@ public class BigDoorsOpener extends JavaPlugin {
         pm.registerEvents(registerInteraction, this);
         pm.registerEvents(new ItemConditionListener(doors, localizer, config), this);
         pm.registerEvents(new DoorOpenedListener(config), this);
+        pm.registerEvents(doorChecker, this);
+        pm.registerEvents(new ModificationListener(config), this);
     }
 
     @SuppressWarnings( {"AssignmentToStaticFieldFromInstanceMethod", "VariableNotUsedInsideIf"})
@@ -255,7 +264,8 @@ public class BigDoorsOpener extends JavaPlugin {
     private void buildSerializer() {
         ConfigurationSerialization.registerClass(TimedDoor.class, "timedDoor");
         ConfigurationSerialization.registerClass(ConditionChain.class, "conditionChain");
-        ConfigurationSerialization.registerClass(ConditionalDoor.class, "conditionalDoor");
+        ConfigurationSerialization.registerClass(ConditionBag.class);
+        ConfigurationSerialization.registerClass(ConditionalDoor.class);
         ConditionRegistrar.registerCondition(ItemBlock.getConditionContainer());
         ConditionRegistrar.registerCondition(ItemClick.getConditionContainer());
         ConditionRegistrar.registerCondition(ItemHolding.getConditionContainer());
@@ -303,7 +313,7 @@ public class BigDoorsOpener extends JavaPlugin {
         // This will probably help to decide which should be developed further.
         metrics.addCustomChart(new Metrics.AdvancedPie("condition_types", () -> {
             Map<String, Integer> counts = new HashMap<>();
-            Collection<ConditionalDoor> values = config.getDoors().values();
+            Collection<ConditionalDoor> values = config.getDoors();
             for (String group : ConditionRegistrar.getGroups()) {
                 ConditionRegistrar.getConditionGroup(group).ifPresent(g ->
                         counts.put(group, (int) values.parallelStream().filter(d -> d.getConditionBag().isConditionSet(g)).count()));

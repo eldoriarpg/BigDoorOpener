@@ -1,7 +1,7 @@
-package de.eldoria.bigdoorsopener.scheduler;
+package de.eldoria.bigdoorsopener.core.adapter;
 
-import de.eldoria.bigdoorsopener.core.conditions.BigDoorsOpener;
-import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
+import de.eldoria.bigdoorsopener.core.BigDoorsOpener;
+import de.eldoria.bigdoorsopener.door.ConditionalDoor;
 import de.eldoria.eldoutilities.localization.Localizer;
 import de.eldoria.eldoutilities.localization.Replacement;
 import lombok.Getter;
@@ -27,10 +27,10 @@ public abstract class BigDoorsAdapter {
     private final Server server = Bukkit.getServer();
     private final Localizer localizer;
 
-    public BigDoorsAdapter(BigDoors bigDoors, Localizer localizer) {
+    public BigDoorsAdapter(BigDoors bigDoors) {
         this.bigDoors = bigDoors;
         commander = bigDoors.getCommander();
-        this.localizer = localizer;
+        this.localizer = BigDoorsOpener.localizer();
     }
 
     /**

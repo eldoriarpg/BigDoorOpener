@@ -13,7 +13,7 @@ public final class ConditionHelper {
      * @return serialized name of class
      * @throws IllegalStateException when the annotation is not present.
      */
-    public static String serializedName(Class<? extends DoorCondition> condition) {
+    public static String serializedName(Class<? extends DoorCondition> condition) throws IllegalStateException{
         if (!condition.isAnnotationPresent(SerializableAs.class)) {
             throw new IllegalStateException("Missing serialization annotation in class " + condition.getName());
         }
