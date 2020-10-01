@@ -6,6 +6,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import net.kyori.adventure.text.format.TextColor;
 
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
@@ -13,6 +14,10 @@ import java.util.function.Function;
  * Pure utility class to save some global constants.
  */
 public final class C {
+    /**
+     * A chaotic cache. Handle with care. ANARCHY!
+     */
+    public static final Cache<String, List<?>> PLUGIN_CACHE = C.getExpiringCache(30, TimeUnit.SECONDS);
     public static TextColor baseColor = TextColor.of(0, 170, 0);
     public static TextColor highlightColor = TextColor.of(255, 170, 0);
 
