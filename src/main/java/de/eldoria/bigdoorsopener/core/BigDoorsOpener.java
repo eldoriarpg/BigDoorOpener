@@ -34,7 +34,7 @@ import de.eldoria.eldoutilities.container.Pair;
 import de.eldoria.eldoutilities.crossversion.ServerVersion;
 import de.eldoria.eldoutilities.localization.Localizer;
 import de.eldoria.eldoutilities.messages.MessageSender;
-import de.eldoria.eldoutilities.updater.UpdateChecker;
+import de.eldoria.eldoutilities.updater.SpigotUpdateChecker;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import nl.pim16aap2.bigDoors.BigDoors;
@@ -147,7 +147,7 @@ public class BigDoorsOpener extends JavaPlugin {
 
             // Check for updates
             if (config.isCheckUpdates()) {
-                UpdateChecker.performAndNotifyUpdateCheck(this, 80805, true);
+                SpigotUpdateChecker.performAndNotifyUpdateCheck(this, 80805, true);
             }
 
             localizer = new Localizer(this, config.getLanguage(), "messages",
@@ -177,7 +177,7 @@ public class BigDoorsOpener extends JavaPlugin {
     }
 
     private void registerCommand(String command, TabExecutor executor) {
-        PluginCommand cmd = getCommand("bigdoorsopener");
+        PluginCommand cmd = getCommand(command);
         if (cmd != null) {
             cmd.setExecutor(executor);
             return;

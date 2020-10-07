@@ -116,7 +116,7 @@ public class Info extends BigDoorsAdapterCommand {
                             .clickEvent(ClickEvent.suggestCommand(condition.getCreationCommand(cDoor))));
         }
 
-        bukkitAudiences.audience(sender).sendMessage(builder.build());
+        bukkitAudiences.sender(sender).sendMessage(builder.build());
         return true;
 
     }
