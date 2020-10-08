@@ -85,7 +85,7 @@ public class MythicMob implements DoorCondition {
                         BigDoorsOpener.logger().log(Level.WARNING, "Could not build mob names.", e);
                         return Collections.emptyList();
                     }
-                    return ArrayUtil.startingWithInArray(args[3], mythicMobs.toArray(new String[0])).collect(Collectors.toList());
+                    return ArrayUtil.startingWithInArray(args[0], mythicMobs.toArray(new String[0])).collect(Collectors.toList());
                 })
                 .withMeta("mythicMob", ConditionContainer.Builder.Cost.WORLD_LOW.cost)
                 .build();
@@ -93,7 +93,7 @@ public class MythicMob implements DoorCondition {
 
     @Override
     public Boolean isOpen(Player player, World world, ConditionalDoor door, boolean currentState) {
-        if (BigDoorsOpener.isPlaceholderEnabled()) {
+        if (BigDoorsOpener.isMythicMobsEnabled()) {
             return state;
         }
         BigDoorsOpener.logger().warning("A mythic mobs condition on door " + door.getDoorUID() + " was called but MythicMobs is not active.");
