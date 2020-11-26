@@ -9,6 +9,7 @@ import de.eldoria.eldoutilities.serialization.SerializationUtil;
 import de.eldoria.eldoutilities.serialization.TypeResolvingMap;
 import de.eldoria.eldoutilities.utils.EnumUtil;
 import lombok.Getter;
+import nl.pim16aap2.bigDoors.Door;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
@@ -33,7 +34,7 @@ import static java.time.temporal.ChronoUnit.SECONDS;
 @SerializableAs("conditionalDoor")
 public class ConditionalDoor implements ConfigurationSerializable {
     /**
-     * UID of the door from {@link nl.pim16aap2.bigDoors.Door}.
+     * UID of the door from {@link Door}.
      */
     private final long doorUID;
 
@@ -103,7 +104,7 @@ public class ConditionalDoor implements ConfigurationSerializable {
             conditionBag = new ConditionBag();
             conditionChain.getConditions().stream().filter(java.util.Objects::nonNull).forEach(c -> conditionBag.putCondition(c));
         } else {
-            conditionBag = resolvingMap.getValue("conditionBag");
+            conditionBag = resolvingMap.getValueOrDefault("conditionBag", new ConditionBag());
         }
         stayOpen = resolvingMap.getValue("stayOpen");
     }

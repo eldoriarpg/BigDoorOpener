@@ -122,4 +122,8 @@ public class ItemClick extends ItemInteraction {
         return SET_COMMAND + door.getDoorUID() + " itemClick " + getItem().getAmount() + " " + isConsumed();
     }
 
+    @Override
+    public ItemClick clone() {
+        return new ItemClick(getItem().clone(), isConsumed());
+    }
 }

@@ -239,7 +239,5 @@ public abstract class Item implements DoorCondition {
 	}
 
 	@Override
-	public Item clone() {
-		return new ItemOwning(getItem(), isConsumed());
-	}
+	public abstract Item clone();
 }
