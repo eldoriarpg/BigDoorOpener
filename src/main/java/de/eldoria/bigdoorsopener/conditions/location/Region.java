@@ -11,13 +11,12 @@ import de.eldoria.bigdoorsopener.core.conditions.ConditionRegistrar;
 import de.eldoria.bigdoorsopener.core.conditions.Scope;
 import de.eldoria.bigdoorsopener.door.ConditionalDoor;
 import de.eldoria.bigdoorsopener.util.C;
-import de.eldoria.bigdoorsopener.util.TextColors;
+import de.eldoria.eldoutilities.localization.ILocalizer;
 import de.eldoria.eldoutilities.localization.Localizer;
 import de.eldoria.eldoutilities.localization.Replacement;
 import de.eldoria.eldoutilities.serialization.SerializationUtil;
 import de.eldoria.eldoutilities.serialization.TypeResolvingMap;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
@@ -81,7 +80,7 @@ public class Region implements Location {
         return ConditionContainer.ofClass(Region.class, Scope.PLAYER)
                 .withFactory((player, messageSender, conditionBag, arguments) -> {
                     final RegionContainer regionContainer = BigDoorsOpener.getRegionContainer();
-                    Localizer localizer = BigDoorsOpener.localizer();
+                    ILocalizer localizer = BigDoorsOpener.localizer();
                     if (regionContainer == null) {
                         messageSender.sendError(player, localizer.getMessage("error.wgNotEnabled"));
                         return;
@@ -137,7 +136,7 @@ public class Region implements Location {
     }
 
     @Override
-    public Component getDescription(Localizer localizer) {
+    public Component getDescription(ILocalizer localizer) {
         Optional<ConditionContainer> containerByClass = ConditionRegistrar.getContainerByClass(getClass());
 
         return Component.text(

@@ -6,6 +6,7 @@ import de.eldoria.bigdoorsopener.util.C;
 import de.eldoria.eldoutilities.crossversion.ServerVersion;
 import de.eldoria.eldoutilities.crossversion.function.VersionFunction;
 import de.eldoria.eldoutilities.crossversion.functionbuilder.VersionFunctionBuilder;
+import de.eldoria.eldoutilities.localization.ILocalizer;
 import de.eldoria.eldoutilities.localization.Localizer;
 import de.eldoria.eldoutilities.serialization.SerializationUtil;
 import lombok.Getter;
@@ -78,7 +79,7 @@ public abstract class Item implements DoorCondition {
 		this.consumed = consumed;
 	}
 
-	public static List<String> onTabComplete(CommandSender sender, Localizer localizer, String[] args) {
+	public static List<String> onTabComplete(CommandSender sender, ILocalizer localizer, String[] args) {
 		if (args.length == 1) {
 			return Collections.singletonList("<" + localizer.getMessage("syntax.amount") + ">");
 		}
@@ -204,7 +205,7 @@ public abstract class Item implements DoorCondition {
 	}
 
 	@Override
-	public Component getDescription(Localizer localizer) {
+	public Component getDescription(ILocalizer localizer) {
 		ItemMeta meta = item.getItemMeta();
 		TextComponent.Builder builder = Component.text();
 		if (meta != null) {

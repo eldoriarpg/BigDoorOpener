@@ -7,6 +7,7 @@ import de.eldoria.bigdoorsopener.core.conditions.ConditionRegistrar;
 import de.eldoria.bigdoorsopener.core.conditions.Scope;
 import de.eldoria.bigdoorsopener.door.ConditionalDoor;
 import de.eldoria.bigdoorsopener.util.C;
+import de.eldoria.eldoutilities.localization.ILocalizer;
 import de.eldoria.eldoutilities.localization.Localizer;
 import de.eldoria.eldoutilities.localization.Replacement;
 import de.eldoria.eldoutilities.serialization.SerializationUtil;
@@ -29,6 +30,7 @@ import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 import static de.eldoria.bigdoorsopener.commands.CommandHelper.argumentsInvalid;
+import static de.eldoria.bigdoorsopener.conditions.DoorCondition.*;
 
 @SerializableAs("mythicMobsCondition")
 public class MythicMob implements DoorCondition {
@@ -46,16 +48,15 @@ public class MythicMob implements DoorCondition {
 	public static ConditionContainer getConditionContainer() {
 		return ConditionContainer.ofClass(MythicMob.class, Scope.PLAYER)
 				.withFactory((player, messageSender, conditionBag, arguments) -> {
-					Localizer localizer = BigDoorsOpener.localizer();
 					if (!BigDoorsOpener.isMythicMobsEnabled()) {
-						messageSender.sendError(player, localizer.getMessage("error.mythicMob"));
+						messageSender.sendError(player, localizer().getMessage("error.mythicMob"));
 						return;
 					}
 
-					if (argumentsInvalid(player, messageSender, localizer, arguments, 1,
-							"<" + localizer.getMessage("syntax.doorId") + "> <"
-									+ localizer.getMessage("syntax.condition") + "> <"
-									+ localizer.getMessage("syntax.mobType") + ">")) {
+					if (argumentsInvalid(player, messageSender, localizer(), arguments, 1,
+							"<" + localizer().getMessage("syntax.doorId") + "> <"
+									+ localizer().getMessage("syntax.condition") + "> <"
+									+ localizer().getMessage("syntax.mobType") + ">")) {
 						return;
 					}
 
@@ -64,12 +65,12 @@ public class MythicMob implements DoorCondition {
 					boolean exists = MythicMobs.inst().getAPIHelper().getMythicMob(mob) != null;
 
 					if (!exists) {
-						messageSender.sendError(player, localizer.getMessage("error.invalidMob"));
+						messageSender.sendError(player, localizer().getMessage("error.invalidMob"));
 						return;
 					}
 
 					conditionBag.putCondition(new MythicMob(mob));
-					messageSender.sendMessage(player, localizer.getMessage("setCondition.mythicMob"));
+					messageSender.sendMessage(player, localizer().getMessage("setCondition.mythicMob"));
 
 				})
 				.onTabComplete((sender, localizer, args) -> {
@@ -105,15 +106,15 @@ public class MythicMob implements DoorCondition {
 	}
 
 	@Override
-	public Component getDescription(Localizer localizer) {
+	public Component getDescription(ILocalizer localizer) {
 		Optional<ConditionContainer> containerByClass = ConditionRegistrar.getContainerByClass(getClass());
 
 		return Component.text(
-				localizer.getMessage("conditionDesc.type.mythicMob",
+				localizer().getMessage("conditionDesc.type.mythicMob",
 						Replacement.create("NAME", containerByClass
 								.map(ConditionContainer::getName).orElse("undefined"))), NamedTextColor.AQUA)
 				.append(Component.newline())
-				.append(Component.text(localizer.getMessage("conditionDesc.mythicMob") + " ", C.baseColor))
+				.append(Component.text(localizer().getMessage("conditionDesc.mythicMob") + " ", C.baseColor))
 				.append(Component.text(mobType, C.highlightColor));
 	}
 

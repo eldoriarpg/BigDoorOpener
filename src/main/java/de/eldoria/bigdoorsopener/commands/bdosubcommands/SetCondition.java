@@ -31,13 +31,9 @@ import static de.eldoria.bigdoorsopener.commands.CommandHelper.denyAccess;
 import static de.eldoria.bigdoorsopener.commands.CommandHelper.getPlayerFromSender;
 
 public class SetCondition extends BigDoorsAdapterCommand {
-    private final Localizer localizer;
-    private final MessageSender messageSender;
 
     public SetCondition(BigDoors bigDoors, Config config) {
         super(bigDoors, config);
-        this.localizer = BigDoorsOpener.localizer();
-        messageSender = BigDoorsOpener.getPluginMessageSender();
     }
 
     @Override
@@ -48,9 +44,9 @@ public class SetCondition extends BigDoorsAdapterCommand {
         }
 
         if (argumentsInvalid(sender, args, 2,
-                "<" + localizer.getMessage("syntax.doorId") + "> <"
-                        + localizer.getMessage("syntax.condition") + "> ["
-                        + localizer.getMessage("syntax.conditionValues") + "]")) {
+                "<" + localizer().getMessage("syntax.doorId") + "> <"
+                        + localizer().getMessage("syntax.condition") + "> ["
+                        + localizer().getMessage("syntax.conditionValues") + "]")) {
             return true;
         }
 
@@ -71,7 +67,7 @@ public class SetCondition extends BigDoorsAdapterCommand {
         Optional<ConditionContainer> conditionByName = ConditionRegistrar.getConditionByName(args[1]);
 
         if (!conditionByName.isPresent()) {
-            messageSender.sendError(sender, localizer.getMessage("error.invalidConditionType"));
+            messageSender().sendLocalizedError(sender, "error.invalidConditionType");
             return true;
         }
 
@@ -89,13 +85,13 @@ public class SetCondition extends BigDoorsAdapterCommand {
             conditionArgs = Arrays.copyOfRange(args, 2, args.length);
         }
 
-        condition.create(player, messageSender, conditionalDoor.getConditionBag(), conditionArgs);
+        condition.create(player, messageSender(), conditionalDoor.getConditionBag(), conditionArgs);
 
         if (conditionalDoor.getEvaluationType() == ConditionalDoor.EvaluationType.CUSTOM) {
             Pattern compile = Pattern.compile(group, Pattern.CASE_INSENSITIVE);
             if (!compile.matcher(conditionalDoor.getEvaluator()).find()) {
-                messageSender.sendError(player, localizer.getMessage("warning.valueNotInEvaluator",
-                        Replacement.create("VALUE", group).addFormatting('6')));
+                messageSender().sendLocalizedError(player, "warning.valueNotInEvaluator",
+                        Replacement.create("VALUE", group).addFormatting('6'));
             }
         }
         return true;
@@ -113,15 +109,15 @@ public class SetCondition extends BigDoorsAdapterCommand {
         Optional<ConditionContainer> conditionByName = ConditionRegistrar.getConditionByName(args[1]);
 
         if (!conditionByName.isPresent()) {
-            return Collections.singletonList(localizer.getMessage("error.invalidConditionType"));
+            return Collections.singletonList(localizer().getMessage("error.invalidConditionType"));
         }
 
         ConditionContainer container = conditionByName.get();
 
         if (denyAccess(sender, true, Permissions.getConditionPermission(container.getGroup()), Permissions.ALL_CONDITION)) {
-            return Collections.singletonList(localizer.getMessage("error.permission",
+            return Collections.singletonList(localizer().getMessage("error.permission",
                     Replacement.create("PERMISSION", Permissions.getConditionPermission(container.getGroup()) + ", " + Permissions.ALL_CONDITION)));
         }
-        return container.onTabComplete(sender, localizer, Arrays.copyOfRange(args, 2, args.length));
+        return container.onTabComplete(sender, localizer(), Arrays.copyOfRange(args, 2, args.length));
     }
 }

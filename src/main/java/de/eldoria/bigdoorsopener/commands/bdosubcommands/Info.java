@@ -33,12 +33,10 @@ import static de.eldoria.bigdoorsopener.commands.CommandHelper.denyAccess;
 import static de.eldoria.bigdoorsopener.commands.CommandHelper.getPlayerFromSender;
 
 public class Info extends BigDoorsAdapterCommand {
-	private final Localizer localizer;
 	private final BukkitAudiences bukkitAudiences;
 
 	public Info(BigDoors bigDoors, Plugin plugin, Config config) {
 		super(bigDoors, config);
-		this.localizer = BigDoorsOpener.localizer();
 		bukkitAudiences = BukkitAudiences.create(plugin);
 	}
 
@@ -48,7 +46,7 @@ public class Info extends BigDoorsAdapterCommand {
 			return true;
 		}
 
-		if (argumentsInvalid(sender, args, 1, "<" + localizer.getMessage("syntax.doorId") + ">")) {
+		if (argumentsInvalid(sender, args, 1, "<" + localizer().getMessage("syntax.doorId") + ">")) {
 			return true;
 		}
 
@@ -63,21 +61,21 @@ public class Info extends BigDoorsAdapterCommand {
 		TextComponent.Builder component = Component.text()
 				.append(Component.text(door.second.getName() + " ", C.highlightColor, TextDecoration.BOLD))
 				.append(Component.text("(Id:" + door.second.getDoorUID() + ") ", C.highlightColor, TextDecoration.BOLD))
-				.append(Component.text(localizer.getMessage("info.info"), C.baseColor, TextDecoration.BOLD))
+				.append(Component.text(localizer().getMessage("info.info"), C.baseColor, TextDecoration.BOLD))
 				.append(Component.newline())
-				.append(Component.text(localizer.getMessage("info.state") + " ", C.baseColor))
-				.append(Component.text(localizer.getMessage(cDoor.isEnabled() ? "info.state.enabled" : "info.state.disabled"), C.highlightColor))
+				.append(Component.text(localizer().getMessage("info.state") + " ", C.baseColor))
+				.append(Component.text(localizer().getMessage(cDoor.isEnabled() ? "info.state.enabled" : "info.state.disabled"), C.highlightColor))
 				.append(Component.newline())
-				.append(Component.text(localizer.getMessage("info.world") + " ", C.baseColor))
+				.append(Component.text(localizer().getMessage("info.world") + " ", C.baseColor))
 				.append(Component.text(cDoor.getWorld(), C.highlightColor))
 				.append(Component.newline())
 				.append(Component.text(""));
 
 		// append evaluator
-		component.append(Component.text(localizer.getMessage("info.evaluator") + " ", C.baseColor));
+		component.append(Component.text(localizer().getMessage("info.evaluator") + " ", C.baseColor));
 		if (cDoor.getEvaluationType() == ConditionalDoor.EvaluationType.CUSTOM) {
 			component.append(Component.text(cDoor.getEvaluator() + " ", C.highlightColor))
-					.append(Component.text("[" + localizer.getMessage("info.edit") + "]", NamedTextColor.GREEN, TextDecoration.UNDERLINED)
+					.append(Component.text("[" + localizer().getMessage("info.edit") + "]", NamedTextColor.GREEN, TextDecoration.UNDERLINED)
 							.clickEvent(ClickEvent.suggestCommand("/bdo setEvaluator " + cDoor.getDoorUID() + " custom " + cDoor.getEvaluator())));
 		} else {
 			component.append(Component.text(cDoor.getEvaluationType().name(), C.highlightColor));
@@ -85,25 +83,25 @@ public class Info extends BigDoorsAdapterCommand {
 		component.append(Component.newline());
 
 		// append open time
-		component.append(Component.text(localizer.getMessage("info.stayOpen") + " ", C.baseColor))
+		component.append(Component.text(localizer().getMessage("info.stayOpen") + " ", C.baseColor))
 				.append(Component.text(cDoor.getStayOpen() + " ",C.highlightColor))
-				.append(Component.text("[" + localizer.getMessage("info.edit") + "]", NamedTextColor.GREEN, TextDecoration.UNDERLINED)
+				.append(Component.text("[" + localizer().getMessage("info.edit") + "]", NamedTextColor.GREEN, TextDecoration.UNDERLINED)
 						.clickEvent(ClickEvent.suggestCommand("/bdo stayOpen " + cDoor.getDoorUID() + " " + cDoor.getStayOpen())))
 				.append(Component.newline());
 
 		// start of key list
-		component.append(Component.text(localizer.getMessage("info.conditions"), C.highlightColor, TextDecoration.BOLD));
+		component.append(Component.text(localizer().getMessage("info.conditions"), C.highlightColor, TextDecoration.BOLD));
 
 		ConditionBag conditionBag = cDoor.getConditionBag();
 
 		for (DoorCondition condition : conditionBag.getConditions()) {
 			component.append(Component.newline())
-					.append(condition.getDescription(localizer))
+					.append(condition.getDescription(localizer()))
 					.append(Component.newline())
-					.append(Component.text("[" + localizer.getMessage("info.remove") + "]", NamedTextColor.DARK_RED, TextDecoration.UNDERLINED)
+					.append(Component.text("[" + localizer().getMessage("info.remove") + "]", NamedTextColor.DARK_RED, TextDecoration.UNDERLINED)
 							.clickEvent(ClickEvent.runCommand(condition.getRemoveCommand(cDoor))))
 					.append(Component.text(" "))
-					.append(Component.text("[" + localizer.getMessage("info.edit") + "]", NamedTextColor.GREEN, TextDecoration.UNDERLINED)
+					.append(Component.text("[" + localizer().getMessage("info.edit") + "]", NamedTextColor.GREEN, TextDecoration.UNDERLINED)
 							.clickEvent(ClickEvent.suggestCommand(condition.getCreationCommand(cDoor))));
 		}
 

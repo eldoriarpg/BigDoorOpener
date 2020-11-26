@@ -16,16 +16,13 @@ import java.util.Collections;
 import java.util.List;
 
 public class About extends EldoCommand {
-    private final Plugin plugin;
-
     public About(Plugin plugin) {
-        super(BigDoorsOpener.localizer(), BigDoorsOpener.getPluginMessageSender());
-        this.plugin = plugin;
+        super(plugin);
     }
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        PluginDescriptionFile descr = plugin.getDescription();
+        PluginDescriptionFile descr = getPlugin().getDescription();
         String info = localizer().getMessage("about",
                 Replacement.create("PLUGIN_NAME", "Big Doors Opener").addFormatting('b'),
                 Replacement.create("AUTHORS", String.join(", ", descr.getAuthors())).addFormatting('b'),

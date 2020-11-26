@@ -15,7 +15,7 @@ public class MythicMobsListener extends BigDoorsAdapter implements Listener {
 
     private final Config config;
 
-    public MythicMobsListener(BigDoors bigDoors, Localizer localizer, Config config) {
+    public MythicMobsListener(BigDoors bigDoors, Config config) {
         super(bigDoors);
         this.config = config;
     }

@@ -37,7 +37,7 @@ public abstract class BigDoorsAdapterCommand extends EldoCommand {
     private final Config config;
 
     public BigDoorsAdapterCommand(BigDoors bigDoors, Config config) {
-        super(BigDoorsOpener.localizer(), BigDoorsOpener.getPluginMessageSender());
+        super(BigDoorsOpener.instance());
         this.bigDoors = bigDoors;
         commander = bigDoors.getCommander();
         this.config = config;

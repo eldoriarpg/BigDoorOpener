@@ -35,7 +35,7 @@ public class BDOCommand extends EldoCommand {
     private final Cache<String, List<?>> pluginCache = C.getExpiringCache(30, TimeUnit.SECONDS);
 
     public BDOCommand(BigDoorsOpener plugin, BigDoors doors, Config config, DoorChecker doorChecker) {
-        super(BigDoorsOpener.localizer(), BigDoorsOpener.getPluginMessageSender());
+        super(plugin);
         BukkitAudiences bukkitAudiences = BukkitAudiences.create(plugin);
         Help help = new Help(plugin);
         setDefaultCommand(help);

@@ -26,13 +26,9 @@ import static de.eldoria.bigdoorsopener.commands.CommandHelper.denyAccess;
 import static de.eldoria.bigdoorsopener.commands.CommandHelper.getPlayerFromSender;
 
 public class CloneDoor extends BigDoorsAdapterCommand {
-    private final Localizer localizer;
-    private final MessageSender messageSender;
 
     public CloneDoor(BigDoors bigDoors, Config config) {
         super(bigDoors, config);
-        this.localizer = BigDoorsOpener.localizer();
-        messageSender = BigDoorsOpener.getPluginMessageSender();
     }
 
     @Override
@@ -41,8 +37,8 @@ public class CloneDoor extends BigDoorsAdapterCommand {
         if (denyAccess(sender, Permissions.ALL_CONDITION)) return true;
 
         if (argumentsInvalid(sender, args, 2,
-                "<" + localizer.getMessage("syntax.sourceDoor") + "> <"
-                        + localizer.getMessage("syntax.targetDoor") + ">")) {
+                "<" + localizer().getMessage("syntax.sourceDoor") + "> <"
+                        + localizer().getMessage("syntax.targetDoor") + ">")) {
             return true;
         }
 
@@ -78,9 +74,9 @@ public class CloneDoor extends BigDoorsAdapterCommand {
 
         Bukkit.getPluginManager().callEvent(new DoorModifiedEvent(targetDoor));
 
-        messageSender.sendMessage(sender, localizer.getMessage("cloneDoor.message",
+        messageSender().sendLocalizedMessage(sender, "cloneDoor.message",
                 Replacement.create("SOURCE", playerSourceDoor.getName()).addFormatting('6'),
-                Replacement.create("TARGET", playerTargetDoor.getName()).addFormatting('6')));
+                Replacement.create("TARGET", playerTargetDoor.getName()).addFormatting('6'));
         return true;
 
     }

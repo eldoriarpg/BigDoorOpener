@@ -4,6 +4,7 @@ import de.eldoria.bigdoorsopener.conditions.DoorCondition;
 import de.eldoria.bigdoorsopener.door.conditioncollections.ConditionBag;
 import de.eldoria.eldoutilities.consumer.QuadConsumer;
 import de.eldoria.eldoutilities.functions.TriFunction;
+import de.eldoria.eldoutilities.localization.ILocalizer;
 import de.eldoria.eldoutilities.localization.Localizer;
 import de.eldoria.eldoutilities.messages.MessageSender;
 import org.bukkit.command.Command;
@@ -22,9 +23,9 @@ public final class ConditionContainer {
     private final String group;
     private final int cost;
     private final QuadConsumer<Player, MessageSender, ConditionBag, String[]> create;
-    private final TriFunction<CommandSender, Localizer, String[], List<String>> onTabComplete;
+    private final TriFunction<CommandSender, ILocalizer, String[], List<String>> onTabComplete;
 
-    private ConditionContainer(Class<? extends DoorCondition> clazz, Scope scope, String name, String group, int cost, QuadConsumer<Player, MessageSender, ConditionBag, String[]> create, TriFunction<CommandSender, Localizer, String[], List<String>> onTabComplete) {
+    private ConditionContainer(Class<? extends DoorCondition> clazz, Scope scope, String name, String group, int cost, QuadConsumer<Player, MessageSender, ConditionBag, String[]> create, TriFunction<CommandSender, ILocalizer, String[], List<String>> onTabComplete) {
         this.clazz = clazz;
         this.scope = scope;
         this.name = name;
@@ -82,7 +83,7 @@ public final class ConditionContainer {
      * @return A List of possible completions for the final argument, or null
      * to default to the command executor
      */
-    public List<String> onTabComplete(CommandSender sender, Localizer localizer, String[] args) {
+    public List<String> onTabComplete(CommandSender sender, ILocalizer localizer, String[] args) {
         return onTabComplete.apply(sender, localizer, args);
     }
 
@@ -93,7 +94,7 @@ public final class ConditionContainer {
         private String group = null;
         private int cost = 50;
         private QuadConsumer<Player, MessageSender, ConditionBag, String[]> create = null;
-        private TriFunction<CommandSender, Localizer, String[], List<String>> onTabComplete = (sender, localizer, strings) -> Collections.emptyList();
+        private TriFunction<CommandSender, ILocalizer, String[], List<String>> onTabComplete = (sender, localizer, strings) -> Collections.emptyList();
 
         /**
          * Creates a new builder instance for a condition of type {@code clazz}.
@@ -130,7 +131,7 @@ public final class ConditionContainer {
          * @param onTabComplete a quad function which i
          * @return this builder instance
          */
-        public Builder onTabComplete(TriFunction<CommandSender, Localizer, String[], List<String>> onTabComplete) {
+        public Builder onTabComplete(TriFunction<CommandSender, ILocalizer, String[], List<String>> onTabComplete) {
             this.onTabComplete = onTabComplete;
             return this;
         }

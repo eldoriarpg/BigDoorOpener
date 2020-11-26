@@ -18,7 +18,7 @@ import java.util.Optional;
 public class ItemConditionListener extends BigDoorsAdapter implements Listener {
     private final Config config;
 
-    public ItemConditionListener(BigDoors bigDoors, Localizer localizer, Config config) {
+    public ItemConditionListener(BigDoors bigDoors, Config config) {
         super(bigDoors);
         this.config = config;
     }

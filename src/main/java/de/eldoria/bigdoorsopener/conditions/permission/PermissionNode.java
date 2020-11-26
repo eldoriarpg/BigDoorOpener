@@ -6,13 +6,12 @@ import de.eldoria.bigdoorsopener.core.conditions.ConditionRegistrar;
 import de.eldoria.bigdoorsopener.core.conditions.Scope;
 import de.eldoria.bigdoorsopener.door.ConditionalDoor;
 import de.eldoria.bigdoorsopener.util.C;
-import de.eldoria.bigdoorsopener.util.TextColors;
+import de.eldoria.eldoutilities.localization.ILocalizer;
 import de.eldoria.eldoutilities.localization.Localizer;
 import de.eldoria.eldoutilities.localization.Replacement;
 import de.eldoria.eldoutilities.serialization.SerializationUtil;
 import de.eldoria.eldoutilities.serialization.TypeResolvingMap;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.World;
 import org.bukkit.configuration.serialization.SerializableAs;
@@ -44,7 +43,7 @@ public class PermissionNode implements Permission {
     public static ConditionContainer getConditionContainer() {
         return ConditionContainer.ofClass(PermissionNode.class, Scope.PLAYER)
                 .withFactory((player, messageSender, conditionBag, arguments) -> {
-                    Localizer localizer = BigDoorsOpener.localizer();
+                    ILocalizer localizer = BigDoorsOpener.localizer();
 
                     if (argumentsInvalid(player, messageSender, localizer, arguments, 1,
                             "<" + localizer.getMessage("syntax.doorId") + "> <"
@@ -73,7 +72,7 @@ public class PermissionNode implements Permission {
     }
 
     @Override
-    public Component getDescription(Localizer localizer) {
+    public Component getDescription(ILocalizer localizer) {
         Optional<ConditionContainer> containerByClass = ConditionRegistrar.getContainerByClass(getClass());
 
         return Component.text(
