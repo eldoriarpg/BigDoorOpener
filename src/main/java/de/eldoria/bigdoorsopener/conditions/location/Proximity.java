@@ -16,7 +16,9 @@ import de.eldoria.eldoutilities.utils.ArgumentUtils;
 import de.eldoria.eldoutilities.utils.ArrayUtil;
 import de.eldoria.eldoutilities.utils.EnumUtil;
 import de.eldoria.eldoutilities.utils.Parser;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.World;
 import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.entity.Player;
@@ -140,20 +142,19 @@ public class Proximity implements Location {
     }
 
     @Override
-    public TextComponent getDescription(Localizer localizer) {
+    public Component getDescription(Localizer localizer) {
         Optional<ConditionContainer> containerByClass = ConditionRegistrar.getContainerByClass(getClass());
 
-        return TextComponent.builder(
+        return Component.text(
                 localizer.getMessage("conditionDesc.type.proximity",
                         Replacement.create("NAME", containerByClass
-                                .map(ConditionContainer::getName).orElse("undefined")))).color(TextColors.AQUA)
-                .append(TextComponent.newline())
-                .append(TextComponent.builder(localizer.getMessage("conditionDesc.size") + " ").color(C.baseColor))
-                .append(TextComponent.builder(dimensions.toString()).color(C.highlightColor))
-                .append(TextComponent.newline())
-                .append(TextComponent.builder(localizer.getMessage("conditionDesc.proximityForm") + " ").color(C.baseColor))
-                .append(TextComponent.builder(localizer.getMessage(proximityForm.localKey)).color(C.highlightColor))
-                .build();
+                                .map(ConditionContainer::getName).orElse("undefined"))), NamedTextColor.AQUA)
+                .append(Component.newline())
+                .append(Component.text(localizer.getMessage("conditionDesc.size") + " ", C.baseColor))
+                .append(Component.text(dimensions.toString(), C.highlightColor))
+                .append(Component.newline())
+                .append(Component.text(localizer.getMessage("conditionDesc.proximityForm") + " ", C.baseColor))
+                .append(Component.text(localizer.getMessage(proximityForm.localKey), C.highlightColor));
     }
 
     @Override

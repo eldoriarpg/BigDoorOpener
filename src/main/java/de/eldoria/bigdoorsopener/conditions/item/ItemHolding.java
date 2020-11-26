@@ -12,7 +12,9 @@ import de.eldoria.eldoutilities.serialization.SerializationUtil;
 import de.eldoria.eldoutilities.serialization.TypeResolvingMap;
 import de.eldoria.eldoutilities.utils.ArgumentUtils;
 import de.eldoria.eldoutilities.utils.Parser;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.World;
 import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.entity.Player;
@@ -101,15 +103,14 @@ public class ItemHolding extends Item {
     }
 
     @Override
-    public TextComponent getDescription(Localizer localizer) {
+    public Component getDescription(Localizer localizer) {
         Optional<ConditionContainer> containerByClass = ConditionRegistrar.getContainerByClass(getClass());
-        return TextComponent.builder(
+        return Component.text(
                 localizer.getMessage("conditionDesc.type.itemHolding",
                         Replacement.create("NAME", containerByClass
-                                .map(ConditionContainer::getName).orElse("undefined")))).color(TextColors.AQUA)
-                .append(TextComponent.newline())
-                .append(super.getDescription(localizer))
-                .build();
+                                .map(ConditionContainer::getName).orElse("undefined"))), NamedTextColor.AQUA)
+                .append(Component.newline())
+                .append(super.getDescription(localizer));
     }
 
     @Override

@@ -15,7 +15,9 @@ import de.eldoria.eldoutilities.localization.Replacement;
 import de.eldoria.eldoutilities.serialization.SerializationUtil;
 import de.eldoria.eldoutilities.serialization.TypeResolvingMap;
 import me.clip.placeholderapi.PlaceholderAPI;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.World;
 import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.entity.Player;
@@ -117,17 +119,16 @@ public class Placeholder implements DoorCondition {
     }
 
     @Override
-    public TextComponent getDescription(Localizer localizer) {
+    public Component getDescription(Localizer localizer) {
         Optional<ConditionContainer> containerByClass = ConditionRegistrar.getContainerByClass(getClass());
 
-        return TextComponent.builder(
+        return Component.text(
                 localizer.getMessage("conditionDesc.type.placeholder",
                         Replacement.create("NAME", containerByClass
-                                .map(ConditionContainer::getName).orElse("undefined")))).color(TextColors.AQUA)
-                .append(TextComponent.newline())
-                .append(TextComponent.builder(localizer.getMessage("conditionDesc.evaluator") + " ").color(C.baseColor))
-                .append(TextComponent.builder(evaluator).color(C.highlightColor))
-                .build();
+                                .map(ConditionContainer::getName).orElse("undefined"))), NamedTextColor.AQUA)
+                .append(Component.newline())
+                .append(Component.text(localizer.getMessage("conditionDesc.evaluator") + " ", C.baseColor))
+                .append(Component.text(evaluator, C.highlightColor));
     }
 
     @Override

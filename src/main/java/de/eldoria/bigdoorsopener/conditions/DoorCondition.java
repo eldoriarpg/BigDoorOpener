@@ -4,7 +4,7 @@ import de.eldoria.bigdoorsopener.core.conditions.ConditionContainer;
 import de.eldoria.bigdoorsopener.core.conditions.Scope;
 import de.eldoria.bigdoorsopener.door.ConditionalDoor;
 import de.eldoria.eldoutilities.localization.Localizer;
-import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.Component;
 import org.bukkit.World;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.entity.Player;
@@ -35,7 +35,7 @@ public interface DoorCondition extends ConfigurationSerializable, Cloneable {
      * @param localizer localizer instance for translation
      * @return text component with description.
      */
-    TextComponent getDescription(Localizer localizer);
+    Component getDescription(Localizer localizer);
 
     /**
      * Get the command to set this condition with the current settings.

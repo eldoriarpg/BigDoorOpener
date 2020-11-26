@@ -8,13 +8,13 @@ import de.eldoria.bigdoorsopener.door.ConditionalDoor;
 import de.eldoria.bigdoorsopener.door.conditioncollections.ConditionBag;
 import de.eldoria.bigdoorsopener.util.C;
 import de.eldoria.bigdoorsopener.util.Permissions;
-import de.eldoria.bigdoorsopener.util.TextColors;
 import de.eldoria.eldoutilities.container.Pair;
 import de.eldoria.eldoutilities.localization.Localizer;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
-import net.kyori.adventure.text.format.Style;
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import nl.pim16aap2.bigDoors.BigDoors;
 import nl.pim16aap2.bigDoors.Door;
@@ -33,99 +33,90 @@ import static de.eldoria.bigdoorsopener.commands.CommandHelper.denyAccess;
 import static de.eldoria.bigdoorsopener.commands.CommandHelper.getPlayerFromSender;
 
 public class Info extends BigDoorsAdapterCommand {
-    private final Localizer localizer;
-    private final BukkitAudiences bukkitAudiences;
+	private final Localizer localizer;
+	private final BukkitAudiences bukkitAudiences;
 
-    public Info(BigDoors bigDoors, Plugin plugin, Config config) {
-        super(bigDoors, config);
-        this.localizer = BigDoorsOpener.localizer();
-        bukkitAudiences = BukkitAudiences.create(plugin);
-    }
+	public Info(BigDoors bigDoors, Plugin plugin, Config config) {
+		super(bigDoors, config);
+		this.localizer = BigDoorsOpener.localizer();
+		bukkitAudiences = BukkitAudiences.create(plugin);
+	}
 
-    @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        if (denyAccess(sender, Permissions.USE)) {
-            return true;
-        }
+	@Override
+	public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+		if (denyAccess(sender, Permissions.USE)) {
+			return true;
+		}
 
-        if (argumentsInvalid(sender, args, 1, "<" + localizer.getMessage("syntax.doorId") + ">")) {
-            return true;
-        }
+		if (argumentsInvalid(sender, args, 1, "<" + localizer.getMessage("syntax.doorId") + ">")) {
+			return true;
+		}
 
-        Player playerFromSender = getPlayerFromSender(sender);
+		Player playerFromSender = getPlayerFromSender(sender);
 
-        Pair<ConditionalDoor, Door> door = getConditionalPlayerDoor(args[0], playerFromSender);
-        if (door == null) {
-            return true;
-        }
+		Pair<ConditionalDoor, Door> door = getConditionalPlayerDoor(args[0], playerFromSender);
+		if (door == null) {
+			return true;
+		}
 
-        ConditionalDoor cDoor = door.first;
-        TextComponent.Builder builder = TextComponent.builder()
-                .append(TextComponent.builder(door.second.getName() + " ").color(C.highlightColor).decoration(TextDecoration.BOLD, true))
-                .append(TextComponent.builder("(Id:" + door.second.getDoorUID() + ") ").decoration(TextDecoration.BOLD, true)).color(C.highlightColor)
-                .append(TextComponent.builder(localizer.getMessage("info.info")).color(C.baseColor).decoration(TextDecoration.BOLD, true))
-                .append(TextComponent.newline()).decoration(TextDecoration.BOLD, false)
-                .append(TextComponent.builder(localizer.getMessage("info.state") + " ").color(C.baseColor))
-                .append(TextComponent.builder(localizer.getMessage(cDoor.isEnabled() ? "info.state.enabled" : "info.state.disabled")).color(C.highlightColor))
-                .append(TextComponent.newline())
-                .append(TextComponent.builder(localizer.getMessage("info.world") + " ").color(C.baseColor))
-                .append(TextComponent.builder(cDoor.getWorld()).color(C.highlightColor))
-                .append(TextComponent.newline()
-                        .append(TextComponent.builder("")));
+		ConditionalDoor cDoor = door.first;
+		TextComponent.Builder component = Component.text()
+				.append(Component.text(door.second.getName() + " ", C.highlightColor, TextDecoration.BOLD))
+				.append(Component.text("(Id:" + door.second.getDoorUID() + ") ", C.highlightColor, TextDecoration.BOLD))
+				.append(Component.text(localizer.getMessage("info.info"), C.baseColor, TextDecoration.BOLD))
+				.append(Component.newline())
+				.append(Component.text(localizer.getMessage("info.state") + " ", C.baseColor))
+				.append(Component.text(localizer.getMessage(cDoor.isEnabled() ? "info.state.enabled" : "info.state.disabled"), C.highlightColor))
+				.append(Component.newline())
+				.append(Component.text(localizer.getMessage("info.world") + " ", C.baseColor))
+				.append(Component.text(cDoor.getWorld(), C.highlightColor))
+				.append(Component.newline())
+				.append(Component.text(""));
 
-        // append evaluator
-        builder.append(TextComponent.builder(localizer.getMessage("info.evaluator") + " ").color(C.baseColor));
-        if (cDoor.getEvaluationType() == ConditionalDoor.EvaluationType.CUSTOM) {
-            builder.append(TextComponent.builder(cDoor.getEvaluator() + " ").color(C.highlightColor))
-                    .append(TextComponent.builder("[" + localizer.getMessage("info.edit") + "]")
-                            .style(Style.builder().decoration(TextDecoration.UNDERLINED, true)
-                                    .color(TextColors.GREEN).build())
-                            .clickEvent(ClickEvent.suggestCommand("/bdo setEvaluator " + cDoor.getDoorUID() + " custom " + cDoor.getEvaluator())));
-        } else {
-            builder.append(TextComponent.builder(cDoor.getEvaluationType().name()).color(C.highlightColor));
-        }
-        builder.append(TextComponent.newline());
+		// append evaluator
+		component.append(Component.text(localizer.getMessage("info.evaluator") + " ", C.baseColor));
+		if (cDoor.getEvaluationType() == ConditionalDoor.EvaluationType.CUSTOM) {
+			component.append(Component.text(cDoor.getEvaluator() + " ", C.highlightColor))
+					.append(Component.text("[" + localizer.getMessage("info.edit") + "]", NamedTextColor.GREEN, TextDecoration.UNDERLINED)
+							.clickEvent(ClickEvent.suggestCommand("/bdo setEvaluator " + cDoor.getDoorUID() + " custom " + cDoor.getEvaluator())));
+		} else {
+			component.append(Component.text(cDoor.getEvaluationType().name(), C.highlightColor));
+		}
+		component.append(Component.newline());
 
-        // append open time
-        builder.append(TextComponent.builder(localizer.getMessage("info.stayOpen") + " ").color(C.baseColor))
-                .append(TextComponent.builder(cDoor.getStayOpen() + " ").color(C.highlightColor))
-                .append(TextComponent.builder("[" + localizer.getMessage("info.edit") + "]")
-                        .style(Style.builder().decoration(TextDecoration.UNDERLINED, true)
-                                .color(TextColors.GREEN).build())
-                        .clickEvent(ClickEvent.suggestCommand("/bdo stayOpen " + cDoor.getDoorUID() + " " + cDoor.getStayOpen())))
-                .append(TextComponent.newline());
+		// append open time
+		component.append(Component.text(localizer.getMessage("info.stayOpen") + " ", C.baseColor))
+				.append(Component.text(cDoor.getStayOpen() + " ",C.highlightColor))
+				.append(Component.text("[" + localizer.getMessage("info.edit") + "]", NamedTextColor.GREEN, TextDecoration.UNDERLINED)
+						.clickEvent(ClickEvent.suggestCommand("/bdo stayOpen " + cDoor.getDoorUID() + " " + cDoor.getStayOpen())))
+				.append(Component.newline());
 
-        // start of key list
-        builder.append(TextComponent.builder(localizer.getMessage("info.conditions"))
-                .style(Style.builder().color(C.highlightColor).decoration(TextDecoration.BOLD, true).build()));
+		// start of key list
+		component.append(Component.text(localizer.getMessage("info.conditions"), C.highlightColor, TextDecoration.BOLD));
 
-        ConditionBag conditionBag = cDoor.getConditionBag();
+		ConditionBag conditionBag = cDoor.getConditionBag();
 
-        for (DoorCondition condition : conditionBag.getConditions()) {
-            builder.append(TextComponent.newline())
-                    .append(condition.getDescription(localizer))
-                    .append(TextComponent.newline())
-                    .append(TextComponent.builder("[" + localizer.getMessage("info.remove") + "]")
-                            .style(Style.builder().color(TextColors.DARK_RED)
-                                    .decoration(TextDecoration.UNDERLINED, true).build())
-                            .clickEvent(ClickEvent.runCommand(condition.getRemoveCommand(cDoor))))
-                    .append(TextComponent.builder(" "))
-                    .append(TextComponent.builder("[" + localizer.getMessage("info.edit") + "]")
-                            .style(Style.builder().color(TextColors.GREEN)
-                                    .decoration(TextDecoration.UNDERLINED, true).build())
-                            .clickEvent(ClickEvent.suggestCommand(condition.getCreationCommand(cDoor))));
-        }
+		for (DoorCondition condition : conditionBag.getConditions()) {
+			component.append(Component.newline())
+					.append(condition.getDescription(localizer))
+					.append(Component.newline())
+					.append(Component.text("[" + localizer.getMessage("info.remove") + "]", NamedTextColor.DARK_RED, TextDecoration.UNDERLINED)
+							.clickEvent(ClickEvent.runCommand(condition.getRemoveCommand(cDoor))))
+					.append(Component.text(" "))
+					.append(Component.text("[" + localizer.getMessage("info.edit") + "]", NamedTextColor.GREEN, TextDecoration.UNDERLINED)
+							.clickEvent(ClickEvent.suggestCommand(condition.getCreationCommand(cDoor))));
+		}
 
-        bukkitAudiences.sender(sender).sendMessage(builder.build());
-        return true;
+		bukkitAudiences.sender(sender).sendMessage(component.build());
+		return true;
 
-    }
+	}
 
-    @Override
-    public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
-        if (args.length == 1) {
-            return getDoorCompletion(sender, args[0]);
-        }
-        return Collections.emptyList();
-    }
+	@Override
+	public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
+		if (args.length == 1) {
+			return getDoorCompletion(sender, args[0]);
+		}
+		return Collections.emptyList();
+	}
 }

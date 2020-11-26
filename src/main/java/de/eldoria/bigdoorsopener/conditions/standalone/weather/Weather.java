@@ -18,7 +18,9 @@ import de.eldoria.eldoutilities.utils.ArgumentUtils;
 import de.eldoria.eldoutilities.utils.ArrayUtil;
 import de.eldoria.eldoutilities.utils.EnumUtil;
 import de.eldoria.eldoutilities.utils.Parser;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.WeatherType;
 import org.bukkit.World;
@@ -168,19 +170,18 @@ public class Weather implements DoorCondition {
     }
 
     @Override
-    public TextComponent getDescription(Localizer localizer) {
+    public Component getDescription(Localizer localizer) {
         Optional<ConditionContainer> containerByClass = ConditionRegistrar.getContainerByClass(getClass());
 
-        return TextComponent.builder(
+        return Component.text(
                 localizer.getMessage("conditionDesc.type.weather",
                         Replacement.create("NAME", containerByClass
-                                .map(ConditionContainer::getName).orElse("undefined")))).color(TextColors.AQUA)
-                .append(TextComponent.newline())
-                .append(TextComponent.builder(localizer.getMessage("conditionDesc.openWhen") + " ").color(C.baseColor))
-                .append(TextComponent.builder(weatherType == WeatherType.CLEAR
+                                .map(ConditionContainer::getName).orElse("undefined"))), NamedTextColor.AQUA)
+                .append(Component.newline())
+                .append(Component.text(localizer.getMessage("conditionDesc.openWhen") + " ", C.baseColor))
+                .append(Component.text(weatherType == WeatherType.CLEAR
                         ? localizer.getMessage("conditionDesc.clear")
-                        : localizer.getMessage("conditionDesc.downfall")).color(C.highlightColor))
-                .build();
+                        : localizer.getMessage("conditionDesc.downfall"), C.highlightColor));
     }
 
     @Override

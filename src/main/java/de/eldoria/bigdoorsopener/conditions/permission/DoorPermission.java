@@ -14,7 +14,9 @@ import de.eldoria.eldoutilities.localization.Replacement;
 import de.eldoria.eldoutilities.serialization.SerializationUtil;
 import de.eldoria.eldoutilities.serialization.TypeResolvingMap;
 import de.eldoria.eldoutilities.utils.ArrayUtil;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.NamedTextColor;
 import nl.pim16aap2.bigDoors.Door;
 import org.bukkit.World;
 import org.bukkit.configuration.serialization.SerializableAs;
@@ -110,17 +112,16 @@ public class DoorPermission extends BigDoorsAdapter implements Permission {
     }
 
     @Override
-    public TextComponent getDescription(Localizer localizer) {
+    public Component getDescription(Localizer localizer) {
         Optional<ConditionContainer> containerByClass = ConditionRegistrar.getContainerByClass(getClass());
 
-        return TextComponent.builder(
+        return Component.text(
                 localizer.getMessage("conditionDesc.type.permission",
                         Replacement.create("NAME", containerByClass
-                                .map(ConditionContainer::getName).orElse("undefined")))).color(TextColors.AQUA)
-                .append(TextComponent.newline())
-                .append(TextComponent.builder(localizer.getMessage("conditionDesc.doorPermission") + " ").color(C.baseColor))
-                .append(TextComponent.builder(localizer.getMessage(getPermString())).color(C.highlightColor))
-                .build();
+                                .map(ConditionContainer::getName).orElse("undefined"))), NamedTextColor.AQUA)
+                .append(Component.newline())
+                .append(Component.text(localizer.getMessage("conditionDesc.doorPermission") + " ", C.baseColor))
+                .append(Component.text(localizer.getMessage(getPermString()), C.highlightColor));
     }
 
     @Override

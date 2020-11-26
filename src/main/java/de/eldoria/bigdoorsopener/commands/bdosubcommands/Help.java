@@ -1,13 +1,12 @@
 package de.eldoria.bigdoorsopener.commands.bdosubcommands;
 
 import de.eldoria.bigdoorsopener.core.BigDoorsOpener;
-import de.eldoria.bigdoorsopener.util.TextColors;
 import de.eldoria.eldoutilities.localization.Localizer;
 import de.eldoria.eldoutilities.localization.Replacement;
 import de.eldoria.eldoutilities.simplecommands.EldoCommand;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
-import net.kyori.adventure.text.TextComponent;
-import net.kyori.adventure.text.format.Style;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -19,146 +18,106 @@ import java.util.Collections;
 import java.util.List;
 
 public class Help extends EldoCommand {
-    private final Plugin plugin;
-    private final BukkitAudiences bukkitAudiences;
+	private final Localizer localizer;
+	private final Plugin plugin;
+	private final BukkitAudiences bukkitAudiences;
 
-    public Help(Plugin plugin) {
-        super(BigDoorsOpener.localizer(), BigDoorsOpener.getPluginMessageSender());
-        this.plugin = plugin;
-        bukkitAudiences = BukkitAudiences.create(plugin);
-    }
+	public Help(Plugin plugin) {
+		this.plugin = plugin;
+		this.localizer = BigDoorsOpener.localizer();
+		bukkitAudiences = BukkitAudiences.create(plugin);
+	}
 
-    @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        TextComponent component = TextComponent.builder()
-                .append(TextComponent.builder(localizer().getMessage("help.title",
-                        Replacement.create("PLUGIN_NAME", plugin.getDescription().getName())))
-                        .style(Style.builder().decoration(TextDecoration.BOLD, true).color(TextColors.GOLD).build()).build())
-                .append(TextComponent.newline())
-                .append(TextComponent.builder("setCondition ")
-                        .style(Style.builder()
-                                .color(TextColors.GOLD)
-                                .decoration(TextDecoration.BOLD, false)
-                                .build()))
-                .append(TextComponent.builder(" <" + localizer().getMessage("syntax.doorId") + "> <"
-                        + localizer().getMessage("syntax.condition") + "> <"
-                        + localizer().getMessage("syntax.conditionValues") + ">")
-                        .color(TextColors.AQUA))
-                .append(TextComponent.newline())
-                .append(TextComponent.builder("  " + localizer().getMessage("help.setCondition"))
-                        .color(TextColors.DARK_GREEN))
-                .append(TextComponent.newline())
-                .append(TextComponent.builder("removeCondition")
-                        .color(TextColors.GOLD))
-                .append(TextComponent.builder(" <" + localizer().getMessage("syntax.doorId") + "> <"
-                        + localizer().getMessage("syntax.condition") + ">")
-                        .color(TextColors.AQUA))
-                .append(TextComponent.newline())
-                .append(TextComponent.builder("  " + localizer().getMessage("help.removeCondition"))
-                        .color(TextColors.DARK_GREEN))
-                .append(TextComponent.newline())
-                .append(TextComponent.builder("copyCondition")
-                        .color(TextColors.GOLD))
-                .append(TextComponent.builder(" <" + localizer().getMessage("syntax.sourceDoor") + "> <"
-                        + localizer().getMessage("syntax.targetDoor") + "> ["
-                        + localizer().getMessage("syntax.condition") + "]")
-                        .color(TextColors.AQUA))
-                .append(TextComponent.newline())
-                .append(TextComponent.builder("  " + localizer().getMessage("help.copyCondition"))
-                        .color(TextColors.DARK_GREEN))
-                .append(TextComponent.newline())
-                .append(TextComponent.builder("cloneDoor")
-                        .color(TextColors.GOLD))
-                .append(TextComponent.builder(" <" + localizer().getMessage("syntax.sourceDoor") + "> <"
-                        + localizer().getMessage("syntax.targetDoor") + ">")
-                        .color(TextColors.AQUA))
-                .append(TextComponent.newline())
-                .append(TextComponent.builder("  " + localizer().getMessage("help.cloneDoor"))
-                        .color(TextColors.DARK_GREEN))
-                .append(TextComponent.newline())
-                .append(TextComponent.builder("giveKey")
-                        .color(TextColors.GOLD))
-                .append(TextComponent.builder(" <" + localizer().getMessage("syntax.doorId") + "> ["
-                        + localizer().getMessage("syntax.amount") + "] ["
-                        + localizer().getMessage("syntax.player") + "]")
-                        .color(TextColors.AQUA))
-                .append(TextComponent.newline())
-                .append(TextComponent.builder("  " + localizer().getMessage("help.giveKey"))
-                        .color(TextColors.DARK_GREEN))
-                .append(TextComponent.newline())
-                .append(TextComponent.builder("info")
-                        .color(TextColors.GOLD))
-                .append(TextComponent.builder(" <" + localizer().getMessage("syntax.doorId") + ">")
-                        .color(TextColors.AQUA))
-                .append(TextComponent.newline())
-                .append(TextComponent.builder("  " + localizer().getMessage("help.info"))
-                        .color(TextColors.DARK_GREEN))
-                .append(TextComponent.newline())
-                .append(TextComponent.builder("unregister")
-                        .color(TextColors.GOLD))
-                .append(TextComponent.builder(" <" + localizer().getMessage("syntax.doorId") + ">")
-                        .color(TextColors.AQUA))
-                .append(TextComponent.newline())
-                .append(TextComponent.builder("  " + localizer().getMessage("help.unregister"))
-                        .color(TextColors.DARK_GREEN))
-                .append(TextComponent.newline())
-                .append(TextComponent.builder("invertOpen").color(TextColors.GOLD))
-                .append(TextComponent.builder(" <" + localizer().getMessage("syntax.doorId") + ">")
-                        .color(TextColors.AQUA))
-                .append(TextComponent.newline())
-                .append(TextComponent.builder("  " + localizer().getMessage("help.invertOpen"))
-                        .color(TextColors.DARK_GREEN))
-                .append(TextComponent.newline())
-                .append(TextComponent.builder("setEvaluator")
-                        .color(TextColors.GOLD))
-                .append(TextComponent.builder(" <" + localizer().getMessage("syntax.doorId") + "> <"
-                        + localizer().getMessage("syntax.evaluationType") + "> ["
-                        + localizer().getMessage("syntax.customEvaluator") + "]")
-                        .color(TextColors.AQUA))
-                .append(TextComponent.newline())
-                .append(TextComponent.builder("  " + localizer().getMessage("help.setEvaluator"))
-                        .color(TextColors.DARK_GREEN))
-                .append(TextComponent.newline())
-                .append(TextComponent.builder("stayOpen")
-                        .color(TextColors.GOLD))
-                .append(TextComponent.builder(" <" + localizer().getMessage("syntax.doorId") + "> <"
-                        + localizer().getMessage("syntax.seconds") + ">")
-                        .color(TextColors.AQUA))
-                .append(TextComponent.newline())
-                .append(TextComponent.builder("  " + localizer().getMessage("help.stayOpen"))
-                        .color(TextColors.DARK_GREEN))
-                .append(TextComponent.newline())
-                .append(TextComponent.builder("list")
-                        .color(TextColors.GOLD))
-                .append(TextComponent.newline())
-                .append(TextComponent.builder("  " + localizer().getMessage("help.list"))
-                        .color(TextColors.DARK_GREEN))
-                .append(TextComponent.newline())
-                .append(TextComponent.builder("reload")
-                        .color(TextColors.GOLD))
-                .append(TextComponent.newline())
-                .append(TextComponent.builder("  " + localizer().getMessage("help.reload"))
-                        .color(TextColors.DARK_GREEN))
-                .append(TextComponent.newline())
-                .append(TextComponent.builder("about")
-                        .color(TextColors.GOLD))
-                .append(TextComponent.newline())
-                .append(TextComponent.builder("  " + localizer().getMessage("help.about"))
-                        .color(TextColors.DARK_GREEN))
-                .append(TextComponent.newline())
-                .append(TextComponent.builder("help")
-                        .color(TextColors.GOLD))
-                .append(TextComponent.newline())
-                .append(TextComponent.builder("  " + localizer().getMessage("help.help"))
-                        .color(TextColors.DARK_GREEN))
-                .build();
+	@Override
+	public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+		Component component = Component.text()
+				.append(Component.text(localizer.getMessage("help.title",
+						Replacement.create("PLUGIN_NAME", plugin.getDescription().getName())), NamedTextColor.GOLD, TextDecoration.BOLD))
+				.append(Component.newline())
+				.append(Component.text("setCondition ", NamedTextColor.GOLD))
+				.append(Component.text(" <" + localizer.getMessage("syntax.doorId") + "> <"
+						+ localizer.getMessage("syntax.condition") + "> <"
+						+ localizer.getMessage("syntax.conditionValues") + ">", NamedTextColor.AQUA))
+				.append(Component.newline())
+				.append(Component.text("  " + localizer.getMessage("help.setCondition"), NamedTextColor.DARK_GREEN))
+				.append(Component.newline())
+				.append(Component.text("removeCondition", NamedTextColor.GOLD))
+				.append(Component.text(" <" + localizer.getMessage("syntax.doorId") + "> <"
+						+ localizer.getMessage("syntax.condition") + ">", NamedTextColor.AQUA))
+				.append(Component.newline())
+				.append(Component.text("  " + localizer.getMessage("help.removeCondition"), NamedTextColor.DARK_GREEN))
+				.append(Component.newline())
+				.append(Component.text("copyCondition", NamedTextColor.GOLD))
+				.append(Component.text(" <" + localizer.getMessage("syntax.sourceDoor") + "> <"
+						+ localizer.getMessage("syntax.targetDoor") + "> ["
+						+ localizer.getMessage("syntax.condition") + "]", NamedTextColor.AQUA))
+				.append(Component.newline())
+				.append(Component.text("  " + localizer.getMessage("help.copyCondition"), NamedTextColor.DARK_GREEN))
+				.append(Component.newline())
+				.append(Component.text("cloneDoor", NamedTextColor.GOLD))
+				.append(Component.text(" <" + localizer.getMessage("syntax.sourceDoor") + "> <"
+						+ localizer.getMessage("syntax.targetDoor") + ">", NamedTextColor.AQUA))
+				.append(Component.newline())
+				.append(Component.text("  " + localizer.getMessage("help.cloneDoor"), NamedTextColor.DARK_GREEN))
+				.append(Component.newline())
+				.append(Component.text("giveKey", NamedTextColor.GOLD))
+				.append(Component.text(" <" + localizer.getMessage("syntax.doorId") + "> ["
+						+ localizer.getMessage("syntax.amount") + "] ["
+						+ localizer.getMessage("syntax.player") + "]", NamedTextColor.AQUA))
+				.append(Component.newline())
+				.append(Component.text("  " + localizer.getMessage("help.giveKey"), NamedTextColor.DARK_GREEN))
+				.append(Component.newline())
+				.append(Component.text("info", NamedTextColor.GOLD))
+				.append(Component.text(" <" + localizer.getMessage("syntax.doorId") + ">", NamedTextColor.AQUA))
+				.append(Component.newline())
+				.append(Component.text("  " + localizer.getMessage("help.info"), NamedTextColor.DARK_GREEN))
+				.append(Component.newline())
+				.append(Component.text("unregister", NamedTextColor.GOLD))
+				.append(Component.text(" <" + localizer.getMessage("syntax.doorId") + ">", NamedTextColor.AQUA))
+				.append(Component.newline())
+				.append(Component.text("  " + localizer.getMessage("help.unregister"), NamedTextColor.DARK_GREEN))
+				.append(Component.newline())
+				.append(Component.text("invertOpen", NamedTextColor.GOLD))
+				.append(Component.text(" <" + localizer.getMessage("syntax.doorId") + ">", NamedTextColor.AQUA))
+				.append(Component.newline())
+				.append(Component.text("  " + localizer.getMessage("help.invertOpen"), NamedTextColor.DARK_GREEN))
+				.append(Component.newline())
+				.append(Component.text("setEvaluator", NamedTextColor.GOLD))
+				.append(Component.text(" <" + localizer.getMessage("syntax.doorId") + "> <"
+						+ localizer.getMessage("syntax.evaluationType") + "> ["
+						+ localizer.getMessage("syntax.customEvaluator") + "]", NamedTextColor.AQUA))
+				.append(Component.newline())
+				.append(Component.text("  " + localizer.getMessage("help.setEvaluator"), NamedTextColor.DARK_GREEN))
+				.append(Component.newline())
+				.append(Component.text("stayOpen", NamedTextColor.GOLD))
+				.append(Component.text(" <" + localizer.getMessage("syntax.doorId") + "> <"
+						+ localizer.getMessage("syntax.seconds") + ">", NamedTextColor.AQUA))
+				.append(Component.newline())
+				.append(Component.text("  " + localizer.getMessage("help.stayOpen"), NamedTextColor.DARK_GREEN))
+				.append(Component.newline())
+				.append(Component.text("list", NamedTextColor.GOLD))
+				.append(Component.newline())
+				.append(Component.text("  " + localizer.getMessage("help.list"), NamedTextColor.DARK_GREEN))
+				.append(Component.newline())
+				.append(Component.text("reload", NamedTextColor.GOLD))
+				.append(Component.newline())
+				.append(Component.text("  " + localizer.getMessage("help.reload"), NamedTextColor.DARK_GREEN))
+				.append(Component.newline())
+				.append(Component.text("about", NamedTextColor.GOLD))
+				.append(Component.newline())
+				.append(Component.text("  " + localizer.getMessage("help.about"), NamedTextColor.DARK_GREEN))
+				.append(Component.newline())
+				.append(Component.text("help", NamedTextColor.GOLD))
+				.append(Component.newline())
+				.append(Component.text("  " + localizer.getMessage("help.help"), NamedTextColor.DARK_GREEN))
+				.build();
 
-        bukkitAudiences.sender(sender).sendMessage(component);
-        return true;
-    }
+		bukkitAudiences.sender(sender).sendMessage(component);
+		return true;
+	}
 
-    @Override
-    public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
-        return Collections.emptyList();
-    }
+	@Override
+	public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
+		return Collections.emptyList();
+	}
 }

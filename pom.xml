@@ -140,8 +140,8 @@
         </dependency>
         <dependency>
             <groupId>net.kyori</groupId>
-            <artifactId>adventure-text-minimessage</artifactId>
-            <version>3.0.0-SNAPSHOT</version>
+            <artifactId>adventure-api</artifactId>
+            <version>4.2.0</version>
             <scope>compile</scope>
             <exclusions>
                 <exclusion>
