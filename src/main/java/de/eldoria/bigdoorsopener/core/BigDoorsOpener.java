@@ -35,7 +35,7 @@ import de.eldoria.eldoutilities.crossversion.ServerVersion;
 import de.eldoria.eldoutilities.localization.ILocalizer;
 import de.eldoria.eldoutilities.messages.MessageSender;
 import de.eldoria.eldoutilities.updater.Updater;
-import de.eldoria.eldoutilities.updater.spigotupdater.SpigotUpdateData;
+import de.eldoria.eldoutilities.updater.butlerupdater.ButlerUpdateData;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import nl.pim16aap2.bigDoors.BigDoors;
@@ -152,7 +152,7 @@ public class BigDoorsOpener extends JavaPlugin {
 
 			// Check for updates
 			if (config.isCheckUpdates()) {
-				Updater.Spigot(new SpigotUpdateData(this, "bdo.command.reload", true, 80805));
+				Updater.Butler(new ButlerUpdateData(this, "bdo.command.reload", true, false, 8, "https://plugins.eldoria.de"));
 			}
 
 			localizer = ILocalizer.create(this, "de_DE", "en_US");
