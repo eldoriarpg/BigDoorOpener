@@ -30,22 +30,17 @@ import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
-import static de.eldoria.bigdoorsopener.commands.CommandHelper.getPlayerFromSender;
-
 public abstract class BigDoorsAdapterCommand extends EldoCommand {
     private final Commander commander;
     private final BigDoors bigDoors;
     private final Server server = Bukkit.getServer();
-    private final Localizer localizer;
-    private final MessageSender messageSender;
     private final Config config;
 
     public BigDoorsAdapterCommand(BigDoors bigDoors, Config config) {
+        super(BigDoorsOpener.instance());
         this.bigDoors = bigDoors;
         commander = bigDoors.getCommander();
         this.config = config;
-        this.localizer = BigDoorsOpener.localizer();
-        messageSender = BigDoorsOpener.getPluginMessageSender();
     }
 
 
@@ -118,7 +113,7 @@ public abstract class BigDoorsAdapterCommand extends EldoCommand {
             // requester is console. should always have access to all doors.
             Door door = getDoor(doorUID);
             if (door == null) {
-                messageSender.sendError(null, localizer.getMessage("error.doorNotFound"));
+                messageSender().sendError(null, localizer().getMessage("error.doorNotFound"));
                 return null;
             }
             door.setPermission(0);
@@ -139,7 +134,7 @@ public abstract class BigDoorsAdapterCommand extends EldoCommand {
             // door is null. check if door exists anyway
             door = getDoor(doorUID);
             if (door == null) {
-                messageSender.sendError(player, localizer.getMessage("error.doorNotFound"));
+                messageSender().sendError(player, localizer().getMessage("error.doorNotFound"));
                 return null;
             }
 
@@ -148,13 +143,13 @@ public abstract class BigDoorsAdapterCommand extends EldoCommand {
                 door.setPermission(0);
                 return door;
             } else {
-                messageSender.sendError(player, localizer.getMessage("error.notYourDoor"));
+                messageSender().sendError(player, localizer().getMessage("error.notYourDoor"));
             }
             return null;
         }
 
         if (doors.size() != 1) {
-            messageSender.sendMessage(player, localizer.getMessage("error.ambiguousDoorName"));
+            messageSender().sendMessage(player, localizer().getMessage("error.ambiguousDoorName"));
             return null;
         }
 
@@ -172,7 +167,7 @@ public abstract class BigDoorsAdapterCommand extends EldoCommand {
         World world = door.getWorld();
 
         if (world == null) {
-            messageSender.sendError(player, localizer.getMessage("error.worldNotLoaded"));
+            messageSender().sendError(player, localizer().getMessage("error.worldNotLoaded"));
             return null;
         }
 
@@ -207,13 +202,13 @@ public abstract class BigDoorsAdapterCommand extends EldoCommand {
         }
 
         if (door.getPermission() > 1) {
-            messageSender.sendError(player, localizer.getMessage("error.notYourDoor"));
+            messageSender().sendError(player, localizer().getMessage("error.notYourDoor"));
             return null;
         }
 
         ConditionalDoor conditionalDoor = config.getDoor(door.getDoorUID());
         if (conditionalDoor == null) {
-            messageSender.sendMessage(player, localizer.getMessage("error.doorNotRegistered"));
+            messageSender().sendMessage(player, localizer().getMessage("error.doorNotRegistered"));
             return null;
         }
         return new Pair<>(conditionalDoor, door);
@@ -223,7 +218,7 @@ public abstract class BigDoorsAdapterCommand extends EldoCommand {
     public List<String> getDoorCompletion(CommandSender sender, String name) {
         Player player = getPlayerFromSender(sender);
         if (player == null) {
-            return Collections.singletonList("<" + localizer.getMessage("syntax.doorId") + ">");
+            return Collections.singletonList("<" + localizer().getMessage("syntax.doorId") + ">");
         }
         List<Door> doors;
         try {
@@ -235,7 +230,7 @@ public abstract class BigDoorsAdapterCommand extends EldoCommand {
                     });
         } catch (ExecutionException e) {
             BigDoorsOpener.logger().log(Level.WARNING, "Could not build tab completion cache for door names.", e);
-            return Collections.singletonList("<" + localizer.getMessage("syntax.doorId") + ">");
+            return Collections.singletonList("<" + localizer().getMessage("syntax.doorId") + ">");
         }
         List<String> doorNames;
         try {
@@ -256,7 +251,7 @@ public abstract class BigDoorsAdapterCommand extends EldoCommand {
         } catch (
                 ExecutionException e) {
             BigDoorsOpener.logger().log(Level.WARNING, "Could not build tab completion cache for door names.", e);
-            return Collections.singletonList("<" + localizer.getMessage("syntax.doorId") + ">");
+            return Collections.singletonList("<" + localizer().getMessage("syntax.doorId") + ">");
         }
 
         return ArrayUtil.startingWithInArray(name,

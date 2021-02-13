@@ -4,6 +4,7 @@ import de.eldoria.bigdoorsopener.core.BigDoorsOpener;
 import de.eldoria.eldoutilities.localization.Localizer;
 import de.eldoria.eldoutilities.localization.Replacement;
 import de.eldoria.eldoutilities.messages.MessageSender;
+import de.eldoria.eldoutilities.simplecommands.EldoCommand;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.Plugin;
@@ -14,27 +15,21 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Collections;
 import java.util.List;
 
-public class About extends de.eldoria.eldoutilities.simplecommands.EldoCommand {
-    private final Localizer localizer;
-    private final Plugin plugin;
-    private final MessageSender messageSender;
-
+public class About extends EldoCommand {
     public About(Plugin plugin) {
-        this.localizer = BigDoorsOpener.localizer();
-        this.plugin = plugin;
-        messageSender = BigDoorsOpener.getPluginMessageSender();
+        super(plugin);
     }
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        PluginDescriptionFile descr = plugin.getDescription();
-        String info = localizer.getMessage("about",
+        PluginDescriptionFile descr = getPlugin().getDescription();
+        String info = localizer().getMessage("about",
                 Replacement.create("PLUGIN_NAME", "Big Doors Opener").addFormatting('b'),
                 Replacement.create("AUTHORS", String.join(", ", descr.getAuthors())).addFormatting('b'),
                 Replacement.create("VERSION", descr.getVersion()).addFormatting('b'),
                 Replacement.create("WEBSITE", descr.getWebsite()).addFormatting('b'),
                 Replacement.create("DISCORD", "https://discord.gg/JJdx3xe").addFormatting('b'));
-        messageSender.sendMessage(sender, info);
+        messageSender().sendMessage(sender, info);
         return true;
     }
 

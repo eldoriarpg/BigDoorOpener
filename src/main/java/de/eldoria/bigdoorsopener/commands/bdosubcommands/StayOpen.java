@@ -27,13 +27,9 @@ import static de.eldoria.bigdoorsopener.commands.CommandHelper.denyAccess;
 import static de.eldoria.bigdoorsopener.commands.CommandHelper.getPlayerFromSender;
 
 public class StayOpen extends BigDoorsAdapterCommand {
-    private final Localizer localizer;
-    private final MessageSender messageSender;
 
     public StayOpen(BigDoors bigDoors, Config config) {
         super(bigDoors, config);
-        this.localizer = BigDoorsOpener.localizer();
-        messageSender = BigDoorsOpener.getPluginMessageSender();
     }
 
     @Override
@@ -43,8 +39,8 @@ public class StayOpen extends BigDoorsAdapterCommand {
         }
 
         if (argumentsInvalid(sender, args, 2,
-                "<" + localizer.getMessage("syntax.doorId") + "> <"
-                        + localizer.getMessage("syntax.seconds") + ">")) {
+                "<" + localizer().getMessage("syntax.doorId") + "> <"
+                        + localizer().getMessage("syntax.seconds") + ">")) {
             return true;
         }
 
@@ -58,12 +54,12 @@ public class StayOpen extends BigDoorsAdapterCommand {
 
         OptionalInt optionalInt = Parser.parseInt(args[1]);
         if (!optionalInt.isPresent()) {
-            messageSender.sendError(sender, localizer.getMessage("error.invalidAmount"));
+            messageSender().sendLocalizedError(sender, "error.invalidAmount");
             return true;
         }
         door.first.setStayOpen(optionalInt.getAsInt());
-        messageSender.sendMessage(sender, localizer.getMessage("stayOpen.message",
-                Replacement.create("SECONDS", optionalInt.getAsInt())));
+        messageSender().sendLocalizedMessage(sender, "stayOpen.message",
+                Replacement.create("SECONDS", optionalInt.getAsInt()));
         return true;
 
     }
@@ -74,7 +70,7 @@ public class StayOpen extends BigDoorsAdapterCommand {
             return getDoorCompletion(sender, args[0]);
         }
         if (args.length == 2) {
-            return Collections.singletonList("<" + localizer.getMessage("syntax.amount") + ">");
+            return Collections.singletonList("<" + localizer().getMessage("syntax.amount") + ">");
         }
         return Collections.emptyList();
     }

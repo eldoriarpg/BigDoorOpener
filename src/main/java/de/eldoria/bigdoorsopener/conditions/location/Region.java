@@ -11,12 +11,13 @@ import de.eldoria.bigdoorsopener.core.conditions.ConditionRegistrar;
 import de.eldoria.bigdoorsopener.core.conditions.Scope;
 import de.eldoria.bigdoorsopener.door.ConditionalDoor;
 import de.eldoria.bigdoorsopener.util.C;
-import de.eldoria.bigdoorsopener.util.TextColors;
+import de.eldoria.eldoutilities.localization.ILocalizer;
 import de.eldoria.eldoutilities.localization.Localizer;
 import de.eldoria.eldoutilities.localization.Replacement;
 import de.eldoria.eldoutilities.serialization.SerializationUtil;
 import de.eldoria.eldoutilities.serialization.TypeResolvingMap;
-import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.configuration.serialization.SerializableAs;
@@ -79,7 +80,7 @@ public class Region implements Location {
         return ConditionContainer.ofClass(Region.class, Scope.PLAYER)
                 .withFactory((player, messageSender, conditionBag, arguments) -> {
                     final RegionContainer regionContainer = BigDoorsOpener.getRegionContainer();
-                    Localizer localizer = BigDoorsOpener.localizer();
+                    ILocalizer localizer = BigDoorsOpener.localizer();
                     if (regionContainer == null) {
                         messageSender.sendError(player, localizer.getMessage("error.wgNotEnabled"));
                         return;
@@ -135,20 +136,19 @@ public class Region implements Location {
     }
 
     @Override
-    public TextComponent getDescription(Localizer localizer) {
+    public Component getDescription(ILocalizer localizer) {
         Optional<ConditionContainer> containerByClass = ConditionRegistrar.getContainerByClass(getClass());
 
-        return TextComponent.builder(
+        return Component.text(
                 localizer.getMessage("conditionDesc.type.region",
                         Replacement.create("NAME", containerByClass
-                                .map(ConditionContainer::getName).orElse("undefined")))).color(TextColors.AQUA)
-                .append(TextComponent.newline())
-                .append(TextComponent.builder(localizer.getMessage("conditionDesc.region") + " ").color(C.baseColor))
-                .append(TextComponent.builder(regionId)).color(C.highlightColor)
-                .append(TextComponent.newline())
-                .append(TextComponent.builder(localizer.getMessage("conditionDesc.world") + " ").color(C.baseColor))
-                .append(TextComponent.builder(worldName)).color(C.highlightColor)
-                .build();
+                                .map(ConditionContainer::getName).orElse("undefined"))), NamedTextColor.AQUA)
+                .append(Component.newline())
+                .append(Component.text(localizer.getMessage("conditionDesc.region") + " ", C.baseColor))
+                .append(Component.text(regionId, C.highlightColor))
+                .append(Component.newline())
+                .append(Component.text(localizer.getMessage("conditionDesc.world") + " ", C.baseColor))
+                .append(Component.text(worldName, C.highlightColor));
     }
 
     @Override

@@ -24,13 +24,9 @@ import static de.eldoria.bigdoorsopener.commands.CommandHelper.denyAccess;
 import static de.eldoria.bigdoorsopener.commands.CommandHelper.getPlayerFromSender;
 
 public class InvertOpen extends BigDoorsAdapterCommand {
-    private final Localizer localizer;
-    private final MessageSender messageSender;
 
     public InvertOpen(BigDoors bigDoors, Config config) {
         super(bigDoors, config);
-        this.localizer = BigDoorsOpener.localizer();
-        messageSender = BigDoorsOpener.getPluginMessageSender();
     }
 
     @Override
@@ -39,7 +35,7 @@ public class InvertOpen extends BigDoorsAdapterCommand {
             return true;
         }
 
-        if (argumentsInvalid(sender, args, 1, "<" + localizer.getMessage("syntax.doorId") + ">")) {
+        if (argumentsInvalid(sender, args, 1, "<" + localizer().getMessage("syntax.doorId") + ">")) {
             return true;
         }
 
@@ -51,7 +47,7 @@ public class InvertOpen extends BigDoorsAdapterCommand {
         }
 
         door.first.invertOpen();
-        messageSender.sendMessage(sender, localizer.getMessage("invertOpen.inverted"));
+        messageSender().sendLocalizedMessage(sender, "invertOpen.inverted");
         return true;
 
     }

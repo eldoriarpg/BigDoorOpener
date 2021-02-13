@@ -10,6 +10,7 @@ import de.eldoria.bigdoorsopener.core.events.DoorUnregisteredEvent;
 import de.eldoria.bigdoorsopener.door.ConditionalDoor;
 import de.eldoria.bigdoorsopener.util.C;
 import de.eldoria.eldoutilities.functions.TriFunction;
+import de.eldoria.eldoutilities.localization.ILocalizer;
 import de.eldoria.eldoutilities.localization.Localizer;
 import nl.pim16aap2.bigDoors.BigDoors;
 import org.bukkit.Bukkit;
@@ -45,7 +46,7 @@ public class DoorChecker extends BigDoorsAdapter implements Runnable, Listener {
     private final TriFunction<Vector, Vector, Vector, Boolean> proximity = Proximity.ProximityForm.CUBOID.check;
     private double doorUpdateInterval;
 
-    public DoorChecker(Config config, BigDoors bigDoors, Localizer localizer) {
+    public DoorChecker(Config config, BigDoors bigDoors) {
         super(bigDoors);
         this.config = config;
         doors.addAll(config.getDoors());

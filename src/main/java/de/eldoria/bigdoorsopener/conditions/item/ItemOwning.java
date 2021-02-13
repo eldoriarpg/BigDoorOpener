@@ -5,14 +5,15 @@ import de.eldoria.bigdoorsopener.core.conditions.ConditionContainer;
 import de.eldoria.bigdoorsopener.core.conditions.ConditionRegistrar;
 import de.eldoria.bigdoorsopener.core.conditions.Scope;
 import de.eldoria.bigdoorsopener.door.ConditionalDoor;
-import de.eldoria.bigdoorsopener.util.TextColors;
+import de.eldoria.eldoutilities.localization.ILocalizer;
 import de.eldoria.eldoutilities.localization.Localizer;
 import de.eldoria.eldoutilities.localization.Replacement;
 import de.eldoria.eldoutilities.serialization.SerializationUtil;
 import de.eldoria.eldoutilities.serialization.TypeResolvingMap;
 import de.eldoria.eldoutilities.utils.ArgumentUtils;
 import de.eldoria.eldoutilities.utils.Parser;
-import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.World;
 import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.entity.Player;
@@ -36,7 +37,7 @@ public class ItemOwning extends Item {
     public static ConditionContainer getConditionContainer() {
         return ConditionContainer.ofClass(ItemOwning.class, Scope.PLAYER)
                 .withFactory((player, messageSender, conditionBag, arguments) -> {
-                    Localizer localizer = BigDoorsOpener.localizer();
+                    ILocalizer localizer = BigDoorsOpener.localizer();
                     if (player == null) {
                         messageSender.sendError(null, localizer.getMessage("error.notAllowedFromConsole"));
                         return;
@@ -100,21 +101,25 @@ public class ItemOwning extends Item {
     }
 
     @Override
-    public TextComponent getDescription(Localizer localizer) {
+    public Component getDescription(ILocalizer localizer) {
         Optional<ConditionContainer> containerByClass = ConditionRegistrar.getContainerByClass(getClass());
 
 
-        return TextComponent.builder(
+        return Component.text(
                 localizer.getMessage("conditionDesc.type.itemOwning",
                         Replacement.create("NAME", containerByClass
-                                .map(ConditionContainer::getName).orElse("undefined")))).color(TextColors.AQUA)
-                .append(TextComponent.newline())
-                .append(super.getDescription(localizer))
-                .build();
+                                .map(ConditionContainer::getName).orElse("undefined"))), NamedTextColor.AQUA)
+                .append(Component.newline())
+                .append(super.getDescription(localizer));
     }
 
     @Override
     public String getCreationCommand(ConditionalDoor door) {
         return SET_COMMAND + door.getDoorUID() + " itemOwning " + getItem().getAmount() + " " + isConsumed();
+    }
+
+    @Override
+    public ItemOwning clone() {
+        return new ItemOwning(getItem().clone(), isConsumed());
     }
 }

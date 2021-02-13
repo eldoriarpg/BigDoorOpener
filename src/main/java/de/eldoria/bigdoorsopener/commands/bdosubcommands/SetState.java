@@ -28,13 +28,9 @@ import static de.eldoria.bigdoorsopener.commands.CommandHelper.denyAccess;
 import static de.eldoria.bigdoorsopener.commands.CommandHelper.getPlayerFromSender;
 
 public class SetState extends BigDoorsAdapterCommand {
-    private final Localizer localizer;
-    private final MessageSender messageSender;
 
     public SetState(BigDoors bigDoors, Config config) {
         super(bigDoors, config);
-        localizer = BigDoorsOpener.localizer();
-        messageSender = BigDoorsOpener.getPluginMessageSender();
     }
 
     @Override
@@ -44,8 +40,8 @@ public class SetState extends BigDoorsAdapterCommand {
         }
 
         if (argumentsInvalid(sender, args, 2,
-                "<" + localizer.getMessage("syntax.doorId") + "> <"
-                        + localizer.getMessage("syntax.state") + ">")) {
+                "<" + localizer().getMessage("syntax.doorId") + "> <"
+                        + localizer().getMessage("syntax.state") + ">")) {
             return true;
         }
 
@@ -59,14 +55,14 @@ public class SetState extends BigDoorsAdapterCommand {
 
         Optional<Boolean> state = Parser.parseBoolean(args[1], "enabled", "disabled");
         if (!state.isPresent()) {
-            messageSender.sendMessage(sender, localizer.getMessage("error.invalidState"));
+            messageSender().sendLocalizedError(sender, "error.invalidState");
             return true;
         }
 
         if (state.get()) {
-            messageSender.sendMessage(sender, localizer.getMessage("setState.enabled"));
+            messageSender().sendLocalizedError(sender, "setState.enabled");
         } else {
-            messageSender.sendMessage(sender, localizer.getMessage("setState.disabled"));
+            messageSender().sendLocalizedError(sender, "setState.disabled");
         }
         door.first.setEnabled(state.get());
         return true;

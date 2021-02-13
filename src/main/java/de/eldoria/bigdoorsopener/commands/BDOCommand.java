@@ -22,6 +22,7 @@ import de.eldoria.bigdoorsopener.core.scheduler.DoorChecker;
 import de.eldoria.bigdoorsopener.util.C;
 import de.eldoria.eldoutilities.localization.Localizer;
 import de.eldoria.eldoutilities.messages.MessageSender;
+import de.eldoria.eldoutilities.simplecommands.EldoCommand;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import nl.pim16aap2.bigDoors.BigDoors;
 import org.bukkit.command.Command;
@@ -30,15 +31,11 @@ import org.bukkit.command.CommandSender;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-public class BDOCommand extends de.eldoria.eldoutilities.simplecommands.EldoCommand {
-    private final Localizer localizer;
-    private final MessageSender messageSender;
-
+public class BDOCommand extends EldoCommand {
     private final Cache<String, List<?>> pluginCache = C.getExpiringCache(30, TimeUnit.SECONDS);
 
     public BDOCommand(BigDoorsOpener plugin, BigDoors doors, Config config, DoorChecker doorChecker) {
-        this.localizer = BigDoorsOpener.localizer();
-        messageSender = MessageSender.get(plugin);
+        super(plugin);
         BukkitAudiences bukkitAudiences = BukkitAudiences.create(plugin);
         Help help = new Help(plugin);
         setDefaultCommand(help);
@@ -62,7 +59,7 @@ public class BDOCommand extends de.eldoria.eldoutilities.simplecommands.EldoComm
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!super.onCommand(sender, command, label, args)) {
-            messageSender.sendError(sender, localizer.getMessage("error.invalidCommand"));
+            messageSender().sendError(sender, localizer().getMessage("error.invalidCommand"));
             return true;
         }
         return true;

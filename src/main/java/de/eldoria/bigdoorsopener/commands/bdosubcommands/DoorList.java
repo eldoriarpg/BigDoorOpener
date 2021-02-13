@@ -23,15 +23,11 @@ import static de.eldoria.bigdoorsopener.commands.CommandHelper.denyAccess;
 import static de.eldoria.bigdoorsopener.commands.CommandHelper.getPlayerFromSender;
 
 public class DoorList extends BigDoorsAdapterCommand {
-    private final Localizer localizer;
-    private final MessageSender messageSender;
     private final Config config;
 
     public DoorList(BigDoors bigDoors, Config config) {
         super(bigDoors, config);
         this.config = config;
-        this.localizer = BigDoorsOpener.localizer();
-        messageSender = BigDoorsOpener.getPluginMessageSender();
     }
 
     @Override
@@ -41,7 +37,7 @@ public class DoorList extends BigDoorsAdapterCommand {
         }
 
         Map<Long, ConditionalDoor> doors = config.getDoorMap();
-        StringBuilder builder = new StringBuilder(localizer.getMessage("list.title")).append("\n");
+        StringBuilder builder = new StringBuilder(localizer().getMessage("list.title")).append("\n");
 
         Player playerFromSender = getPlayerFromSender(sender);
 
@@ -64,7 +60,7 @@ public class DoorList extends BigDoorsAdapterCommand {
             }
         }
 
-        messageSender.sendMessage(sender, builder.toString());
+        messageSender().sendMessage(sender, builder.toString());
         return true;
 
     }

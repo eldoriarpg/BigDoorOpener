@@ -2,7 +2,7 @@ package de.eldoria.bigdoorsopener.core.adapter;
 
 import de.eldoria.bigdoorsopener.core.BigDoorsOpener;
 import de.eldoria.bigdoorsopener.door.ConditionalDoor;
-import de.eldoria.eldoutilities.localization.Localizer;
+import de.eldoria.eldoutilities.localization.ILocalizer;
 import de.eldoria.eldoutilities.localization.Replacement;
 import lombok.Getter;
 import nl.pim16aap2.bigDoors.BigDoors;
@@ -25,7 +25,7 @@ public abstract class BigDoorsAdapter {
     private final Commander commander;
     private final BigDoors bigDoors;
     private final Server server = Bukkit.getServer();
-    private final Localizer localizer;
+    private final ILocalizer localizer;
 
     public BigDoorsAdapter(BigDoors bigDoors) {
         this.bigDoors = bigDoors;
@@ -183,7 +183,7 @@ public abstract class BigDoorsAdapter {
         return commander.getDoors();
     }
 
-    protected Localizer getLocalizer() {
+    protected ILocalizer getLocalizer() {
         return localizer;
     }
 }

@@ -35,13 +35,9 @@ import static de.eldoria.bigdoorsopener.commands.CommandHelper.denyAccess;
 import static de.eldoria.bigdoorsopener.commands.CommandHelper.getPlayerFromSender;
 
 public class GiveKey extends BigDoorsAdapterCommand {
-    private final Localizer localizer;
-    private final MessageSender messageSender;
 
     public GiveKey(BigDoors bigDoors, Config config) {
         super(bigDoors, config);
-        this.localizer = BigDoorsOpener.localizer();
-        messageSender = BigDoorsOpener.getPluginMessageSender();
     }
 
     @Override
@@ -54,16 +50,16 @@ public class GiveKey extends BigDoorsAdapterCommand {
 
         if (playerFromSender == null) {
             if (argumentsInvalid(null, args, 3,
-                    "<" + localizer.getMessage("syntax.doorId") + "> <"
-                            + localizer.getMessage("syntax.amount") + "> <"
-                            + localizer.getMessage("syntax.player") + ">")) {
+                    "<" + localizer().getMessage("syntax.doorId") + "> <"
+                            + localizer().getMessage("syntax.amount") + "> <"
+                            + localizer().getMessage("syntax.player") + ">")) {
                 return true;
             }
         } else {
             if (argumentsInvalid(sender, args, 1,
-                    "<" + localizer.getMessage("syntax.doorId") + "> ["
-                            + localizer.getMessage("syntax.amount") + "] ["
-                            + localizer.getMessage("syntax.player") + "]")) {
+                    "<" + localizer().getMessage("syntax.doorId") + "> ["
+                            + localizer().getMessage("syntax.amount") + "] ["
+                            + localizer().getMessage("syntax.player") + "]")) {
                 return true;
             }
         }
@@ -77,7 +73,7 @@ public class GiveKey extends BigDoorsAdapterCommand {
         Optional<DoorCondition> condition = door.first.getConditionBag().getCondition("item");
 
         if (!condition.isPresent()) {
-            messageSender.sendError(sender, localizer.getMessage("error.noItemConditionSet"));
+            messageSender().sendLocalizedError(sender, "error.noItemConditionSet");
             return true;
         }
 
@@ -86,14 +82,14 @@ public class GiveKey extends BigDoorsAdapterCommand {
         OptionalInt amount = ArgumentUtils.getOptionalParameter(args, 1, OptionalInt.of(64), Parser::parseInt);
 
         if (!amount.isPresent()) {
-            messageSender.sendError(sender, localizer.getMessage("error.invalidAmount"));
+            messageSender().sendLocalizedError(sender, "error.invalidAmount");
             return true;
         }
 
         Player target = ArgumentUtils.getOptionalParameter(args, 2, playerFromSender, Bukkit::getPlayer);
 
         if (target == null) {
-            messageSender.sendError(sender, localizer.getMessage("error.playerNotFound"));
+            messageSender().sendLocalizedError(sender, "error.playerNotFound");
             return true;
         }
 
@@ -101,20 +97,20 @@ public class GiveKey extends BigDoorsAdapterCommand {
         clone.setAmount(amount.getAsInt());
         target.getInventory().addItem(clone);
         if (target != playerFromSender) {
-            messageSender.sendMessage(playerFromSender, localizer.getMessage("giveKey.send",
+            messageSender().sendLocalizedMessage(playerFromSender, "giveKey.send",
                     Replacement.create("AMOUNT", amount.getAsInt()),
                     Replacement.create("ITEMNAME", item.hasItemMeta() ? (item.getItemMeta().hasDisplayName()
                             ? item.getItemMeta().getDisplayName()
                             : item.getType().name().toLowerCase())
                             : item.getType().name().toLowerCase()),
-                    Replacement.create("TARGET", target.getDisplayName())));
+                    Replacement.create("TARGET", target.getDisplayName()));
         }
-        messageSender.sendMessage(target, localizer.getMessage("giveKey.received",
+        messageSender().sendLocalizedMessage(target, "giveKey.received",
                 Replacement.create("AMOUNT", amount.getAsInt()),
                 Replacement.create("ITEMNAME", item.hasItemMeta() ? (item.getItemMeta().hasDisplayName()
                         ? item.getItemMeta().getDisplayName()
                         : item.getType().name().toLowerCase())
-                        : item.getType().name().toLowerCase())));
+                        : item.getType().name().toLowerCase()));
         return true;
 
     }
@@ -126,7 +122,7 @@ public class GiveKey extends BigDoorsAdapterCommand {
         }
 
         if (args.length == 2) {
-            return Collections.singletonList("<" + localizer.getMessage("syntax.amount") + ">");
+            return Collections.singletonList("<" + localizer().getMessage("syntax.amount") + ">");
         }
 
         if (args.length == 3) {
