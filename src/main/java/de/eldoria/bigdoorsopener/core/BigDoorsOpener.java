@@ -61,7 +61,6 @@ import java.util.regex.Pattern;
 
 public class BigDoorsOpener extends EldoPlugin {
 
-    private static Logger logger;
     private static CachingJSEngine JS;
     private static boolean placeholderEnabled = false;
     private static boolean mythicMobsEnabled;
@@ -89,7 +88,7 @@ public class BigDoorsOpener extends EldoPlugin {
     @SuppressWarnings("StaticVariableUsedBeforeInitialization")
     @NotNull
     public static Logger logger() {
-        return logger;
+        return instance.getLogger();
     }
 
     @SuppressWarnings("StaticVariableUsedBeforeInitialization")
@@ -124,20 +123,19 @@ public class BigDoorsOpener extends EldoPlugin {
     }
 
     @Override
-    public void onDisable() {
+    public void onPluginDisable() {
         super.onDisable();
     }
 
-    @SuppressWarnings("AssignmentToStaticFieldFromInstanceMethod")
     @SneakyThrows
+    @SuppressWarnings("AssignmentToStaticFieldFromInstanceMethod")
     @Override
-    public void onEnable() {
+    public void onPluginEnable() {
 
         ServerVersion.forceVersion(ServerVersion.MC_1_8, ServerVersion.MC_1_16);
 
         if (!initialized) {
             instance = this;
-            logger = this.getLogger();
 
             // Load external resources. Must be loaded first.
             loadExternalSources();
