@@ -55,15 +55,15 @@ public class ConditionChain implements ConditionCollection {
         this.mythicMob = mythicMob;
     }
 
-    public static ConditionChain deserialize(Map<String, Object> map) {
-        TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
-        Item item = resolvingMap.getValue("item");
-        Location location = resolvingMap.getValue("location");
-        Permission permission = resolvingMap.getValue("permission");
-        Time time = resolvingMap.getValue("time");
-        Weather weather = resolvingMap.getValue("weather");
-        Placeholder placeholder = resolvingMap.getValueOrDefault("placeholder", null);
-        MythicMob mythicMob = resolvingMap.getValueOrDefault("mythicMob", null);
+    public static ConditionChain deserialize(Map<String, Object> objectMap) {
+        TypeResolvingMap map = SerializationUtil.mapOf(objectMap);
+        Item item = map.getValue("item");
+        Location location = map.getValue("location");
+        Permission permission = map.getValue("permission");
+        Time time = map.getValue("time");
+        Weather weather = map.getValue("weather");
+        Placeholder placeholder = map.getValue("placeholder");
+        MythicMob mythicMob = map.getValue("mythicMob");
         return new ConditionChain(item, location, permission, time, weather, placeholder, mythicMob);
     }
 
@@ -93,7 +93,6 @@ public class ConditionChain implements ConditionCollection {
      * @return result of the conditions.
      */
     @Override
-
     public boolean and(Player player, World world, ConditionalDoor door, boolean currentState) {
         // the conditions should be evaluated from the simpelest to the most expensive computation.
         return ConditionChainEvaluator.and(player, world, door, currentState,
@@ -111,7 +110,6 @@ public class ConditionChain implements ConditionCollection {
      * @return string with the values replaced.
      */
     @Override
-
     public String custom(String string, Player player, World world, ConditionalDoor door, boolean currentState) {
         return "null";
     }
@@ -122,7 +120,6 @@ public class ConditionChain implements ConditionCollection {
      * @return true if a player key is present.
      */
     @Override
-
     public boolean requiresPlayerEvaluation() {
         return item != null || permission != null || location != null || placeholder != null;
     }
@@ -162,7 +159,6 @@ public class ConditionChain implements ConditionCollection {
                 .add("placeholder", placeholder)
                 .add("mythicMob", mythicMob)
                 .build();
-
     }
 
     /**

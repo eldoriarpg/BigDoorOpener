@@ -16,6 +16,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -49,7 +50,7 @@ public class DoorList extends BigDoorsAdapterCommand {
                         .append(" (").append(door.getWorld().getName()).append(")\n");
             }
         } else {
-            java.util.List<Door> registeredDoors = getDoors(playerFromSender, null)
+            List<Door> registeredDoors = getDoors(playerFromSender, null)
                     .stream()
                     .filter(d -> doors.containsKey(d.getDoorUID()))
                     .collect(Collectors.toList());
@@ -66,7 +67,7 @@ public class DoorList extends BigDoorsAdapterCommand {
     }
 
     @Override
-    public java.util.@Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
+    public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
         return Collections.emptyList();
     }
 }
