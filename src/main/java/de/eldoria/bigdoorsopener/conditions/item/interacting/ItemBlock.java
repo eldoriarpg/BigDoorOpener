@@ -114,6 +114,8 @@ public class ItemBlock extends ItemInteraction {
 
                     itemInMainHand.setAmount(amount.getAsInt());
                     ItemBlock itemBlock = new ItemBlock(itemInMainHand, consume.get());
+
+                    messageSender.sendLocalizedMessage(player, "setCondition.clickKeyBlock");
                     // Register Keyhole object at registration listener.
                     RegisterInteraction.getInstance().register(player, (event, mSender) -> {
                         if (event.getAction() != Action.RIGHT_CLICK_BLOCK) {
