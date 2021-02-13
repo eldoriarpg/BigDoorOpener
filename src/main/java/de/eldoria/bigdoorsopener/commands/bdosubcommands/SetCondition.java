@@ -44,9 +44,7 @@ public class SetCondition extends BigDoorsAdapterCommand {
         }
 
         if (argumentsInvalid(sender, args, 2,
-                "<" + localizer().getMessage("syntax.doorId") + "> <"
-                        + localizer().getMessage("syntax.condition") + "> ["
-                        + localizer().getMessage("syntax.conditionValues") + "]")) {
+                "<$syntax.doorId$> <$syntax.condition$> [$syntax.conditionValues$]")) {
             return true;
         }
 

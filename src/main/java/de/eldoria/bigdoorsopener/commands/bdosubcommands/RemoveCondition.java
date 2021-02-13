@@ -36,8 +36,7 @@ public class RemoveCondition extends BigDoorsAdapterCommand {
 		}
 
 		if (argumentsInvalid(sender, args, 2,
-				"<" + localizer().getMessage("syntax.doorId") + "> <"
-				+ localizer().getMessage("syntax.condition") + ">")){
+				"<$syntax.doorId$> <$syntax.condition$>")){
 			return false;
 		}
 
