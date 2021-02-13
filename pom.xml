@@ -37,6 +37,10 @@
                             <pattern>net.kyori</pattern>
                             <shadedPattern>de.eldoria.bigdoorsopener.kyori</shadedPattern>
                         </relocation>
+                        <relocation>
+                            <pattern>de.eldoria.eldoutilities</pattern>
+                            <shadedPattern>de.eldoria.bigdoorsopener.eldoutilities</shadedPattern>
+                        </relocation>
                     </relocations>
                 </configuration>
                 <executions>
@@ -122,10 +126,10 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>de.eldoria</groupId>
-            <artifactId>EldoUtilities</artifactId>
-            <version>1.4.2</version>
-            <scope>provided</scope>
+            <groupId>de.eldoria.EldoUtilities</groupId>
+            <artifactId>EldoUtilitiesCore</artifactId>
+            <version>1.7.3</version>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>net.kyori</groupId>
