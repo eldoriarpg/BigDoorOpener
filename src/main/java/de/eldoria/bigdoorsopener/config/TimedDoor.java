@@ -6,6 +6,7 @@ import de.eldoria.eldoutilities.serialization.TypeResolvingMap;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
+import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 
@@ -17,6 +18,7 @@ import java.util.Map;
 @Getter
 @Setter
 @Deprecated
+@SerializableAs("timedDoor")
 public class TimedDoor implements ConfigurationSerializable {
     /**
      * UUID of the door.

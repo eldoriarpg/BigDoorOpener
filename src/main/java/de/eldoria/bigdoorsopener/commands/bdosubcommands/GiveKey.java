@@ -48,18 +48,14 @@ public class GiveKey extends BigDoorsAdapterCommand {
 
         Player playerFromSender = getPlayerFromSender(sender);
 
-        if (playerFromSender == null) {
-            if (argumentsInvalid(null, args, 3,
-                    "<" + localizer().getMessage("syntax.doorId") + "> <"
-                            + localizer().getMessage("syntax.amount") + "> <"
-                            + localizer().getMessage("syntax.player") + ">")) {
+        if (!isPlayer(sender)) {
+            if (argumentsInvalid(sender, args, 3,
+                    "<$syntax.doorId$> <$syntax.amount$> <$syntax.player$>")) {
                 return true;
             }
         } else {
             if (argumentsInvalid(sender, args, 1,
-                    "<" + localizer().getMessage("syntax.doorId") + "> ["
-                            + localizer().getMessage("syntax.amount") + "] ["
-                            + localizer().getMessage("syntax.player") + "]")) {
+                    "<$syntax.doorId$> [$syntax.amount$] [$syntax.player$]")) {
                 return true;
             }
         }

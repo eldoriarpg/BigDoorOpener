@@ -46,9 +46,7 @@ public class SetEvaluator extends BigDoorsAdapterCommand {
 		}
 
 		if (argumentsInvalid(sender, args, 2,
-				"<" + localizer().getMessage("syntax.doorId") + "> <"
-						+ localizer().getMessage("syntax.evaluationType") + "> ["
-						+ localizer().getMessage("syntax.customEvaluator") + "]")) {
+				"<$syntax.doorId$> <$syntax.evaluationType$> [$syntax.customEvaluator$]")) {
 			return true;
 		}
 

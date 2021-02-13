@@ -36,9 +36,7 @@ public class CopyCondition extends BigDoorsAdapterCommand {
 		}
 
 		if (argumentsInvalid(sender, args, 2,
-				"<" + localizer().getMessage("syntax.sourceDoor") + "> <"
-						+ localizer().getMessage("syntax.targetDoor") + "> ["
-						+ localizer().getMessage("syntax.condition") + "]")) {
+				"<$syntax.sourceDoor$> <$syntax.targetDoor$> [$syntax.condition$]")) {
 			return true;
 		}
 

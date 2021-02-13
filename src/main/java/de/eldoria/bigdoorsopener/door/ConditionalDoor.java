@@ -79,11 +79,11 @@ public class ConditionalDoor implements ConfigurationSerializable {
     private boolean invertOpen = false;
 
 
-    public ConditionalDoor(long doorUID, String world, Vector position, ConditionBag conditionChain) {
+    public ConditionalDoor(long doorUID, String world, Vector position, ConditionBag conditionBag) {
         this.doorUID = doorUID;
         this.world = world;
         this.position = position;
-        this.conditionBag = conditionChain;
+        this.conditionBag = conditionBag;
     }
 
     public ConditionalDoor(long doorUID, String world, Vector position) {

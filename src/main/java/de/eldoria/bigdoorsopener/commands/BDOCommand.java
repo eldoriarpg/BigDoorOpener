@@ -20,9 +20,11 @@ import de.eldoria.bigdoorsopener.config.Config;
 import de.eldoria.bigdoorsopener.core.BigDoorsOpener;
 import de.eldoria.bigdoorsopener.core.scheduler.DoorChecker;
 import de.eldoria.bigdoorsopener.util.C;
+import de.eldoria.bigdoorsopener.util.Permissions;
 import de.eldoria.eldoutilities.localization.Localizer;
 import de.eldoria.eldoutilities.messages.MessageSender;
 import de.eldoria.eldoutilities.simplecommands.EldoCommand;
+import de.eldoria.eldoutilities.simplecommands.commands.DefaultDebug;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import nl.pim16aap2.bigDoors.BigDoors;
 import org.bukkit.command.Command;
@@ -54,6 +56,7 @@ public class BDOCommand extends EldoCommand {
         registerCommand("stayOpen", new StayOpen(doors, config));
         registerCommand("unregister", new Unregister(doors, config));
         registerCommand("setState", new SetState(doors, config));
+        registerCommand("debug", new DefaultDebug(plugin, Permissions.RELOAD));
     }
 
     @Override

@@ -39,8 +39,7 @@ public class StayOpen extends BigDoorsAdapterCommand {
         }
 
         if (argumentsInvalid(sender, args, 2,
-                "<" + localizer().getMessage("syntax.doorId") + "> <"
-                        + localizer().getMessage("syntax.seconds") + ">")) {
+                "<$syntax.doorId$> <$syntax.seconds$>")) {
             return true;
         }
 

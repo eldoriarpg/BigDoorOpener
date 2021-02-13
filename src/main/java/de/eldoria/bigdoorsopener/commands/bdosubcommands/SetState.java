@@ -40,8 +40,7 @@ public class SetState extends BigDoorsAdapterCommand {
         }
 
         if (argumentsInvalid(sender, args, 2,
-                "<" + localizer().getMessage("syntax.doorId") + "> <"
-                        + localizer().getMessage("syntax.state") + ">")) {
+                "<$syntax.doorId$> <$syntax.state$>")) {
             return true;
         }
 

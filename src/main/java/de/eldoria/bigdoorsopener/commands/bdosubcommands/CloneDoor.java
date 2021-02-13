@@ -1,14 +1,11 @@
 package de.eldoria.bigdoorsopener.commands.bdosubcommands;
 
 import de.eldoria.bigdoorsopener.config.Config;
-import de.eldoria.bigdoorsopener.core.BigDoorsOpener;
 import de.eldoria.bigdoorsopener.core.adapter.BigDoorsAdapterCommand;
 import de.eldoria.bigdoorsopener.core.events.DoorModifiedEvent;
 import de.eldoria.bigdoorsopener.door.ConditionalDoor;
 import de.eldoria.bigdoorsopener.util.Permissions;
-import de.eldoria.eldoutilities.localization.Localizer;
 import de.eldoria.eldoutilities.localization.Replacement;
-import de.eldoria.eldoutilities.messages.MessageSender;
 import nl.pim16aap2.bigDoors.BigDoors;
 import nl.pim16aap2.bigDoors.Door;
 import org.bukkit.Bukkit;
@@ -21,10 +18,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Collections;
 import java.util.List;
 
-import static de.eldoria.bigdoorsopener.commands.CommandHelper.argumentsInvalid;
-import static de.eldoria.bigdoorsopener.commands.CommandHelper.denyAccess;
-import static de.eldoria.bigdoorsopener.commands.CommandHelper.getPlayerFromSender;
-
 public class CloneDoor extends BigDoorsAdapterCommand {
 
     public CloneDoor(BigDoors bigDoors, Config config) {
@@ -36,9 +29,7 @@ public class CloneDoor extends BigDoorsAdapterCommand {
         if (denyAccess(sender, Permissions.USE)) return true;
         if (denyAccess(sender, Permissions.ALL_CONDITION)) return true;
 
-        if (argumentsInvalid(sender, args, 2,
-                "<" + localizer().getMessage("syntax.sourceDoor") + "> <"
-                        + localizer().getMessage("syntax.targetDoor") + ">")) {
+        if (argumentsInvalid(sender, args, 2, "<$syntax.sourceDoor$> <$syntax.targetDoor$>")) {
             return true;
         }
 

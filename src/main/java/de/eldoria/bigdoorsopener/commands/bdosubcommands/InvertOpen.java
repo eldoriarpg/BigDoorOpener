@@ -35,7 +35,7 @@ public class InvertOpen extends BigDoorsAdapterCommand {
             return true;
         }
 
-        if (argumentsInvalid(sender, args, 1, "<" + localizer().getMessage("syntax.doorId") + ">")) {
+        if (argumentsInvalid(sender, args, 1, "<$syntax.doorId$>")) {
             return true;
         }
 
