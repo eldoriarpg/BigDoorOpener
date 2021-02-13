@@ -80,17 +80,6 @@ public class BigDoorsOpener extends EldoPlugin {
     private WeatherListener weatherListener;
     private RegisterInteraction registerInteraction;
 
-    /**
-     * Get the plugin logger instance.
-     *
-     * @return plugin logger instance
-     */
-    @SuppressWarnings("StaticVariableUsedBeforeInitialization")
-    @NotNull
-    public static Logger logger() {
-        return instance.getLogger();
-    }
-
     @SuppressWarnings("StaticVariableUsedBeforeInitialization")
     public static CachingJSEngine JS() {
         return JS;
@@ -149,7 +138,7 @@ public class BigDoorsOpener extends EldoPlugin {
 
             // Check for updates
             if (config.isCheckUpdates()) {
-                Updater.Butler(new ButlerUpdateData(this, "bdo.command.reload", true, false, 8, "https://plugins.eldoria.de"));
+                Updater.Butler(new ButlerUpdateData(this, "bdo.command.reload", true, false, 8, "https://plugins.eldoria.de")).start();
             }
 
             localizer = ILocalizer.create(this, "de_DE", "en_US");
