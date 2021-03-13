@@ -16,76 +16,90 @@ import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 @SerializableAs("bdoConditionBag")
 public class ConditionBag implements ConditionCollection {
-    private final Map<String, DoorCondition> playerScope = new TreeMap<>();
-    private final Map<String, DoorCondition> worldScope = new TreeMap<>();
+    private final Map<String, List<DoorCondition>> playerScope = new LinkedHashMap<>();
+    private final Map<String, List<DoorCondition>> worldScope = new LinkedHashMap<>();
 
     private ConditionBag(Collection<DoorCondition> playerScope, Collection<DoorCondition> worldScope) {
-        playerScope.forEach(c -> {
-            ConditionRegistrar.getContainerByClass(c.getClass()).ifPresent(g -> this.playerScope.put(g.getGroup(), c));
-        });
-        worldScope.forEach(c -> {
-            ConditionRegistrar.getContainerByClass(c.getClass()).ifPresent(g -> this.worldScope.put(g.getGroup(), c));
-        });
+        playerScope.forEach(this::addCondition);
+        worldScope.forEach(this::addCondition);
     }
 
     public ConditionBag() {
-
     }
 
     public ConditionBag(Map<String, Object> map) {
         TypeResolvingMap typeResolvingMap = SerializationUtil.mapOf(map);
-        List<DoorCondition> conditions = (List<DoorCondition>) typeResolvingMap.get("conditions");
-        conditions.forEach(this::putCondition);
+        List<DoorCondition> conditions = typeResolvingMap.getValueOrDefault("conditions", Collections.emptyList());
+        conditions.forEach(this::addCondition);
     }
 
     @Override
     public @NotNull Map<String, Object> serialize() {
-        Collection<DoorCondition> values = playerScope.values();
-        values.addAll(worldScope.values());
-        return SerializationUtil.newBuilder().add("conditions", values).build();
+        return SerializationUtil.newBuilder().add("conditions", getConditions()).build();
     }
 
-    public void putCondition(DoorCondition condition) {
+    public void setCondition(DoorCondition condition) {
+        List<DoorCondition> conditions = getConditions(condition);
+        conditions.clear();
+        conditions.add(condition);
+        Bukkit.getPluginManager().callEvent(new ConditionBagModifiedEvent(this));
+    }
+
+    public void addCondition(DoorCondition condition) {
+        getConditions(condition).add(condition);
+        Bukkit.getPluginManager().callEvent(new ConditionBagModifiedEvent(this));
+    }
+
+    public boolean removeCondition(ConditionGroup group, int index) {
+        if (getConditions(group).size() < index) {
+            return false;
+        }
+        getConditions(group).remove(index);
+        Bukkit.getPluginManager().callEvent(new ConditionBagModifiedEvent(this));
+        return true;
+    }
+
+    public List<DoorCondition> getConditions(DoorCondition condition) {
         Optional<ConditionContainer> containerByClass = ConditionRegistrar.getContainerByClass(condition.getClass());
         if (!containerByClass.isPresent()) {
             throw new ConditionCreationException("The requested condition " + condition.getClass().getName() + "is not registered");
         }
         ConditionContainer container = containerByClass.get();
-        if (container.getScope() == Scope.PLAYER) {
-            playerScope.put(container.getGroup(), condition);
-        } else {
-            worldScope.put(container.getGroup(), condition);
+        return getConditions(container.getGroup());
+    }
+
+    public List<DoorCondition> getConditions(ConditionGroup group) {
+        if (group.getScope() == Scope.PLAYER) {
+            return playerScope.computeIfAbsent(group.getName(), k -> new LinkedList<>());
         }
-        Bukkit.getPluginManager().callEvent(new ConditionBagModifiedEvent(this));
+        if (group.getScope() == Scope.WORLD) {
+            return worldScope.computeIfAbsent(group.getName(), k -> new LinkedList<>());
+        }
+        return getConditions(group.getName());
     }
 
-    public boolean removeCondition(ConditionGroup container) {
-        boolean result = playerScope.remove(container.getName()) != null || worldScope.remove(container.getName()) != null;
-        Bukkit.getPluginManager().callEvent(new ConditionBagModifiedEvent(this));
-        return result;
-    }
-
-    public Optional<DoorCondition> getCondition(ConditionGroup container) {
-        return getCondition(container.getName());
-    }
-
-    public Optional<DoorCondition> getCondition(String group) {
-        Optional<DoorCondition> worldCon = Optional.ofNullable(worldScope.get(group));
-        if (worldCon.isPresent()) return worldCon;
-        return Optional.ofNullable(playerScope.get(group));
+    public List<DoorCondition> getConditions(String group) {
+        Optional<ConditionGroup> conditionGroup = ConditionRegistrar.getConditionGroup(group);
+        if (conditionGroup.isPresent()) {
+            return getConditions(conditionGroup.get());
+        }
+        throw new IllegalArgumentException("The requested group does not exist.");
     }
 
     public boolean isConditionSet(ConditionGroup container) {
-        return getCondition(container).isPresent();
+        return !getConditions(container).isEmpty();
     }
 
     @Override
@@ -123,13 +137,12 @@ public class ConditionBag implements ConditionCollection {
 
     @Override
     public void evaluated() {
-        playerScope.values().forEach(DoorCondition::evaluated);
-        worldScope.values().forEach(DoorCondition::evaluated);
+        getConditions().forEach(DoorCondition::evaluated);
     }
 
     @Override
     public void opened(Player player) {
-        playerScope.values().forEach(c -> c.opened(player));
+        getPlayerConditions().forEach(c -> c.opened(player));
     }
 
     @Override
@@ -145,14 +158,22 @@ public class ConditionBag implements ConditionCollection {
     @Override
     public ConditionBag copy() {
         return new ConditionBag(
-                playerScope.values().stream().map(DoorCondition::clone).collect(Collectors.toList()),
-                worldScope.values().stream().map(DoorCondition::clone).collect(Collectors.toList()));
+                getPlayerConditions().stream().map(DoorCondition::clone).collect(Collectors.toList()),
+                getWorldConditions().stream().map(DoorCondition::clone).collect(Collectors.toList()));
+    }
+
+    public Collection<DoorCondition> getPlayerConditions() {
+        return playerScope.values().stream().flatMap(List::stream).collect(Collectors.toList());
+    }
+
+    public Collection<DoorCondition> getWorldConditions() {
+        return worldScope.values().stream().flatMap(List::stream).collect(Collectors.toList());
     }
 
     @Override
     public Collection<DoorCondition> getConditions() {
-        Collection<DoorCondition> values = playerScope.values();
-        values.addAll(worldScope.values());
+        Collection<DoorCondition> values = new ArrayList<>(getPlayerConditions());
+        values.addAll(getWorldConditions());
         return values;
     }
 }
