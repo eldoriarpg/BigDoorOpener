@@ -6,7 +6,7 @@
 
     <groupId>de.eldoria</groupId>
     <artifactId>bigdoorsopener</artifactId>
-    <version>2.3.3</version>
+    <version>2.4.0-pre5</version>
     <name>BigDoorsOpener</name>
     <url>https://github.com/eldoriarpg/BigDoorOpener</url>
     <description>Open and close doors automatically on certain conditions</description>
@@ -20,7 +20,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.5</version>
+                <version>3.8.1</version>
                 <configuration>
                     <source>8</source>
                     <target>8</target>
@@ -29,7 +29,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.2.3</version>
+                <version>3.2.4</version>
                 <!-- Do not include the <configuration>...</configuration> part if you are using Sponge! -->
                 <configuration>
                     <relocations>
@@ -126,10 +126,16 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>de.eldoria.EldoUtilities</groupId>
+            <groupId>de.eldoria</groupId>
             <artifactId>EldoUtilitiesCore</artifactId>
-            <version>1.7.3</version>
+            <version>1.7.8</version>
             <scope>compile</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.bstats</groupId>
+                    <artifactId>bstats-bukkit</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>net.kyori</groupId>
