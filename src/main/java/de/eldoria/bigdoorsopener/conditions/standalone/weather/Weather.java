@@ -10,7 +10,6 @@ import de.eldoria.bigdoorsopener.core.conditions.Scope;
 import de.eldoria.bigdoorsopener.door.ConditionalDoor;
 import de.eldoria.bigdoorsopener.util.C;
 import de.eldoria.eldoutilities.localization.ILocalizer;
-import de.eldoria.eldoutilities.localization.Localizer;
 import de.eldoria.eldoutilities.localization.Replacement;
 import de.eldoria.eldoutilities.serialization.SerializationUtil;
 import de.eldoria.eldoutilities.serialization.TypeResolvingMap;
@@ -89,7 +88,7 @@ public class Weather implements DoorCondition {
                         return;
                     }
 
-                    conditionBag.putCondition(new Weather(weatherType, forceWeather.get()));
+                    conditionBag.accept(new Weather(weatherType, forceWeather.get()));
                     messageSender.sendMessage(player, localizer.getMessage("setCondition.weather",
                             Replacement.create("OPEN", weatherType == WeatherType.CLEAR
                                     ? localizer.getMessage("conditionDesc.clear")

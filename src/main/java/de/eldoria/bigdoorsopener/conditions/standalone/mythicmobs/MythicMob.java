@@ -8,7 +8,6 @@ import de.eldoria.bigdoorsopener.core.conditions.Scope;
 import de.eldoria.bigdoorsopener.door.ConditionalDoor;
 import de.eldoria.bigdoorsopener.util.C;
 import de.eldoria.eldoutilities.localization.ILocalizer;
-import de.eldoria.eldoutilities.localization.Localizer;
 import de.eldoria.eldoutilities.localization.Replacement;
 import de.eldoria.eldoutilities.serialization.SerializationUtil;
 import de.eldoria.eldoutilities.utils.ArrayUtil;
@@ -69,7 +68,7 @@ public class MythicMob implements DoorCondition {
 						return;
 					}
 
-					conditionBag.putCondition(new MythicMob(mob));
+					conditionBag.accept(new MythicMob(mob));
 					messageSender.sendMessage(player, localizer().getMessage("setCondition.mythicMob"));
 
 				})

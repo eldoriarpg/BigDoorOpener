@@ -10,7 +10,6 @@ import de.eldoria.bigdoorsopener.core.listener.registration.RegisterInteraction;
 import de.eldoria.bigdoorsopener.door.ConditionalDoor;
 import de.eldoria.bigdoorsopener.util.C;
 import de.eldoria.eldoutilities.localization.ILocalizer;
-import de.eldoria.eldoutilities.localization.Localizer;
 import de.eldoria.eldoutilities.localization.Replacement;
 import de.eldoria.eldoutilities.messages.MessageSender;
 import de.eldoria.eldoutilities.serialization.SerializationUtil;
@@ -76,7 +75,7 @@ public class SimpleRegion implements Location {
                                 messageSender.sendMessage(player, localizer.getMessage("setCondition.secondPoint"));
                                 return false;
                             }
-                            conditionBag.putCondition(new SimpleRegion(first, vec, world));
+                            conditionBag.accept(new SimpleRegion(first, vec, world));
                             event.setCancelled(true);
                             messageSender.sendMessage(player, localizer.getMessage("setCondition.simpleRegionRegisterd"));
                             return true;
@@ -97,7 +96,6 @@ public class SimpleRegion implements Location {
                 if (pos.getX() > maximum.getX() || pos.getX() < minimum.getX()) return false;
                 if (pos.getY() > maximum.getY() || pos.getY() < minimum.getY()) return false;
                 return !(pos.getZ() > maximum.getZ()) && !(pos.getZ() < minimum.getZ());
-
             });
         } catch (ExecutionException e) {
             BigDoorsOpener.logger().log(Level.WARNING, "Could not compute value", e);

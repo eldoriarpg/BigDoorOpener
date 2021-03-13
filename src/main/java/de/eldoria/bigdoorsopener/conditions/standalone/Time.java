@@ -10,7 +10,6 @@ import de.eldoria.bigdoorsopener.core.conditions.Scope;
 import de.eldoria.bigdoorsopener.door.ConditionalDoor;
 import de.eldoria.bigdoorsopener.util.C;
 import de.eldoria.eldoutilities.localization.ILocalizer;
-import de.eldoria.eldoutilities.localization.Localizer;
 import de.eldoria.eldoutilities.localization.Replacement;
 import de.eldoria.eldoutilities.serialization.SerializationUtil;
 import de.eldoria.eldoutilities.serialization.TypeResolvingMap;
@@ -121,7 +120,7 @@ public class Time implements DoorCondition {
                         messageSender.sendError(player, localizer.getMessage("error.invalidBoolean"));
                         return;
                     }
-                    conditionBag.putCondition(new Time(open.getAsInt(), close.getAsInt(), force.get()));
+                    conditionBag.accept(new Time(open.getAsInt(), close.getAsInt(), force.get()));
                     messageSender.sendMessage(player, localizer.getMessage("setCondition.time",
                             Replacement.create("OPEN", Parser.parseTicksToTime(open.getAsInt())),
                             Replacement.create("CLOSE", Parser.parseTicksToTime(close.getAsInt()))));

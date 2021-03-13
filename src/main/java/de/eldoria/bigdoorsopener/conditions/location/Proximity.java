@@ -8,7 +8,6 @@ import de.eldoria.bigdoorsopener.door.ConditionalDoor;
 import de.eldoria.bigdoorsopener.util.C;
 import de.eldoria.eldoutilities.functions.TriFunction;
 import de.eldoria.eldoutilities.localization.ILocalizer;
-import de.eldoria.eldoutilities.localization.Localizer;
 import de.eldoria.eldoutilities.localization.Replacement;
 import de.eldoria.eldoutilities.serialization.SerializationUtil;
 import de.eldoria.eldoutilities.serialization.TypeResolvingMap;
@@ -109,7 +108,7 @@ public class Proximity implements Location {
                         return;
                     }
 
-                    conditionBag.putCondition(new Proximity(vector, form));
+                    conditionBag.accept(new Proximity(vector, form));
 
                     // TODO: display region Maybe some day. In a far future...
 

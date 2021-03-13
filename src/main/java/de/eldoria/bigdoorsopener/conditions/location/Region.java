@@ -12,7 +12,6 @@ import de.eldoria.bigdoorsopener.core.conditions.Scope;
 import de.eldoria.bigdoorsopener.door.ConditionalDoor;
 import de.eldoria.bigdoorsopener.util.C;
 import de.eldoria.eldoutilities.localization.ILocalizer;
-import de.eldoria.eldoutilities.localization.Localizer;
 import de.eldoria.eldoutilities.localization.Replacement;
 import de.eldoria.eldoutilities.serialization.SerializationUtil;
 import de.eldoria.eldoutilities.serialization.TypeResolvingMap;
@@ -107,7 +106,7 @@ public class Region implements Location {
                         messageSender.sendError(player, localizer.getMessage("error.regionNotFound"));
                         return;
                     }
-                    conditionBag.putCondition(new Region(region, player.getWorld()));
+                    conditionBag.accept(new Region(region, player.getWorld()));
                     messageSender.sendMessage(player, localizer.getMessage("setCondition.region"));
 
                 })
