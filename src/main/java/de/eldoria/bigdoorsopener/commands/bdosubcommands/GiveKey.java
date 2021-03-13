@@ -42,7 +42,7 @@ public class GiveKey extends BigDoorsAdapterCommand {
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        if (denyAccess(sender, Permissions.USE)) {
+        if (denyAccess(sender, Permissions.GIVE_KEY)) {
             return true;
         }
 
