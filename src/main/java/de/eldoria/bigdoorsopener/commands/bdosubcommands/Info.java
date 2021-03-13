@@ -95,7 +95,10 @@ public class Info extends BigDoorsAdapterCommand {
 		ConditionBag conditionBag = cDoor.getConditionBag();
 
 		for (DoorCondition condition : conditionBag.getConditions()) {
+            Optional<ConditionContainer> containerByClass = ConditionRegistrar.getContainerByClass(condition.getClass());
+            Integer id = groupCount.compute(containerByClass.get().getGroup(), (k, v) -> v == null ? 0 : v + 1);
 			component.append(Component.newline())
+                    .append(Component.text(id + " | ", NamedTextColor.AQUA))
 					.append(condition.getDescription(localizer()))
 					.append(Component.newline())
 					.append(Component.text("[" + localizer().getMessage("info.remove") + "]", NamedTextColor.DARK_RED, TextDecoration.UNDERLINED)
