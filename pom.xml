@@ -6,7 +6,7 @@
 
     <groupId>de.eldoria</groupId>
     <artifactId>bigdoorsopener</artifactId>
-    <version>2.3.2</version>
+    <version>2.3.3</version>
     <name>BigDoorsOpener</name>
     <url>https://github.com/eldoriarpg/BigDoorOpener</url>
     <description>Open and close doors automatically on certain conditions</description>
@@ -36,6 +36,10 @@
                         <relocation>
                             <pattern>net.kyori</pattern>
                             <shadedPattern>de.eldoria.bigdoorsopener.kyori</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>de.eldoria.eldoutilities</pattern>
+                            <shadedPattern>de.eldoria.bigdoorsopener.eldoutilities</shadedPattern>
                         </relocation>
                     </relocations>
                 </configuration>
@@ -122,10 +126,10 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>de.eldoria</groupId>
-            <artifactId>EldoUtilities</artifactId>
-            <version>1.4.2</version>
-            <scope>provided</scope>
+            <groupId>de.eldoria.EldoUtilities</groupId>
+            <artifactId>EldoUtilitiesCore</artifactId>
+            <version>1.7.3</version>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>net.kyori</groupId>

@@ -61,7 +61,6 @@ import java.util.regex.Pattern;
 
 public class BigDoorsOpener extends EldoPlugin {
 
-    private static Logger logger;
     private static CachingJSEngine JS;
     private static boolean placeholderEnabled = false;
     private static boolean mythicMobsEnabled;
@@ -80,17 +79,6 @@ public class BigDoorsOpener extends EldoPlugin {
     // listener
     private WeatherListener weatherListener;
     private RegisterInteraction registerInteraction;
-
-    /**
-     * Get the plugin logger instance.
-     *
-     * @return plugin logger instance
-     */
-    @SuppressWarnings("StaticVariableUsedBeforeInitialization")
-    @NotNull
-    public static Logger logger() {
-        return logger;
-    }
 
     @SuppressWarnings("StaticVariableUsedBeforeInitialization")
     public static CachingJSEngine JS() {
@@ -124,20 +112,19 @@ public class BigDoorsOpener extends EldoPlugin {
     }
 
     @Override
-    public void onDisable() {
+    public void onPluginDisable() {
         super.onDisable();
     }
 
-    @SuppressWarnings("AssignmentToStaticFieldFromInstanceMethod")
     @SneakyThrows
+    @SuppressWarnings("AssignmentToStaticFieldFromInstanceMethod")
     @Override
-    public void onEnable() {
+    public void onPluginEnable() {
 
         ServerVersion.forceVersion(ServerVersion.MC_1_8, ServerVersion.MC_1_16);
 
         if (!initialized) {
             instance = this;
-            logger = this.getLogger();
 
             // Load external resources. Must be loaded first.
             loadExternalSources();
@@ -151,7 +138,7 @@ public class BigDoorsOpener extends EldoPlugin {
 
             // Check for updates
             if (config.isCheckUpdates()) {
-                Updater.Butler(new ButlerUpdateData(this, "bdo.command.reload", true, false, 8, "https://plugins.eldoria.de"));
+                Updater.Butler(new ButlerUpdateData(this, "bdo.command.reload", true, false, 8, "https://plugins.eldoria.de")).start();
             }
 
             localizer = ILocalizer.create(this, "de_DE", "en_US");
