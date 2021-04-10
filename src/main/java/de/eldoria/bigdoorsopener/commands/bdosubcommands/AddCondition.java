@@ -1,15 +1,12 @@
 package de.eldoria.bigdoorsopener.commands.bdosubcommands;
 
 import de.eldoria.bigdoorsopener.config.Config;
-import de.eldoria.bigdoorsopener.core.BigDoorsOpener;
 import de.eldoria.bigdoorsopener.core.adapter.BigDoorsAdapterCommand;
 import de.eldoria.bigdoorsopener.core.conditions.ConditionContainer;
 import de.eldoria.bigdoorsopener.core.conditions.ConditionRegistrar;
 import de.eldoria.bigdoorsopener.door.ConditionalDoor;
 import de.eldoria.bigdoorsopener.util.Permissions;
-import de.eldoria.eldoutilities.localization.Localizer;
 import de.eldoria.eldoutilities.localization.Replacement;
-import de.eldoria.eldoutilities.messages.MessageSender;
 import de.eldoria.eldoutilities.utils.ArrayUtil;
 import nl.pim16aap2.bigDoors.BigDoors;
 import nl.pim16aap2.bigDoors.Door;
@@ -26,19 +23,14 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static de.eldoria.bigdoorsopener.commands.CommandHelper.argumentsInvalid;
-import static de.eldoria.bigdoorsopener.commands.CommandHelper.denyAccess;
-import static de.eldoria.bigdoorsopener.commands.CommandHelper.getPlayerFromSender;
+public class AddCondition extends BigDoorsAdapterCommand {
 
-public class SetCondition extends BigDoorsAdapterCommand {
-
-    public SetCondition(BigDoors bigDoors, Config config) {
+    public AddCondition(BigDoors bigDoors, Config config) {
         super(bigDoors, config);
     }
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-
         if (denyAccess(sender, Permissions.USE)) {
             return true;
         }
@@ -83,7 +75,7 @@ public class SetCondition extends BigDoorsAdapterCommand {
             conditionArgs = Arrays.copyOfRange(args, 2, args.length);
         }
 
-        condition.create(player, messageSender(), c -> conditionalDoor.getConditionBag().setCondition(c), conditionArgs);
+        condition.create(player, messageSender(), c -> conditionalDoor.getConditionBag().addCondition(c), conditionArgs);
 
         if (conditionalDoor.getEvaluationType() == ConditionalDoor.EvaluationType.CUSTOM) {
             Pattern compile = Pattern.compile(group, Pattern.CASE_INSENSITIVE);

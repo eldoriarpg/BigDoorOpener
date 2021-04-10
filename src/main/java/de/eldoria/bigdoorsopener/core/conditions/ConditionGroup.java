@@ -17,7 +17,6 @@ public class ConditionGroup {
         this.name = name;
     }
 
-
     void addCondition(ConditionContainer condition) {
         conditions.put(condition.getName(), condition);
     }
@@ -28,5 +27,9 @@ public class ConditionGroup {
 
     public Optional<ConditionContainer> getConditionByName(String name) {
         return Optional.ofNullable(conditions.get(name));
+    }
+
+    public Scope getScope() {
+        return conditions.values().stream().findFirst().map(ConditionContainer::getScope).orElse(null);
     }
 }

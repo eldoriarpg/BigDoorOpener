@@ -1,4 +1,4 @@
-package de.eldoria.bigdoorsopener.conditions.location;
+package de.eldoria.bigdoorsopener.conditions.worldlocation;
 
 import de.eldoria.bigdoorsopener.core.BigDoorsOpener;
 import de.eldoria.bigdoorsopener.core.conditions.ConditionContainer;
@@ -35,17 +35,17 @@ import static de.eldoria.bigdoorsopener.commands.CommandHelper.argumentsInvalid;
 /**
  * A condition which opens the door when the player is within a specific range of defined by geometric form
  */
-@SerializableAs("proximityCondition")
-public class Proximity implements Location {
+@SerializableAs("worldProximityCondition")
+public class WorldProximity implements WorldLocation {
     private final Vector dimensions;
     private final ProximityForm proximityForm;
 
-    public Proximity(Vector dimensions, ProximityForm proximityForm) {
+    public WorldProximity(Vector dimensions, ProximityForm proximityForm) {
         this.dimensions = dimensions;
         this.proximityForm = proximityForm;
     }
 
-    public Proximity(Map<String, Object> map) {
+    public WorldProximity(Map<String, Object> map) {
         TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
         dimensions = resolvingMap.getValue("dimensions");
         String formString = resolvingMap.getValue("proximityForm");
@@ -54,7 +54,7 @@ public class Proximity implements Location {
     }
 
     public static ConditionContainer getConditionContainer() {
-        return ConditionContainer.ofClass(Proximity.class, Scope.PLAYER)
+        return ConditionContainer.ofClass(WorldProximity.class, Scope.WORLD)
                 .withFactory((player, messageSender, conditionBag, arguments) -> {
                     ILocalizer localizer = BigDoorsOpener.localizer();
                     if (argumentsInvalid(player, messageSender, localizer, arguments, 1,
@@ -101,21 +101,21 @@ public class Proximity implements Location {
                         return;
                     }
 
-                    Proximity.ProximityForm form = ArgumentUtils.getOptionalParameter(arguments, 1, Proximity.ProximityForm.CUBOID, (s) -> EnumUtil.parse(s, Proximity.ProximityForm.class));
+                    WorldProximity.ProximityForm form = ArgumentUtils.getOptionalParameter(arguments, 1, WorldProximity.ProximityForm.CUBOID, (s) -> EnumUtil.parse(s, WorldProximity.ProximityForm.class));
 
                     if (form == null) {
                         messageSender.sendError(player, localizer.getMessage("error.invalidForm"));
                         return;
                     }
 
-                    conditionBag.accept(new Proximity(vector, form));
+                    conditionBag.accept(new WorldProximity(vector, form));
 
                     // TODO: display region Maybe some day. In a far future...
 
                     messageSender.sendMessage(player, localizer.getMessage("setCondition.proximity"));
                 })
                 .onTabComplete((sender, localizer, args) -> {
-                    final String[] proximityForm = Arrays.stream(Proximity.ProximityForm.values())
+                    final String[] proximityForm = Arrays.stream(WorldProximity.ProximityForm.values())
                             .map(v -> v.name().toLowerCase())
                             .toArray(String[]::new);
 
@@ -127,16 +127,21 @@ public class Proximity implements Location {
                     }
                     return Collections.emptyList();
                 })
-                .withMeta("proximity", "location", ConditionContainer.Builder.Cost.PLAYER_LOW.cost)
+                .withMeta("worldProximity", "worldLocation", ConditionContainer.Builder.Cost.PLAYER_LOW.cost)
                 .build();
     }
 
     @Override
     public Boolean isOpen(Player player, World world, ConditionalDoor door, boolean currentState) {
-        Vector vector = player.getLocation().toVector();
-        return proximityForm.check.apply(door.getPosition(),
-                new Vector(vector.getBlockX(), vector.getBlockY(), vector.getBlockZ()),
-                dimensions);
+        for (Player worldPlayer : world.getPlayers()) {
+            Vector vector = worldPlayer.getLocation().toVector();
+            if (proximityForm.check.apply(door.getPosition(),
+                    new Vector(vector.getBlockX(), vector.getBlockY(), vector.getBlockZ()),
+                    dimensions)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
@@ -163,8 +168,8 @@ public class Proximity implements Location {
     }
 
     @Override
-    public Proximity clone() {
-        return new Proximity(dimensions, proximityForm);
+    public WorldProximity clone() {
+        return new WorldProximity(dimensions, proximityForm);
     }
 
     @Override

@@ -19,6 +19,9 @@ import de.eldoria.bigdoorsopener.conditions.standalone.mythicmobs.MythicMob;
 import de.eldoria.bigdoorsopener.conditions.standalone.mythicmobs.MythicMobsListener;
 import de.eldoria.bigdoorsopener.conditions.standalone.weather.Weather;
 import de.eldoria.bigdoorsopener.conditions.standalone.weather.WeatherListener;
+import de.eldoria.bigdoorsopener.conditions.worldlocation.WorldProximity;
+import de.eldoria.bigdoorsopener.conditions.worldlocation.WorldRegion;
+import de.eldoria.bigdoorsopener.conditions.worldlocation.WorldSimpleRegion;
 import de.eldoria.bigdoorsopener.config.Config;
 import de.eldoria.bigdoorsopener.config.TimedDoor;
 import de.eldoria.bigdoorsopener.core.conditions.ConditionRegistrar;
@@ -46,7 +49,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.PluginManager;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.jetbrains.annotations.NotNull;
 
@@ -55,7 +57,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -111,60 +112,58 @@ public class BigDoorsOpener extends EldoPlugin {
         return instance;
     }
 
-    @Override
-    public void onPluginDisable() {
-        super.onDisable();
-    }
-
     @SneakyThrows
     @SuppressWarnings("AssignmentToStaticFieldFromInstanceMethod")
     @Override
     public void onPluginEnable() {
-
         ServerVersion.forceVersion(ServerVersion.MC_1_8, ServerVersion.MC_1_16);
 
         if (!initialized) {
             instance = this;
-
-            // Load external resources. Must be loaded first.
-            loadExternalSources();
-
             buildSerializer();
-
-            // create config
-            config = new Config(this);
-
-            JS = new CachingJSEngine(config.getJsCacheSize());
-
-            // Check for updates
-            if (config.isCheckUpdates()) {
-                Updater.Butler(new ButlerUpdateData(this, "bdo.command.reload", true, false, 8, "https://plugins.eldoria.de")).start();
-            }
-
-            localizer = ILocalizer.create(this, "de_DE", "en_US");
-            localizer.setLocale(config.getLanguage());
-
-            //enable metrics
-            enableMetrics();
-
-
-            MessageSender.create(this, "§6[BDO]");
-
-            // start door checker
-            doorChecker = new DoorChecker(config, doors);
-            scheduler.scheduleSyncRepeatingTask(this, doorChecker, 100, 1);
-
-            registerListener();
-
-            registerCommand("bigdoorsopener",
-                    new BDOCommand(this, doors, config, doorChecker));
-        }
-
-        if (initialized) {
+        } else {
             localizer.setLocale(config.getLanguage());
             doorChecker.reload();
         }
         initialized = true;
+    }
+
+    @SneakyThrows
+    @Override
+    public void onPostStart() {
+        // Load external resources. Must be loaded first.
+        loadExternalSources();
+
+
+        lateInitThirdPartyAPIs();
+
+        // create config
+        config = new Config(instance);
+
+        JS = new CachingJSEngine(config.getJsCacheSize());
+
+        // Check for updates
+        if (config.isCheckUpdates()) {
+            Updater.Butler(new ButlerUpdateData(instance, "bdo.command.reload", true, false, 8, "https://plugins.eldoria.de")).start();
+        }
+
+        localizer = ILocalizer.create(instance, "de_DE", "en_US");
+        localizer.setLocale(config.getLanguage());
+
+        //enable metrics
+        enableMetrics();
+
+
+        MessageSender.create(instance, "§6[BDO]");
+
+        // start door checker
+        doorChecker = new DoorChecker(config, doors);
+        scheduler.scheduleSyncRepeatingTask(instance, doorChecker, 100, 1);
+
+        registerListener();
+
+        registerCommand("bigdoorsopener",
+                new BDOCommand(instance, doors, config, doorChecker));
     }
 
     private void registerListener() {
@@ -172,22 +171,21 @@ public class BigDoorsOpener extends EldoPlugin {
         registerInteraction = new RegisterInteraction(MessageSender.getPluginMessageSender(this), config);
         registerListener(new ModificationListener(config), doorChecker, new DoorOpenedListener(config),
                 new ItemConditionListener(doors, config), registerInteraction, weatherListener);
-        if (isMythicMobsEnabled()) {
+        if (mythicMobsEnabled) {
             registerListener(new MythicMobsListener(doors, config));
         }
     }
 
     @SuppressWarnings( {"AssignmentToStaticFieldFromInstanceMethod", "VariableNotUsedInsideIf"})
     private void loadExternalSources() throws InstantiationException {
-        PluginManager pm = Bukkit.getPluginManager();
 
-        if (!pm.isPluginEnabled("BigDoors")) {
+        if (!getPluginManager().isPluginEnabled("BigDoors")) {
             logger().warning("Big Doors is disabled.");
-            pm.disablePlugin(this);
+            getPluginManager().disablePlugin(this);
             throw new InstantiationException("Big Doors is not enabled");
         }
 
-        Plugin bigDoorsPlugin = pm.getPlugin("BigDoors");
+        Plugin bigDoorsPlugin = getPluginManager().getPlugin("BigDoors");
         doors = (BigDoors) bigDoorsPlugin;
         commander = doors.getCommander();
 
@@ -197,6 +195,11 @@ public class BigDoorsOpener extends EldoPlugin {
             logger().warning("Big Doors is not ready or not loaded properly");
             throw new InstantiationException("Big Doors is not enabled");
         }
+    }
+
+    private void lateInitThirdPartyAPIs() {
+        // Since bukkit is not able to guarantee that plugins will be loaded before this,
+        // the third party apis will be initialized delayed
 
         // check if world guard is loaded
         if (Bukkit.getPluginManager().isPluginEnabled("WorldGuard")) {
@@ -250,6 +253,9 @@ public class BigDoorsOpener extends EldoPlugin {
         ConditionRegistrar.registerCondition(Proximity.getConditionContainer());
         ConditionRegistrar.registerCondition(Region.getConditionContainer());
         ConditionRegistrar.registerCondition(SimpleRegion.getConditionContainer());
+        ConditionRegistrar.registerCondition(WorldProximity.getConditionContainer());
+        ConditionRegistrar.registerCondition(WorldRegion.getConditionContainer());
+        ConditionRegistrar.registerCondition(WorldSimpleRegion.getConditionContainer());
         ConditionRegistrar.registerCondition(PermissionNode.getConditionContainer());
         ConditionRegistrar.registerCondition(DoorPermission.getConditionContainer());
         ConditionRegistrar.registerCondition(Time.getConditionContainer());

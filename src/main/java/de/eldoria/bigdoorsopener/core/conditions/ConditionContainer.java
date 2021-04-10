@@ -5,7 +5,7 @@ import de.eldoria.bigdoorsopener.door.conditioncollections.ConditionBag;
 import de.eldoria.eldoutilities.consumer.QuadConsumer;
 import de.eldoria.eldoutilities.functions.TriFunction;
 import de.eldoria.eldoutilities.localization.ILocalizer;
-import de.eldoria.eldoutilities.localization.Localizer;
+import de.eldoria.eldoutilities.localization.Replacement;
 import de.eldoria.eldoutilities.messages.MessageSender;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -15,6 +15,7 @@ import org.bukkit.entity.Player;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 public final class ConditionContainer {
     private final Class<? extends DoorCondition> clazz;
@@ -22,10 +23,12 @@ public final class ConditionContainer {
     private final String name;
     private final String group;
     private final int cost;
-    private final QuadConsumer<Player, MessageSender, ConditionBag, String[]> create;
+    private final QuadConsumer<Player, MessageSender, Consumer<DoorCondition>, String[]> create;
     private final TriFunction<CommandSender, ILocalizer, String[], List<String>> onTabComplete;
 
-    private ConditionContainer(Class<? extends DoorCondition> clazz, Scope scope, String name, String group, int cost, QuadConsumer<Player, MessageSender, ConditionBag, String[]> create, TriFunction<CommandSender, ILocalizer, String[], List<String>> onTabComplete) {
+    private ConditionContainer(Class<? extends DoorCondition> clazz, Scope scope, String name, String group, int cost,
+                               QuadConsumer<Player, MessageSender, Consumer<DoorCondition>, String[]> create,
+                               TriFunction<CommandSender, ILocalizer, String[], List<String>> onTabComplete) {
         this.clazz = clazz;
         this.scope = scope;
         this.name = name;
@@ -67,21 +70,20 @@ public final class ConditionContainer {
      * @param conditionBag  condition bag where the condition should be set
      * @param arguments     arguments for condition creation
      */
-    public void create(Player player, MessageSender messageSender, ConditionBag conditionBag, String[] arguments) {
+    public void create(Player player, MessageSender messageSender, Consumer<DoorCondition> conditionBag, String[] arguments) {
         create.accept(player, messageSender, conditionBag, arguments);
     }
 
     /**
      * Handles the tab completion event for the wrapped condition.
      *
-     * @param sender    Source of the command.  For players tab-completing a
-     *                  command inside of a command block, this will be the player, not
-     *                  the command block.
+     * @param sender    Source of the command.  For players tab-completing a command inside of a command block, this
+     *                  will be the player, not the command block.
      * @param localizer localizer for argument localization
-     * @param args      The arguments passed to the command, including final
-     *                  partial argument to be completed and command label
-     * @return A List of possible completions for the final argument, or null
-     * to default to the command executor
+     * @param args      The arguments passed to the command, including final partial argument to be completed and
+     *                  command label
+     *
+     * @return A List of possible completions for the final argument, or null to default to the command executor
      */
     public List<String> onTabComplete(CommandSender sender, ILocalizer localizer, String[] args) {
         return onTabComplete.apply(sender, localizer, args);
@@ -93,7 +95,7 @@ public final class ConditionContainer {
         private String name = null;
         private String group = null;
         private int cost = 50;
-        private QuadConsumer<Player, MessageSender, ConditionBag, String[]> create = null;
+        private QuadConsumer<Player, MessageSender, Consumer<DoorCondition>, String[]> create = null;
         private TriFunction<CommandSender, ILocalizer, String[], List<String>> onTabComplete = (sender, localizer, strings) -> Collections.emptyList();
 
         /**
@@ -109,26 +111,31 @@ public final class ConditionContainer {
 
         /**
          * This consumer must satisfy these rules:
-         * <p>- If a condition was added to the condition bag, a message must be send to the player via {@link MessageSender#sendMessage(Player, String)}
-         * <p>- If the condition can't be set, a message must be send to the player via {@link MessageSender#sendError(Player, String)}
+         * <p>- If a condition was added to the condition bag, a message must be send to the player via {@link
+         * MessageSender#sendLocalizedMessage(CommandSender, String, Replacement...)}
+         * <p>- If the condition can't be set, a message must be send to the player via {@link
+         * MessageSender#sendLocalizedError(CommandSender, String, Replacement...)}
          * <p>- Do not remove any condition from the bag here.
          * <p>- Do not try to save the config.
-         * <p>- The String[] input is only input for the condition itself. It does not contain anything else and may be empty.
+         * <p>- The String[] input is only input for the condition itself. It does not contain anything else and may be
+         * empty.
          * <p>- Use the message sender to send messages.
          *
          * @param create a consumer, which fullfills the rules above.
+         *
          * @return this builder instance
          */
-        public Builder withFactory(QuadConsumer<Player, MessageSender, ConditionBag, String[]> create) {
+        public Builder withFactory(QuadConsumer<Player, MessageSender, Consumer<DoorCondition>, String[]> create) {
             this.create = create;
             return this;
         }
 
         /**
-         * This quad function should handle the tab completion event like defined in
-         * {@link TabCompleter#onTabComplete(CommandSender, Command, String, String[])}
+         * This quad function should handle the tab completion event like defined in {@link
+         * TabCompleter#onTabComplete(CommandSender, Command, String, String[])}
          *
          * @param onTabComplete a quad function which i
+         *
          * @return this builder instance
          */
         public Builder onTabComplete(TriFunction<CommandSender, ILocalizer, String[], List<String>> onTabComplete) {
@@ -141,6 +148,7 @@ public final class ConditionContainer {
          *
          * @param name name and group of the condition. case sensitive.
          * @param cost cost of the condition. describes the costs to calculate the condition in the given scope.
+         *
          * @return this builder instance
          */
         public Builder withMeta(String name, int cost) {
@@ -153,6 +161,7 @@ public final class ConditionContainer {
          * @param name  name of the condition. case sensitive.
          * @param group group of the condition. case sensitive.
          * @param cost  cost of the condition. describes the costs to calculate the condition in the given scope.
+         *
          * @return this builder instance
          */
         public Builder withMeta(String name, String group, int cost) {

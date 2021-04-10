@@ -122,17 +122,17 @@ public class Config {
                 ConditionBag conditionBag = cD.getConditionBag();
 
                 if (tD.getPermission() != null && !tD.getPermission().isEmpty()) {
-                    conditionBag.putCondition(new PermissionNode(tD.getPermission()));
+                    conditionBag.setCondition(new PermissionNode(tD.getPermission()));
                     log.info("Adding permission condition.");
                 }
 
                 if (!tD.isPermanentlyClosed()) {
-                    conditionBag.putCondition(new Time(tD.getTicksOpen(), tD.getTicksClose(), false));
+                    conditionBag.setCondition(new Time(tD.getTicksOpen(), tD.getTicksClose(), false));
                     log.info("Adding time condition.");
                 }
 
                 if (tD.getOpenRange() > 0) {
-                    conditionBag.putCondition(
+                    conditionBag.setCondition(
                             new Proximity(
                                     new Vector(tD.getOpenRange(), tD.getOpenRange(), tD.getOpenRange()),
                                     Proximity.ProximityForm.ELLIPSOID));

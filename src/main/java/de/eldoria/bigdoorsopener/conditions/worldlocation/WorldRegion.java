@@ -1,4 +1,4 @@
-package de.eldoria.bigdoorsopener.conditions.location;
+package de.eldoria.bigdoorsopener.conditions.worldlocation;
 
 import com.google.common.cache.Cache;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
@@ -18,6 +18,7 @@ import de.eldoria.eldoutilities.serialization.TypeResolvingMap;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.entity.Player;
@@ -26,38 +27,36 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ExecutionException;
-import java.util.logging.Level;
 
 import static de.eldoria.bigdoorsopener.commands.CommandHelper.argumentsInvalid;
 
 /**
  * A condition which opens the door, when a player is inside a world guard region.
  */
-@SerializableAs("regionCondition")
-public class Region implements Location {
+@SerializableAs("worldRegionCondition")
+public class WorldRegion implements WorldLocation {
     private final ProtectedRegion region;
     private final World world;
     private final String worldName;
     private final String regionId;
 
-    private final Cache<org.bukkit.Location, Boolean> cache = C.getExpiringCache();
+    private final Cache<Location, Boolean> cache = C.getExpiringCache();
 
-    public Region(ProtectedRegion region, World world) {
+    public WorldRegion(ProtectedRegion region, World world) {
         this.region = region;
         this.world = world;
         this.worldName = world.getName();
         this.regionId = region.getId();
     }
 
-    private Region(World world, ProtectedRegion region, String regionId, String worldName) {
+    private WorldRegion(World world, ProtectedRegion region, String regionId, String worldName) {
         this.world = world;
         this.region = region;
         this.worldName = worldName;
         this.regionId = regionId;
     }
 
-    public Region(Map<String, Object> map) {
+    public WorldRegion(Map<String, Object> map) {
         TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
         worldName = resolvingMap.getValue("world");
         regionId = resolvingMap.getValue("region");
@@ -76,7 +75,7 @@ public class Region implements Location {
     }
 
     public static ConditionContainer getConditionContainer() {
-        return ConditionContainer.ofClass(Region.class, Scope.PLAYER)
+        return ConditionContainer.ofClass(WorldRegion.class, Scope.WORLD)
                 .withFactory((player, messageSender, conditionBag, arguments) -> {
                     final RegionContainer regionContainer = BigDoorsOpener.getRegionContainer();
                     ILocalizer localizer = BigDoorsOpener.localizer();
@@ -106,7 +105,7 @@ public class Region implements Location {
                         messageSender.sendError(player, localizer.getMessage("error.regionNotFound"));
                         return;
                     }
-                    conditionBag.accept(new Region(region, player.getWorld()));
+                    conditionBag.accept(new WorldRegion(region, player.getWorld()));
                     messageSender.sendMessage(player, localizer.getMessage("setCondition.region"));
 
                 })
@@ -116,7 +115,7 @@ public class Region implements Location {
                     }
                     return Collections.emptyList();
                 })
-                .withMeta("region", "location", ConditionContainer.Builder.Cost.PLAYER_MEDIUM.cost)
+                .withMeta("worldRegion", "worldLocation", ConditionContainer.Builder.Cost.PLAYER_MEDIUM.cost)
                 .build();
     }
 
@@ -124,14 +123,12 @@ public class Region implements Location {
     public Boolean isOpen(Player player, World world, ConditionalDoor door, boolean currentState) {
         if (world != this.world) return false;
         if (region == null) return null;
-        try {
-            return cache.get(player.getLocation(), () ->
-                    region.contains(BukkitAdapter.asBlockVector(player.getLocation()))
-            );
-        } catch (ExecutionException e) {
-            BigDoorsOpener.logger().log(Level.WARNING, "Could not compute value", e);
+        for (Player worldPlayer : world.getPlayers()) {
+            if (region.contains(BukkitAdapter.asBlockVector(worldPlayer.getLocation()))) {
+                return true;
+            }
         }
-        return null;
+        return false;
     }
 
     @Override
@@ -156,8 +153,8 @@ public class Region implements Location {
     }
 
     @Override
-    public Region clone() {
-        return new Region(world, region, worldName, regionId);
+    public WorldRegion clone() {
+        return new WorldRegion(world, region, worldName, regionId);
     }
 
     @Override

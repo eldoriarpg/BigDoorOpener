@@ -102,7 +102,7 @@ public class ConditionalDoor implements ConfigurationSerializable {
         if (resolvingMap.containsKey("conditionChain")) {
             ConditionChain conditionChain = resolvingMap.getValue("conditionChain");
             conditionBag = new ConditionBag();
-            conditionChain.getConditions().stream().filter(java.util.Objects::nonNull).forEach(c -> conditionBag.putCondition(c));
+            conditionChain.getConditions().stream().filter(java.util.Objects::nonNull).forEach(c -> conditionBag.setCondition(c));
         } else {
             conditionBag = resolvingMap.getValueOrDefault("conditionBag", new ConditionBag());
         }

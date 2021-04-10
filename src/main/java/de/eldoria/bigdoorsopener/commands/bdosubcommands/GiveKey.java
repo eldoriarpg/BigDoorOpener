@@ -3,14 +3,11 @@ package de.eldoria.bigdoorsopener.commands.bdosubcommands;
 import de.eldoria.bigdoorsopener.conditions.DoorCondition;
 import de.eldoria.bigdoorsopener.conditions.item.Item;
 import de.eldoria.bigdoorsopener.config.Config;
-import de.eldoria.bigdoorsopener.core.BigDoorsOpener;
 import de.eldoria.bigdoorsopener.core.adapter.BigDoorsAdapterCommand;
 import de.eldoria.bigdoorsopener.door.ConditionalDoor;
 import de.eldoria.bigdoorsopener.util.Permissions;
 import de.eldoria.eldoutilities.container.Pair;
-import de.eldoria.eldoutilities.localization.Localizer;
 import de.eldoria.eldoutilities.localization.Replacement;
-import de.eldoria.eldoutilities.messages.MessageSender;
 import de.eldoria.eldoutilities.utils.ArgumentUtils;
 import de.eldoria.eldoutilities.utils.Parser;
 import nl.pim16aap2.bigDoors.BigDoors;
@@ -26,13 +23,8 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.stream.Collectors;
-
-import static de.eldoria.bigdoorsopener.commands.CommandHelper.argumentsInvalid;
-import static de.eldoria.bigdoorsopener.commands.CommandHelper.denyAccess;
-import static de.eldoria.bigdoorsopener.commands.CommandHelper.getPlayerFromSender;
 
 public class GiveKey extends BigDoorsAdapterCommand {
 
@@ -42,7 +34,7 @@ public class GiveKey extends BigDoorsAdapterCommand {
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        if (denyAccess(sender, Permissions.USE)) {
+        if (denyAccess(sender, Permissions.GIVE_KEY)) {
             return true;
         }
 
@@ -66,14 +58,26 @@ public class GiveKey extends BigDoorsAdapterCommand {
             return true;
         }
 
-        Optional<DoorCondition> condition = door.first.getConditionBag().getCondition("item");
+        List<DoorCondition> condition = door.first.getConditionBag().getConditions("item");
 
-        if (!condition.isPresent()) {
+        if (!condition.isEmpty()) {
             messageSender().sendLocalizedError(sender, "error.noItemConditionSet");
             return true;
         }
 
-        ItemStack item = ((Item) condition.get()).getItem();
+        String id = ArgumentUtils.getOrDefault(args, 1, "0");
+        OptionalInt optionalInt = Parser.parseInt(id);
+        if (!optionalInt.isPresent()) {
+            messageSender().sendLocalizedError(sender, "error.invalidNumber");
+            return true;
+        }
+
+        if (condition.size() < optionalInt.getAsInt()) {
+            messageSender().sendLocalizedError(sender, "error.conditionNotSet");
+            return true;
+        }
+
+        ItemStack item = ((Item) condition.get(optionalInt.getAsInt())).getItem();
 
         OptionalInt amount = ArgumentUtils.getOptionalParameter(args, 1, OptionalInt.of(64), Parser::parseInt);
 
@@ -126,6 +130,9 @@ public class GiveKey extends BigDoorsAdapterCommand {
                     .filter(p -> p.getName().toLowerCase().startsWith(args[2]))
                     .map(HumanEntity::getName)
                     .collect(Collectors.toList());
+        }
+        if (args.length == 4) {
+            return Collections.singletonList(localizer().getMessage("tabcomplete.conditionId"));
         }
         return Collections.emptyList();
     }

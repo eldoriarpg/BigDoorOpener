@@ -10,7 +10,6 @@ import de.eldoria.bigdoorsopener.util.C;
 import de.eldoria.bigdoorsopener.util.JsSyntaxHelper;
 import de.eldoria.eldoutilities.container.Pair;
 import de.eldoria.eldoutilities.localization.ILocalizer;
-import de.eldoria.eldoutilities.localization.Localizer;
 import de.eldoria.eldoutilities.localization.Replacement;
 import de.eldoria.eldoutilities.serialization.SerializationUtil;
 import de.eldoria.eldoutilities.serialization.TypeResolvingMap;
@@ -95,7 +94,7 @@ public class Placeholder implements DoorCondition {
                                     Replacement.create("ERROR", result.second).addFormatting('6')));
                             return;
                         case FINE:
-                            conditionBag.putCondition(new Placeholder(JsSyntaxHelper.translateEvaluator(evaluator)));
+                            conditionBag.accept(new Placeholder(JsSyntaxHelper.translateEvaluator(evaluator)));
                             break;
                     }
 

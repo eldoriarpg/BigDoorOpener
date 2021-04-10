@@ -2,6 +2,7 @@ package de.eldoria.bigdoorsopener.commands;
 
 import com.google.common.cache.Cache;
 import de.eldoria.bigdoorsopener.commands.bdosubcommands.About;
+import de.eldoria.bigdoorsopener.commands.bdosubcommands.AddCondition;
 import de.eldoria.bigdoorsopener.commands.bdosubcommands.CloneDoor;
 import de.eldoria.bigdoorsopener.commands.bdosubcommands.CopyCondition;
 import de.eldoria.bigdoorsopener.commands.bdosubcommands.DoorList;
@@ -52,6 +53,7 @@ public class BDOCommand extends EldoCommand {
         registerCommand("reload", new Reload(config, doorChecker, plugin));
         registerCommand("removeCondition", new RemoveCondition(doors, config));
         registerCommand("setCondition", new SetCondition(doors, config));
+        registerCommand("addCondition", new AddCondition(doors, config));
         registerCommand("setEvaluator", new SetEvaluator(doors, config));
         registerCommand("stayOpen", new StayOpen(doors, config));
         registerCommand("unregister", new Unregister(doors, config));

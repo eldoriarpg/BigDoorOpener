@@ -6,7 +6,6 @@ import de.eldoria.bigdoorsopener.core.conditions.ConditionRegistrar;
 import de.eldoria.bigdoorsopener.core.conditions.Scope;
 import de.eldoria.bigdoorsopener.door.ConditionalDoor;
 import de.eldoria.eldoutilities.localization.ILocalizer;
-import de.eldoria.eldoutilities.localization.Localizer;
 import de.eldoria.eldoutilities.localization.Replacement;
 import de.eldoria.eldoutilities.serialization.SerializationUtil;
 import de.eldoria.eldoutilities.serialization.TypeResolvingMap;
@@ -81,7 +80,7 @@ public class ItemHolding extends Item {
                     ItemStack itemInMainHand = player.getInventory().getItemInMainHand().clone();
 
                     itemInMainHand.setAmount(amount.getAsInt());
-                    conditionBag.putCondition(new ItemHolding(itemInMainHand, consume.get()));
+                    conditionBag.accept(new ItemHolding(itemInMainHand, consume.get()));
                     messageSender.sendMessage(player, localizer.getMessage("setCondition.itemHolding"));
 
                 })
