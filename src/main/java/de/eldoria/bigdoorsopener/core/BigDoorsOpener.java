@@ -111,15 +111,15 @@ public class BigDoorsOpener extends EldoPlugin {
     public static BigDoorsOpener instance() {
         return instance;
     }
+    private boolean postStart = false;
 
     @SneakyThrows
-    @SuppressWarnings("AssignmentToStaticFieldFromInstanceMethod")
     @Override
     public void onPluginEnable() {
         ServerVersion.forceVersion(ServerVersion.MC_1_8, ServerVersion.MC_1_16);
 
         if (!initialized) {
-            instance = this;
+            BigDoorsOpener.instance = this;
             buildSerializer();
         } else {
             localizer.setLocale(config.getLanguage());
@@ -131,9 +131,10 @@ public class BigDoorsOpener extends EldoPlugin {
     @SneakyThrows
     @Override
     public void onPostStart() {
+        if(postStart) return;
+        postStart = true;
         // Load external resources. Must be loaded first.
         loadExternalSources();
-
 
         lateInitThirdPartyAPIs();
 
