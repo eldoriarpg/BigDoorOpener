@@ -92,7 +92,7 @@ public class ItemOwning extends Item {
         return hasPlayerItemInInventory(player);
     }
 
-    public ItemOwning deserialize(Map<String, Object> map) {
+    public static ItemOwning deserialize(Map<String, Object> map) {
         TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
         ItemStack stack = resolvingMap.getValue("item");
         boolean consumed = resolvingMap.getValue("consumed");
