@@ -27,8 +27,8 @@ import java.util.Map;
 /**
  * A condition chain represents a set of multiple conditions.
  *
- * @deprecated This class is only present for serialization reasons and will be removed in the next major release.
- * Use {@link ConditionBag} instead
+ * @deprecated This class is only present for serialization reasons and will be removed in the next major release. Use
+ * {@link ConditionBag} instead
  */
 @Setter
 @Getter
@@ -74,6 +74,7 @@ public class ConditionChain implements ConditionCollection {
      * @param world        world of the door
      * @param door         door which is checked
      * @param currentState the current state of the door
+     *
      * @return result of the conditions.
      */
     @Override
@@ -90,6 +91,7 @@ public class ConditionChain implements ConditionCollection {
      * @param world        world of the door
      * @param door         door which is checked
      * @param currentState the current state of the door
+     *
      * @return result of the conditions.
      */
     @Override
@@ -107,6 +109,7 @@ public class ConditionChain implements ConditionCollection {
      * @param world        world of the door
      * @param door         door which is checked
      * @param currentState the current state of the door
+     *
      * @return string with the values replaced.
      */
     @Override

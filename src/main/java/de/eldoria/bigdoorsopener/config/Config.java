@@ -97,8 +97,7 @@ public class Config {
     }
 
     /**
-     * Updates the config from version 0 to version 1.
-     * Version 0 is identified by a missing version key.
+     * Updates the config from version 0 to version 1. Version 0 is identified by a missing version key.
      */
     @SuppressWarnings("unchecked")
     private void updateVersion0() {
@@ -159,8 +158,7 @@ public class Config {
     }
 
     /**
-     * Forces the current actual config values.
-     * Must be always executed after {@link #updateConfig()}
+     * Forces the current actual config values. Must be always executed after {@link #updateConfig()}
      */
     private void forceConfigConsistency() {
         plugin.saveDefaultConfig();
@@ -182,8 +180,7 @@ public class Config {
     }
 
     /**
-     * Discards any internal changes to the config and loads it.
-     * Ensures config consistency.
+     * Discards any internal changes to the config and loads it. Ensures config consistency.
      */
     @SuppressWarnings("unchecked")
     public void reloadConfig() {

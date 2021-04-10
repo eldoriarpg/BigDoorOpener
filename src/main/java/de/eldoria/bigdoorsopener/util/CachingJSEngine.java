@@ -39,9 +39,9 @@ public class CachingJSEngine {
             } else {
                 BigDoorsOpener.logger().info("Java 15 or newer detected. Searching for external Engine.");
                 RegisteredServiceProvider<ScriptEngineManager> registration = Bukkit.getServer().getServicesManager().getRegistration(ScriptEngineManager.class);
-                if(registration != null){
+                if (registration != null) {
                     this.engine = registration.getProvider().getEngineByName("nashorn");
-                }else {
+                } else {
                     this.engine = null;
                 }
             }

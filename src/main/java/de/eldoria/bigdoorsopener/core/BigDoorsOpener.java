@@ -80,6 +80,7 @@ public class BigDoorsOpener extends EldoPlugin {
     // listener
     private WeatherListener weatherListener;
     private RegisterInteraction registerInteraction;
+    private boolean postStart = false;
 
     @SuppressWarnings("StaticVariableUsedBeforeInitialization")
     public static CachingJSEngine JS() {
@@ -111,7 +112,6 @@ public class BigDoorsOpener extends EldoPlugin {
     public static BigDoorsOpener instance() {
         return instance;
     }
-    private boolean postStart = false;
 
     @SneakyThrows
     @Override
@@ -131,7 +131,7 @@ public class BigDoorsOpener extends EldoPlugin {
     @SneakyThrows
     @Override
     public void onPostStart() {
-        if(postStart) return;
+        if (postStart) return;
         postStart = true;
         // Load external resources. Must be loaded first.
         loadExternalSources();

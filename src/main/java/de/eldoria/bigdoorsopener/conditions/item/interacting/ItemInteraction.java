@@ -42,8 +42,8 @@ public abstract class ItemInteraction extends Item {
     public abstract void opened(Player player);
 
     /**
-     * This method is called when player interact event is fired.
-     * This method ideally adds the player to {@link #playersClicked} when the player can open the door with this key.
+     * This method is called when player interact event is fired. This method ideally adds the player to {@link
+     * #playersClicked} when the player can open the door with this key.
      *
      * @param event     interact event to check.
      * @param available

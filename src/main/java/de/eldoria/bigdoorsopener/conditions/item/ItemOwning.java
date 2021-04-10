@@ -81,6 +81,13 @@ public class ItemOwning extends Item {
                 .build();
     }
 
+    public static ItemOwning deserialize(Map<String, Object> map) {
+        TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
+        ItemStack stack = resolvingMap.getValue("item");
+        boolean consumed = resolvingMap.getValue("consumed");
+        return new ItemOwning(stack, consumed);
+    }
+
     @Override
     public void opened(Player player) {
         if (!isConsumed()) return;
@@ -90,13 +97,6 @@ public class ItemOwning extends Item {
     @Override
     public Boolean isOpen(Player player, World world, ConditionalDoor door, boolean currentState) {
         return hasPlayerItemInInventory(player);
-    }
-
-    public static ItemOwning deserialize(Map<String, Object> map) {
-        TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
-        ItemStack stack = resolvingMap.getValue("item");
-        boolean consumed = resolvingMap.getValue("consumed");
-        return new ItemOwning(stack, consumed);
     }
 
     @Override

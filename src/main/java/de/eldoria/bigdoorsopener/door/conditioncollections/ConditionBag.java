@@ -19,7 +19,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -44,7 +43,7 @@ public class ConditionBag implements ConditionCollection {
         TypeResolvingMap typeResolvingMap = SerializationUtil.mapOf(objectMap);
         ArrayList<DoorCondition> conditions = typeResolvingMap.getValueOrDefault("conditions", new ArrayList<>());
         for (DoorCondition condition : conditions) {
-            if(condition == null) {
+            if (condition == null) {
                 BigDoorsOpener.logger().fine("Condition is null. Skipping.");
                 continue;
             }

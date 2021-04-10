@@ -6,8 +6,6 @@ import de.eldoria.bigdoorsopener.door.ConditionalDoor;
 import de.eldoria.bigdoorsopener.util.C;
 import de.eldoria.bigdoorsopener.util.Permissions;
 import de.eldoria.eldoutilities.container.Pair;
-import de.eldoria.eldoutilities.localization.Localizer;
-import de.eldoria.eldoutilities.messages.MessageSender;
 import de.eldoria.eldoutilities.simplecommands.EldoCommand;
 import de.eldoria.eldoutilities.utils.ArrayUtil;
 import nl.pim16aap2.bigDoors.BigDoors;
@@ -48,6 +46,7 @@ public abstract class BigDoorsAdapterCommand extends EldoCommand {
      * Get the door with a specific id.
      *
      * @param doorId id of the door as long or string
+     *
      * @return Door with id if exists.
      */
     @Nullable
@@ -60,6 +59,7 @@ public abstract class BigDoorsAdapterCommand extends EldoCommand {
      *
      * @param player owner of the door.
      * @param doorId id of the door as long or string
+     *
      * @return Door with id if exists.
      */
     @Nullable
@@ -71,6 +71,7 @@ public abstract class BigDoorsAdapterCommand extends EldoCommand {
      * Get a list of doors owned by the player.
      *
      * @param player Player for which the doors should be retrieved.
+     *
      * @return List of doors which are owned by the player
      */
     public List<Door> getDoors(Player player) {
@@ -82,6 +83,7 @@ public abstract class BigDoorsAdapterCommand extends EldoCommand {
      *
      * @param player Player for which the doors should be retrieved.
      * @param name   Get doors which match the name.
+     *
      * @return List of doors which are owned by the player
      */
     protected List<Door> getDoors(Player player, String name) {
@@ -98,14 +100,13 @@ public abstract class BigDoorsAdapterCommand extends EldoCommand {
     }
 
     /**
-     * Tries to find a door.
-     * Will search for a door of the player.
-     * If no door is found a search in all doors by id is performed.
-     * If the player has the {@link Permissions#ACCESS_ALL} permission,
-     * a door will be returned even when its not owned by the player.
+     * Tries to find a door. Will search for a door of the player. If no door is found a search in all doors by id is
+     * performed. If the player has the {@link Permissions#ACCESS_ALL} permission, a door will be returned even when its
+     * not owned by the player.
      *
      * @param doorUID uid or name of the door.
      * @param player  player which performed the request.
+     *
      * @return door if the door exists and the player is allowed to access it. Otherwise null.
      */
     protected Door getPlayerDoor(String doorUID, Player player) {
@@ -161,6 +162,7 @@ public abstract class BigDoorsAdapterCommand extends EldoCommand {
      *
      * @param door   door to get.
      * @param player player which wants to get the door.
+     *
      * @return door or null if the door does not exist in BD.
      */
     protected ConditionalDoor getOrRegister(Door door, Player player) {
@@ -187,12 +189,12 @@ public abstract class BigDoorsAdapterCommand extends EldoCommand {
     }
 
     /**
-     * Tries to find the door for a player.
-     * Will call {@link #getPlayerDoor(String, Player)} to retrieve a door.
-     * Will check if the door is already registered.
+     * Tries to find the door for a player. Will call {@link #getPlayerDoor(String, Player)} to retrieve a door. Will
+     * check if the door is already registered.
      *
      * @param doorUID uid or name of the door
      * @param player  player which requests this door.
+     *
      * @return door with conditional door or null if the door is not registered or the user has no access.
      */
     public Pair<ConditionalDoor, Door> getConditionalPlayerDoor(String doorUID, Player player) {

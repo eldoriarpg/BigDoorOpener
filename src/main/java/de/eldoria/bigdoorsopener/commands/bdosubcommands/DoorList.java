@@ -1,12 +1,9 @@
 package de.eldoria.bigdoorsopener.commands.bdosubcommands;
 
 import de.eldoria.bigdoorsopener.config.Config;
-import de.eldoria.bigdoorsopener.core.BigDoorsOpener;
 import de.eldoria.bigdoorsopener.core.adapter.BigDoorsAdapterCommand;
 import de.eldoria.bigdoorsopener.door.ConditionalDoor;
 import de.eldoria.bigdoorsopener.util.Permissions;
-import de.eldoria.eldoutilities.localization.Localizer;
-import de.eldoria.eldoutilities.messages.MessageSender;
 import nl.pim16aap2.bigDoors.BigDoors;
 import nl.pim16aap2.bigDoors.Door;
 import org.bukkit.command.Command;
@@ -19,9 +16,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import static de.eldoria.bigdoorsopener.commands.CommandHelper.denyAccess;
-import static de.eldoria.bigdoorsopener.commands.CommandHelper.getPlayerFromSender;
 
 public class DoorList extends BigDoorsAdapterCommand {
     private final Config config;

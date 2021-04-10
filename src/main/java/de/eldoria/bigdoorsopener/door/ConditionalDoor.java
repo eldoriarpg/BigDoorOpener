@@ -26,9 +26,8 @@ import java.util.Map;
 import static java.time.temporal.ChronoUnit.SECONDS;
 
 /**
- * A conditional door consists of some basic settings and a condition chain.
- * A conditional door can be open or closed. This dependes on several conditions.
- * Hint: Thats why its called conditional door.
+ * A conditional door consists of some basic settings and a condition chain. A conditional door can be open or closed.
+ * This dependes on several conditions. Hint: Thats why its called conditional door.
  */
 @Getter
 @SerializableAs("conditionalDoor")
@@ -91,7 +90,7 @@ public class ConditionalDoor implements ConfigurationSerializable {
 
     public ConditionalDoor(Map<String, Object> map) {
         TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
-        doorUID =(int) resolvingMap.getValue("doorUID");
+        doorUID = resolvingMap.getValue("doorUID");
         world = resolvingMap.getValue("world");
         BigDoorsOpener.logger().fine("Loading door \"" + doorUID + "\".");
         position = resolvingMap.getValue("position");
@@ -116,6 +115,7 @@ public class ConditionalDoor implements ConfigurationSerializable {
      * @param player       player for player sensitive calculations
      * @param world        world of the door
      * @param currentState the current state of the door.
+     *
      * @return true if the door should be open or false if not.
      */
     public boolean getState(Player player, World world, boolean currentState) {
@@ -198,8 +198,7 @@ public class ConditionalDoor implements ConfigurationSerializable {
     }
 
     /**
-     * Forces a door to stay open the amount of seconds after it was opened.
-     * Will skip any checks in this time.
+     * Forces a door to stay open the amount of seconds after it was opened. Will skip any checks in this time.
      *
      * @param stayOpen amount of seconds the door should stay open before checking the conditions again.
      */

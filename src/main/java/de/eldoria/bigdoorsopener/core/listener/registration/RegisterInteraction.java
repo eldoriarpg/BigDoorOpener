@@ -62,6 +62,7 @@ public class RegisterInteraction implements Listener {
      * Cancel the registration for a player
      *
      * @param player player to cancel the registration for
+     *
      * @return true if the user had a registered registration process.
      */
     public boolean unregister(Player player) {

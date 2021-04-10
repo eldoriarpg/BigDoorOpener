@@ -10,17 +10,17 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * This listener allows to check the current weather in a world.
- * For some reasons spigot does not know the current weather of a world... wtf.
+ * This listener allows to check the current weather in a world. For some reasons spigot does not know the current
+ * weather of a world... wtf.
  */
 public class WeatherListener implements Listener {
     private static final Map<UUID, Boolean> WEATHER_MAP = new HashMap<>();
 
     /**
-     * Get if its raining in a world.
-     * Is only really correct if the weather changed after plugin initialization.
+     * Get if its raining in a world. Is only really correct if the weather changed after plugin initialization.
      *
      * @param world world to check
+     *
      * @return true if its currently raining in the world
      */
     public static boolean isRaining(World world) {

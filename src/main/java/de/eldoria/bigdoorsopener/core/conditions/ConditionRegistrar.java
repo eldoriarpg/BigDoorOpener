@@ -24,6 +24,7 @@ public final class ConditionRegistrar {
      * <p>The provided class in the container requires the {@link SerializableAs} annotation.
      *
      * @param conditionContainer condition container to register
+     *
      * @throws ConditionRegistrationException when the condition or its serialized name is already implemented
      * @throws IllegalStateException          when the annotation {@link SerializableAs} is not present
      */
@@ -40,10 +41,11 @@ public final class ConditionRegistrar {
     }
 
     /**
-     * Get a condition container by class.
-     * Only registered classes will return a container. Subclasses and interfaces are ambigous and will not return a container.
+     * Get a condition container by class. Only registered classes will return a container. Subclasses and interfaces
+     * are ambigous and will not return a container.
      *
      * @param clazz class to request
+     *
      * @return optional condition container
      */
     public static Optional<ConditionContainer> getContainerByClass(Class<? extends DoorCondition> clazz) {
@@ -54,6 +56,7 @@ public final class ConditionRegistrar {
      * Get the condition group with the provided name.
      *
      * @param string name of group
+     *
      * @return optional group with group if present
      */
     public static Optional<ConditionGroup> getConditionGroup(String string) {
@@ -89,6 +92,7 @@ public final class ConditionRegistrar {
      * Get a condition by name.
      *
      * @param name name of condition
+     *
      * @return option condition container
      */
     public static Optional<ConditionContainer> getConditionByName(String name) {

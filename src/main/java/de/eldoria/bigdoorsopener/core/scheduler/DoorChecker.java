@@ -10,8 +10,6 @@ import de.eldoria.bigdoorsopener.core.events.DoorUnregisteredEvent;
 import de.eldoria.bigdoorsopener.door.ConditionalDoor;
 import de.eldoria.bigdoorsopener.util.C;
 import de.eldoria.eldoutilities.functions.TriFunction;
-import de.eldoria.eldoutilities.localization.ILocalizer;
-import de.eldoria.eldoutilities.localization.Localizer;
 import nl.pim16aap2.bigDoors.BigDoors;
 import org.bukkit.Bukkit;
 import org.bukkit.Server;
@@ -65,8 +63,8 @@ public class DoorChecker extends BigDoorsAdapter implements Runnable, Listener {
     }
 
     /**
-     * Clears all registered doors and load them from the condfiguration.
-     * Therefore it should be executed AFTER {@link Config#reloadConfig()}
+     * Clears all registered doors and load them from the condfiguration. Therefore it should be executed AFTER {@link
+     * Config#reloadConfig()}
      */
     public void reload() {
         synchronized (doors) {

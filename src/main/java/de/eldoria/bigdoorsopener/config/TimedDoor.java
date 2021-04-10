@@ -46,8 +46,7 @@ public class TimedDoor implements ConfigurationSerializable {
      */
     private int ticksOpen = 14000;
     /**
-     * If a player is in this range the door will open.
-     * If not the door will be closed if open.
+     * If a player is in this range the door will open. If not the door will be closed if open.
      */
     private double openRange = 10;
     /**
