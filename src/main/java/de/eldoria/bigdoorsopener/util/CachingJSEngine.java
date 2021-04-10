@@ -4,6 +4,8 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import de.eldoria.bigdoorsopener.core.BigDoorsOpener;
 import jdk.nashorn.api.scripting.NashornScriptEngineFactory;
+import org.bukkit.Bukkit;
+import org.bukkit.plugin.RegisteredServiceProvider;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
@@ -35,7 +37,13 @@ public class CachingJSEngine {
                 BigDoorsOpener.logger().info("Java 11 or newer detected.");
                 this.engine = new NashornScriptEngineFactory().getScriptEngine("--no-deprecation-warning");
             } else {
-                this.engine = new ScriptEngineManager(null).getEngineByName("JavaScript");
+                BigDoorsOpener.logger().info("Java 15 or newer detected. Searching for external Engine.");
+                RegisteredServiceProvider<ScriptEngineManager> registration = Bukkit.getServer().getServicesManager().getRegistration(ScriptEngineManager.class);
+                if(registration != null){
+                    this.engine = registration.getProvider().getEngineByName("nashorn");
+                }else {
+                    this.engine = null;
+                }
             }
             this.engine.eval("print('[BigDoorsOpener] nashorn script engine started.')");
         } catch (ScriptException e) {
@@ -52,7 +60,7 @@ public class CachingJSEngine {
         }
 
 
-        cache = CacheBuilder.newBuilder().expireAfterAccess(24, TimeUnit.MINUTES).maximumSize(500).build();
+        cache = CacheBuilder.newBuilder().expireAfterAccess(24, TimeUnit.MINUTES).maximumSize(cacheSize).build();
     }
 
     /**
