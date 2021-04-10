@@ -1,6 +1,7 @@
 package de.eldoria.bigdoorsopener.door.conditioncollections;
 
 import de.eldoria.bigdoorsopener.conditions.DoorCondition;
+import de.eldoria.bigdoorsopener.core.BigDoorsOpener;
 import de.eldoria.bigdoorsopener.core.conditions.ConditionContainer;
 import de.eldoria.bigdoorsopener.core.conditions.ConditionGroup;
 import de.eldoria.bigdoorsopener.core.conditions.ConditionRegistrar;
@@ -39,15 +40,26 @@ public class ConditionBag implements ConditionCollection {
     public ConditionBag() {
     }
 
-    public ConditionBag(Map<String, Object> map) {
-        TypeResolvingMap typeResolvingMap = SerializationUtil.mapOf(map);
-        List<DoorCondition> conditions = typeResolvingMap.getValueOrDefault("conditions", Collections.emptyList());
-        conditions.forEach(this::addCondition);
+    public ConditionBag(Map<String, Object> objectMap) {
+        TypeResolvingMap typeResolvingMap = SerializationUtil.mapOf(objectMap);
+        ArrayList<DoorCondition> conditions = typeResolvingMap.getValueOrDefault("conditions", new ArrayList<>());
+        for (DoorCondition condition : conditions) {
+            if(condition == null) {
+                BigDoorsOpener.logger().fine("Condition is null. Skipping.");
+                continue;
+            }
+            BigDoorsOpener.logger().fine("Added condition \"" + condition.getClass().getSimpleName() + "\" to condition bag");
+            addCondition(condition);
+        }
     }
 
     @Override
     public @NotNull Map<String, Object> serialize() {
-        return SerializationUtil.newBuilder().add("conditions", getConditions()).build();
+        BigDoorsOpener.logger().fine("Saving Condition bag with " + getConditions().size() + " conditions.");
+        getConditions().forEach(c -> BigDoorsOpener.logger().fine("Saving Condition \"" + c.getClass().getSimpleName() + "\"."));
+        return SerializationUtil.newBuilder()
+                .add("conditions", new ArrayList<>(getConditions()))
+                .build();
     }
 
     public void setCondition(DoorCondition condition) {

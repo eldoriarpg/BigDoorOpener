@@ -72,7 +72,6 @@ public class ConditionalDoor implements ConfigurationSerializable {
 
     private boolean waitForOpen = false;
 
-
     /**
      * True if the door was registered in open state.
      */
@@ -92,14 +91,16 @@ public class ConditionalDoor implements ConfigurationSerializable {
 
     public ConditionalDoor(Map<String, Object> map) {
         TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
-        doorUID = (int) resolvingMap.getValue("doorUID");
+        doorUID =(int) resolvingMap.getValue("doorUID");
         world = resolvingMap.getValue("world");
+        BigDoorsOpener.logger().fine("Loading door \"" + doorUID + "\".");
         position = resolvingMap.getValue("position");
         enabled = resolvingMap.getValueOrDefault("enabled", true);
         invertOpen = resolvingMap.getValue("invertOpen");
         evaluator = resolvingMap.getValue("evaluator");
         evaluationType = EnumUtil.parse(resolvingMap.getValue("evaluationType"), EvaluationType.class);
         if (resolvingMap.containsKey("conditionChain")) {
+            BigDoorsOpener.logger().fine("Converting condition chain to condition bag");
             ConditionChain conditionChain = resolvingMap.getValue("conditionChain");
             conditionBag = new ConditionBag();
             conditionChain.getConditions().stream().filter(java.util.Objects::nonNull).forEach(c -> conditionBag.setCondition(c));
@@ -217,6 +218,7 @@ public class ConditionalDoor implements ConfigurationSerializable {
 
     @Override
     public @NotNull Map<String, Object> serialize() {
+        BigDoorsOpener.logger().fine("Saving door \"" + doorUID + "\".");
         return SerializationUtil.newBuilder()
                 .add("doorUID", doorUID)
                 .add("world", world)

@@ -226,6 +226,7 @@ public class Config {
         FileConfiguration config = plugin.getConfig();
         config.set("doors", new ArrayList<>(doors.values()));
         plugin.saveConfig();
+        BigDoorsOpener.logger().fine("Config saved.");
     }
 
     public ConditionalDoor getDoor(Long key) {
