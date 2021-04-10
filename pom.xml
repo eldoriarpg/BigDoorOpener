@@ -128,7 +128,7 @@
         <dependency>
             <groupId>de.eldoria</groupId>
             <artifactId>EldoUtilitiesCore</artifactId>
-            <version>1.7.8</version>
+            <version>1.7.11</version>
             <scope>compile</scope>
             <exclusions>
                 <exclusion>
