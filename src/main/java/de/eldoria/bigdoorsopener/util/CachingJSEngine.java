@@ -32,20 +32,20 @@ public class CachingJSEngine {
             BigDoorsOpener.logger().info("Detected version: " + verInt);
             if (verInt < 11) {
                 BigDoorsOpener.logger().info("Detected legacy java version below 11.");
-                this.engine = new NashornScriptEngineFactory().getScriptEngine();
+                engine = new NashornScriptEngineFactory().getScriptEngine();
             } else if (verInt < 15) {
                 BigDoorsOpener.logger().info("Java 11 or newer detected.");
-                this.engine = new NashornScriptEngineFactory().getScriptEngine("--no-deprecation-warning");
+                engine = new NashornScriptEngineFactory().getScriptEngine("--no-deprecation-warning");
             } else {
                 BigDoorsOpener.logger().info("Java 15 or newer detected. Searching for external Engine.");
                 RegisteredServiceProvider<ScriptEngineManager> registration = Bukkit.getServer().getServicesManager().getRegistration(ScriptEngineManager.class);
                 if (registration != null) {
-                    this.engine = registration.getProvider().getEngineByName("nashorn");
+                    engine = registration.getProvider().getEngineByName("js");
                 } else {
-                    this.engine = null;
+                    engine = null;
                 }
             }
-            this.engine.eval("print('[BigDoorsOpener] nashorn script engine started.')");
+            engine.eval("print('[BigDoorsOpener] " + engine.getFactory().getEngineName() + " script engine started.')");
         } catch (ScriptException e) {
             BigDoorsOpener.logger().log(Level.WARNING, "No nashorn script engine found. Trying to use JavaScript fallback.", e);
             engine = new ScriptEngineManager(null).getEngineByName("JavaScript");

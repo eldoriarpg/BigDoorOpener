@@ -88,9 +88,10 @@ public class ConditionalDoor implements ConfigurationSerializable {
         this(doorUID, world, position, new ConditionBag());
     }
 
+    @SuppressWarnings("casting")
     public ConditionalDoor(Map<String, Object> map) {
         TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
-        doorUID = resolvingMap.getValue("doorUID");
+        doorUID = (int) resolvingMap.getValue("doorUID");
         world = resolvingMap.getValue("world");
         BigDoorsOpener.logger().fine("Loading door \"" + doorUID + "\".");
         position = resolvingMap.getValue("position");
