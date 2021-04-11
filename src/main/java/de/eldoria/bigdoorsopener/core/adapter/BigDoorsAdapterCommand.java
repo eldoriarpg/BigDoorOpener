@@ -114,7 +114,7 @@ public abstract class BigDoorsAdapterCommand extends EldoCommand {
             // requester is console. should always have access to all doors.
             Door door = getDoor(doorUID);
             if (door == null) {
-                messageSender().sendError(null, localizer().getMessage("error.doorNotFound"));
+                messageSender().sendError(Bukkit.getConsoleSender(), localizer().getMessage("error.doorNotFound"));
                 return null;
             }
             door.setPermission(0);
