@@ -42,8 +42,8 @@ public class ItemBlock extends ItemInteraction {
     private BlockVector position;
 
     /**
-     * Creates a new item block condition without a set position.
-     * This object is incomplete and has to be initialized with the {@link #setPosition(BlockVector)} method before using.
+     * Creates a new item block condition without a set position. This object is incomplete and has to be initialized
+     * with the {@link #setPosition(BlockVector)} method before using.
      *
      * @param item
      * @param consumed

@@ -116,7 +116,7 @@ public class SimpleRegion implements Location {
                 .append(Component.text(world, C.highlightColor))
                 .append(Component.newline())
                 .append(Component.text(localizer.getMessage("conditionDesc.minPoint") + " ", C.baseColor))
-                .append(Component.text(minimum.toString(),C.highlightColor))
+                .append(Component.text(minimum.toString(), C.highlightColor))
                 .append(Component.newline())
                 .append(Component.text(localizer.getMessage("conditionDesc.maxPoint") + " ", C.baseColor))
                 .append(Component.text(maximum.toString(), C.highlightColor));

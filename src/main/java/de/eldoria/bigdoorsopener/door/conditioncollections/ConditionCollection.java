@@ -17,6 +17,7 @@ public interface ConditionCollection extends ConfigurationSerializable, Cloneabl
      * @param world        world of the door
      * @param door         door which is checked
      * @param currentState the current state of the door
+     *
      * @return result of the conditions.
      */
     default boolean or(Player player, World world, ConditionalDoor door, boolean currentState) {
@@ -30,6 +31,7 @@ public interface ConditionCollection extends ConfigurationSerializable, Cloneabl
      * @param world        world of the door
      * @param door         door which is checked
      * @param currentState the current state of the door
+     *
      * @return result of the conditions.
      */
     default boolean and(Player player, World world, ConditionalDoor door, boolean currentState) {
@@ -44,47 +46,48 @@ public interface ConditionCollection extends ConfigurationSerializable, Cloneabl
      * @param world        world of the door
      * @param door         door which is checked
      * @param currentState the current state of the door
+     *
      * @return string with the values replaced.
      */
-    public String custom(String string, Player player, World world, ConditionalDoor door, boolean currentState);
+    String custom(String string, Player player, World world, ConditionalDoor door, boolean currentState);
 
     /**
      * Called when the door was evaluated and a new evaluation cycle begins.
      */
-    public void evaluated();
+    void evaluated();
 
     /**
      * Called when the chain was true and the door was opened.
      *
      * @param player player which opened the door.
      */
-    public void opened(Player player);
+    void opened(Player player);
 
     /**
      * Checks if a key is present which needs a player lookup.
      *
      * @return true if a player key is present.
      */
-    public boolean requiresPlayerEvaluation();
+    boolean requiresPlayerEvaluation();
 
     /**
      * Checks if all conditions are null.
      *
      * @return true if all conditions are nulkl
      */
-    public boolean isEmpty();
+    boolean isEmpty();
 
     /**
      * Get a mutable new condition chain with the same conditions like this condition chain.
      *
      * @return new condition chain.
      */
-    public ConditionCollection copy();
+    ConditionCollection copy();
 
     /**
      * Get the conditions in a order from the less expensive to the most expensive computation time
      *
      * @return array of conditions. May contain null values.
      */
-    public Collection<DoorCondition> getConditions();
+    Collection<DoorCondition> getConditions();
 }

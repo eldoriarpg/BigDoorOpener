@@ -14,33 +14,33 @@ import java.util.Collections;
 import java.util.List;
 
 public class Reload extends EldoCommand {
-	private final Config config;
-	private final DoorChecker doorChecker;
-	private final Plugin plugin;
+    private final Config config;
+    private final DoorChecker doorChecker;
+    private final Plugin plugin;
 
-	public Reload(Config config, DoorChecker doorChecker, Plugin plugin) {
-		super(plugin);
-		this.config = config;
-		this.doorChecker = doorChecker;
-		this.plugin = plugin;
-	}
+    public Reload(Config config, DoorChecker doorChecker, Plugin plugin) {
+        super(plugin);
+        this.config = config;
+        this.doorChecker = doorChecker;
+        this.plugin = plugin;
+    }
 
-	@Override
-	public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-		if (denyAccess(sender, Permissions.RELOAD)) {
-			return true;
-		}
+    @Override
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+        if (denyAccess(sender, Permissions.RELOAD)) {
+            return true;
+        }
 
-		config.reloadConfig();
-		doorChecker.reload();
-		plugin.onEnable();
-		messageSender().sendLocalizedMessage(sender, "reload.completed");
-		return true;
+        config.reloadConfig();
+        doorChecker.reload();
+        plugin.onEnable();
+        messageSender().sendLocalizedMessage(sender, "reload.completed");
+        return true;
 
-	}
+    }
 
-	@Override
-	public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
-		return Collections.emptyList();
-	}
+    @Override
+    public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
+        return Collections.emptyList();
+    }
 }

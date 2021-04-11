@@ -18,44 +18,44 @@ import java.util.Collections;
 import java.util.List;
 
 public class Unregister extends BigDoorsAdapterCommand {
-	private final Config config;
+    private final Config config;
 
-	public Unregister(BigDoors bigDoors, Config config) {
-		super(bigDoors, config);
-		this.config = config;
-	}
+    public Unregister(BigDoors bigDoors, Config config) {
+        super(bigDoors, config);
+        this.config = config;
+    }
 
-	@Override
-	public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-		if (denyAccess(sender, Permissions.USE)) {
-			return true;
-		}
+    @Override
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+        if (denyAccess(sender, Permissions.USE)) {
+            return true;
+        }
 
-		if (argumentsInvalid(sender, args, 1, "<$syntax.doorId$>")) {
-			return true;
-		}
+        if (argumentsInvalid(sender, args, 1, "<$syntax.doorId$>")) {
+            return true;
+        }
 
-		Player playerFromSender = getPlayerFromSender(sender);
+        Player playerFromSender = getPlayerFromSender(sender);
 
-		Pair<ConditionalDoor, Door> door = getConditionalPlayerDoor(args[0], playerFromSender);
+        Pair<ConditionalDoor, Door> door = getConditionalPlayerDoor(args[0], playerFromSender);
 
-		if (door == null) {
-			return true;
-		}
+        if (door == null) {
+            return true;
+        }
 
-		config.removeDoor(door.second.getDoorUID());
+        config.removeDoor(door.second.getDoorUID());
 
-		messageSender().sendLocalizedMessage(sender, "unregister.message",
-				Replacement.create("DOOR_NAME", door.second.getName()).addFormatting('6'));
-		return true;
+        messageSender().sendLocalizedMessage(sender, "unregister.message",
+                Replacement.create("DOOR_NAME", door.second.getName()).addFormatting('6'));
+        return true;
 
-	}
+    }
 
-	@Override
-	public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
-		if (args.length == 1) {
-			return getDoorCompletion(sender, args[0]);
-		}
-		return Collections.emptyList();
-	}
+    @Override
+    public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
+        if (args.length == 1) {
+            return getDoorCompletion(sender, args[0]);
+        }
+        return Collections.emptyList();
+    }
 }

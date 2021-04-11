@@ -27,6 +27,7 @@ public final class JsSyntaxHelper {
      * Translates the alternative easier syntax to the true javascript syntax.
      *
      * @param evaluator evaluator to translate
+     *
      * @return the translated evaluator string.
      */
     public static String translateEvaluator(String evaluator) {
@@ -45,10 +46,11 @@ public final class JsSyntaxHelper {
     }
 
     /**
-     * This method validates a java script string.
-     * Will call {@link #translateEvaluator(String)} first and check the returned string.
+     * This method validates a java script string. Will call {@link #translateEvaluator(String)} first and check the
+     * returned string.
      *
      * @param evaluator string to evaluate
+     *
      * @return pair which returns the result and a optinal string which contains different valued based on the result
      */
     public static Pair<ValidatorResult, String> validateEvaluator(String evaluator, CachingJSEngine engine) {
@@ -88,6 +90,7 @@ public final class JsSyntaxHelper {
      * @param engine    engine to use
      * @param player    player to check for. can be null
      * @param vanilla   set to true to disable third party replacements
+     *
      * @return a pair which indicates if the execution was successful or the fail reason
      */
     public static Pair<ValidatorResult, String> checkExecution(String evaluator, CachingJSEngine engine, Player player, boolean vanilla) {
@@ -121,28 +124,23 @@ public final class JsSyntaxHelper {
          */
         UNBALANCED_PARENTHESIS,
         /**
-         * Indicates that a variable which is not a key was used.
-         * Will include the part which was not a variable
+         * Indicates that a variable which is not a key was used. Will include the part which was not a variable
          */
         INVALID_VARIABLE,
         /**
-         * Indicates that a invalid operator was used.
-         * Will return the invalid operator.
+         * Indicates that a invalid operator was used. Will return the invalid operator.
          */
         INVALID_OPERATOR,
         /**
-         * Indicates that the overall syntax is innvalid.
-         * Will return all invalid chars.
+         * Indicates that the overall syntax is innvalid. Will return all invalid chars.
          */
         INVALID_SYNTAX,
         /**
-         * Indicates that the execution failed.
-         * Will return the validator which was parsed.
+         * Indicates that the execution failed. Will return the validator which was parsed.
          */
         EXECUTION_FAILED,
         /**
-         * Indicates that the result was not a boolean.
-         * Will return the validator which was parsed.
+         * Indicates that the result was not a boolean. Will return the validator which was parsed.
          */
         NON_BOOLEAN_RESULT,
         /**

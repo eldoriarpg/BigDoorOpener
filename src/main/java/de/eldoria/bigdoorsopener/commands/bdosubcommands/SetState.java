@@ -1,13 +1,10 @@
 package de.eldoria.bigdoorsopener.commands.bdosubcommands;
 
 import de.eldoria.bigdoorsopener.config.Config;
-import de.eldoria.bigdoorsopener.core.BigDoorsOpener;
 import de.eldoria.bigdoorsopener.core.adapter.BigDoorsAdapterCommand;
 import de.eldoria.bigdoorsopener.door.ConditionalDoor;
 import de.eldoria.bigdoorsopener.util.Permissions;
 import de.eldoria.eldoutilities.container.Pair;
-import de.eldoria.eldoutilities.localization.Localizer;
-import de.eldoria.eldoutilities.messages.MessageSender;
 import de.eldoria.eldoutilities.utils.ArrayUtil;
 import de.eldoria.eldoutilities.utils.Parser;
 import nl.pim16aap2.bigDoors.BigDoors;
@@ -22,10 +19,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
-import static de.eldoria.bigdoorsopener.commands.CommandHelper.argumentsInvalid;
-import static de.eldoria.bigdoorsopener.commands.CommandHelper.denyAccess;
-import static de.eldoria.bigdoorsopener.commands.CommandHelper.getPlayerFromSender;
 
 public class SetState extends BigDoorsAdapterCommand {
 

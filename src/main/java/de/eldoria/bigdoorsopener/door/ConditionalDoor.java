@@ -26,9 +26,8 @@ import java.util.Map;
 import static java.time.temporal.ChronoUnit.SECONDS;
 
 /**
- * A conditional door consists of some basic settings and a condition chain.
- * A conditional door can be open or closed. This dependes on several conditions.
- * Hint: Thats why its called conditional door.
+ * A conditional door consists of some basic settings and a condition chain. A conditional door can be open or closed.
+ * This dependes on several conditions. Hint: Thats why its called conditional door.
  */
 @Getter
 @SerializableAs("conditionalDoor")
@@ -72,7 +71,6 @@ public class ConditionalDoor implements ConfigurationSerializable {
 
     private boolean waitForOpen = false;
 
-
     /**
      * True if the door was registered in open state.
      */
@@ -90,16 +88,19 @@ public class ConditionalDoor implements ConfigurationSerializable {
         this(doorUID, world, position, new ConditionBag());
     }
 
+    @SuppressWarnings("casting")
     public ConditionalDoor(Map<String, Object> map) {
         TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
         doorUID = (int) resolvingMap.getValue("doorUID");
         world = resolvingMap.getValue("world");
+        BigDoorsOpener.logger().fine("Loading door \"" + doorUID + "\".");
         position = resolvingMap.getValue("position");
         enabled = resolvingMap.getValueOrDefault("enabled", true);
         invertOpen = resolvingMap.getValue("invertOpen");
         evaluator = resolvingMap.getValue("evaluator");
         evaluationType = EnumUtil.parse(resolvingMap.getValue("evaluationType"), EvaluationType.class);
         if (resolvingMap.containsKey("conditionChain")) {
+            BigDoorsOpener.logger().fine("Converting condition chain to condition bag");
             ConditionChain conditionChain = resolvingMap.getValue("conditionChain");
             conditionBag = new ConditionBag();
             conditionChain.getConditions().stream().filter(java.util.Objects::nonNull).forEach(c -> conditionBag.setCondition(c));
@@ -115,6 +116,7 @@ public class ConditionalDoor implements ConfigurationSerializable {
      * @param player       player for player sensitive calculations
      * @param world        world of the door
      * @param currentState the current state of the door.
+     *
      * @return true if the door should be open or false if not.
      */
     public boolean getState(Player player, World world, boolean currentState) {
@@ -197,8 +199,7 @@ public class ConditionalDoor implements ConfigurationSerializable {
     }
 
     /**
-     * Forces a door to stay open the amount of seconds after it was opened.
-     * Will skip any checks in this time.
+     * Forces a door to stay open the amount of seconds after it was opened. Will skip any checks in this time.
      *
      * @param stayOpen amount of seconds the door should stay open before checking the conditions again.
      */
@@ -217,6 +218,7 @@ public class ConditionalDoor implements ConfigurationSerializable {
 
     @Override
     public @NotNull Map<String, Object> serialize() {
+        BigDoorsOpener.logger().fine("Saving door \"" + doorUID + "\".");
         return SerializationUtil.newBuilder()
                 .add("doorUID", doorUID)
                 .add("world", world)

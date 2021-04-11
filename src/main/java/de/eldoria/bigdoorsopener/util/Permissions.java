@@ -3,8 +3,8 @@ package de.eldoria.bigdoorsopener.util;
 import de.eldoria.bigdoorsopener.core.conditions.ConditionContainer;
 
 /**
- * Class to store permission values.
- * We dont like to store permissions where we need it. Otheriwse changing them would be a real pain.
+ * Class to store permission values. We dont like to store permissions where we need it. Otheriwse changing them would
+ * be a real pain.
  */
 public final class Permissions {
 

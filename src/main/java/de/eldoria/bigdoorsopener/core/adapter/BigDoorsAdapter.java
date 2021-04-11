@@ -38,6 +38,7 @@ public abstract class BigDoorsAdapter {
      *
      * @param open true if the door should be open.
      * @param door door to set the state
+     *
      * @return true if the door state was changed succesfully which is indicated by {@link BigDoors#toggleDoor(long)}
      */
     protected boolean setDoorState(boolean open, ConditionalDoor door) {
@@ -49,10 +50,11 @@ public abstract class BigDoorsAdapter {
     }
 
     /**
-     * Check if a door is currently considered as open.
-     * Will use the {@link ConditionalDoor#openInverted(boolean)} method.
+     * Check if a door is currently considered as open. Will use the {@link ConditionalDoor#openInverted(boolean)}
+     * method.
      *
      * @param door door to check.
+     *
      * @return true when the door is open.
      */
     protected boolean isOpen(ConditionalDoor door) {
@@ -63,6 +65,7 @@ public abstract class BigDoorsAdapter {
      * Checks if the world of a door exists and is present in the plugin.
      *
      * @param door door to check
+     *
      * @return true if the door exits
      */
     protected boolean doorExists(ConditionalDoor door) {
@@ -78,10 +81,10 @@ public abstract class BigDoorsAdapter {
     }
 
     /**
-     * Checks if a door is available.
-     * A door is considered available if its not open and not busy
+     * Checks if a door is available. A door is considered available if its not open and not busy
      *
      * @param door door to check
+     *
      * @return true if the door is available
      */
     protected boolean isAvailableToOpen(ConditionalDoor door) {
@@ -92,6 +95,7 @@ public abstract class BigDoorsAdapter {
      * Checks if the chunks of a door are loaded
      *
      * @param door door to check
+     *
      * @return true if chunks around the door are loaded
      */
     protected boolean isDoorLoaded(Door door) {
@@ -102,6 +106,7 @@ public abstract class BigDoorsAdapter {
      * Checks if a door is busy. A door is busy if its closing or opening at the moment.
      *
      * @param door door to check
+     *
      * @return true if the door is busy
      */
     protected boolean isBusy(ConditionalDoor door) {
@@ -112,6 +117,7 @@ public abstract class BigDoorsAdapter {
      * Get the door with the specified id if the player is the owner of the door.
      *
      * @param uid uid of the door.
+     *
      * @return door with id if exitsts
      */
     @Nullable
@@ -123,6 +129,7 @@ public abstract class BigDoorsAdapter {
      * Get the door with the specified id.
      *
      * @param doorId uid of the door.
+     *
      * @return door with id if exitsts
      */
     @Nullable
@@ -134,6 +141,7 @@ public abstract class BigDoorsAdapter {
      * Get the door with a specific id.
      *
      * @param doorId id of the door as long or string
+     *
      * @return Door with id if exists.
      */
     @Nullable
@@ -146,6 +154,7 @@ public abstract class BigDoorsAdapter {
      *
      * @param player owner of the door.
      * @param doorId id of the door as long or string
+     *
      * @return Door with id if exists.
      */
     @Nullable
@@ -157,6 +166,7 @@ public abstract class BigDoorsAdapter {
      * Get a list of doors owned by the player.
      *
      * @param player Player for which the doors should be retrieved.
+     *
      * @return List of doors which are owned by the player
      */
     protected List<Door> getDoors(Player player) {
@@ -168,6 +178,7 @@ public abstract class BigDoorsAdapter {
      *
      * @param player Player for which the doors should be retrieved.
      * @param name   Get doors which match the name.
+     *
      * @return List of doors which are owned by the player
      */
     protected List<Door> getDoors(Player player, String name) {
