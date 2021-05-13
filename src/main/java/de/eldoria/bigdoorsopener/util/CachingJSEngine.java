@@ -25,11 +25,11 @@ public class CachingJSEngine {
 
     public CachingJSEngine(int cacheSize) {
         try {
-            BigDoorsOpener.logger().info("Java version: " + System.getProperty("java.specification.version"));
+            BigDoorsOpener.logger().config("Java version: " + System.getProperty("java.specification.version"));
             String[] versionString = System.getProperty("java.specification.version").split("\\.");
             String version = versionString[versionString.length - 1];
             int verInt = Integer.parseInt(version);
-            BigDoorsOpener.logger().info("Detected version: " + verInt);
+            BigDoorsOpener.logger().config("Detected version: " + verInt);
             if (verInt < 11) {
                 BigDoorsOpener.logger().info("Detected legacy java version below 11.");
                 engine = new NashornScriptEngineFactory().getScriptEngine();
@@ -42,6 +42,12 @@ public class CachingJSEngine {
                 if (registration != null) {
                     engine = registration.getProvider().getEngineByName("js");
                 } else {
+                    BigDoorsOpener.logger().severe("--------------------------------------------------------------------------");
+                    BigDoorsOpener.logger().severe("-> No script engine found.                                              <-");
+                    BigDoorsOpener.logger().severe("-> Custom evaluator and placeholder will not work.                      <-");
+                    BigDoorsOpener.logger().severe("-> When using java 15 or above you have to use the nashorn js provider. <-");
+                    BigDoorsOpener.logger().severe("-> Download here: https://www.spigotmc.org/resources/91204/.            <-");
+                    BigDoorsOpener.logger().severe("--------------------------------------------------------------------------");
                     engine = null;
                 }
             }
@@ -54,11 +60,10 @@ public class CachingJSEngine {
             } catch (ScriptException ex) {
                 BigDoorsOpener.logger().log(Level.WARNING, "Could not start script engine. Custom evaluator will not work.", e);
             }
+        } catch (NullPointerException e) {
         } catch (RuntimeException e) {
             BigDoorsOpener.logger().log(Level.WARNING, "Could not start script engine. Custom evaluator will not work.", e);
-
         }
-
 
         cache = CacheBuilder.newBuilder().expireAfterAccess(24, TimeUnit.MINUTES).maximumSize(cacheSize).build();
     }
@@ -104,6 +109,7 @@ public class CachingJSEngine {
      */
     @SuppressWarnings("unchecked")
     public <T> T evalUnsafe(String string, T defaultValue) throws ExecutionException, ScriptException, ClassCastException {
+        if (engine == null) return defaultValue;
         Object t = cache.get(string, () -> engine.eval(string));
         if (t == null) return defaultValue;
         return (T) t;
