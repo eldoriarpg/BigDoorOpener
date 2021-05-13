@@ -33,7 +33,10 @@ import de.eldoria.bigdoorsopener.door.ConditionalDoor;
 import de.eldoria.bigdoorsopener.door.conditioncollections.ConditionBag;
 import de.eldoria.bigdoorsopener.door.conditioncollections.ConditionChain;
 import de.eldoria.bigdoorsopener.util.CachingJSEngine;
-import de.eldoria.eldoutilities.bstats.Metrics;
+import de.eldoria.eldoutilities.bstats.EldoMetrics;
+import de.eldoria.eldoutilities.bstats.charts.AdvancedPie;
+import de.eldoria.eldoutilities.bstats.charts.DrilldownPie;
+import de.eldoria.eldoutilities.bstats.charts.SimplePie;
 import de.eldoria.eldoutilities.container.Pair;
 import de.eldoria.eldoutilities.crossversion.ServerVersion;
 import de.eldoria.eldoutilities.localization.ILocalizer;
@@ -275,16 +278,16 @@ public class BigDoorsOpener extends EldoPlugin {
         Pattern version = Pattern.compile("([0-9]\\.(?:[0-9]\\.?)+)");
         Pattern build = Pattern.compile("\\((b[0-9]+)\\)");
 
-        Metrics metrics = new Metrics(this, 8015);
+        EldoMetrics metrics = new EldoMetrics(this, 8015);
 
         logger().info(localizer.getMessage("general.metrics"));
 
         // old version. will be removed when enough ppl are on version 2.0
-        metrics.addCustomChart(new Metrics.SimplePie("big_doors_version",
+        metrics.addCustomChart(new SimplePie("big_doors_version",
                 () -> doors.getDescription().getVersion()));
 
         // new hopefully more detailed version information.
-        metrics.addCustomChart(new Metrics.DrilldownPie("big_doors_version_new", () -> {
+        metrics.addCustomChart(new DrilldownPie("big_doors_version_new", () -> {
             String ver = doors.getDescription().getVersion();
             Map<String, Map<String, Integer>> map = new HashMap<>();
             Pair<String, String> doorsVersion = getDoorsVersion(ver);
@@ -296,7 +299,7 @@ public class BigDoorsOpener extends EldoPlugin {
 
         // Get some insights in the condition types.
         // This will probably help to decide which should be developed further.
-        metrics.addCustomChart(new Metrics.AdvancedPie("condition_types", () -> {
+        metrics.addCustomChart(new AdvancedPie("condition_types", () -> {
             Map<String, Integer> counts = new HashMap<>();
             Collection<ConditionalDoor> values = config.getDoors();
             for (String group : ConditionRegistrar.getGroups()) {
