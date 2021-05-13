@@ -3,7 +3,6 @@ package de.eldoria.bigdoorsopener.util;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import de.eldoria.bigdoorsopener.core.BigDoorsOpener;
-import jdk.nashorn.api.scripting.NashornScriptEngineFactory;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.RegisteredServiceProvider;
 
@@ -32,10 +31,12 @@ public class CachingJSEngine {
             BigDoorsOpener.logger().config("Detected version: " + verInt);
             if (verInt < 11) {
                 BigDoorsOpener.logger().info("Detected legacy java version below 11.");
-                engine = new NashornScriptEngineFactory().getScriptEngine();
+                engine = new ScriptEngineManager().getEngineByName("nashorn");
+                BigDoorsOpener.logger().info("Support for java version below 16 will be dropped with the release of MC 1.17.");
             } else if (verInt < 15) {
                 BigDoorsOpener.logger().info("Java 11 or newer detected.");
-                engine = new NashornScriptEngineFactory().getScriptEngine("--no-deprecation-warning");
+                engine = new ScriptEngineManager().getEngineByName("nashorn");
+                BigDoorsOpener.logger().info("Support for java version below 16 will be dropped with the release of MC 1.17.");
             } else {
                 BigDoorsOpener.logger().info("Java 15 or newer detected. Searching for external Engine.");
                 RegisteredServiceProvider<ScriptEngineManager> registration = Bukkit.getServer().getServicesManager().getRegistration(ScriptEngineManager.class);

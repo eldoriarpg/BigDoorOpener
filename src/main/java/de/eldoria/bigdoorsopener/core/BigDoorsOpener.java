@@ -275,9 +275,6 @@ public class BigDoorsOpener extends EldoPlugin {
     private void enableMetrics() {
         if (!config.isEnableMetrics()) return;
 
-        Pattern version = Pattern.compile("([0-9]\\.(?:[0-9]\\.?)+)");
-        Pattern build = Pattern.compile("\\((b[0-9]+)\\)");
-
         EldoMetrics metrics = new EldoMetrics(this, 8015);
 
         logger().info(localizer.getMessage("general.metrics"));

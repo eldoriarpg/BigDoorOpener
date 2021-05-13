@@ -203,7 +203,7 @@ public class Weather implements DoorCondition {
     }
 
     private double getTemperature(World world, Vector pos) {
-        double temperature = world.getTemperature((int) pos.getX(), (int) pos.getY(), (int) pos.getZ());
+        double temperature = world.getTemperature((int) pos.getX(), (int) pos.getZ());
         if (pos.getY() > world.getSeaLevel()) {
             temperature -= (pos.getY() - world.getSeaLevel()) * 0.0016;
         }

@@ -19,7 +19,6 @@ import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nonnull;
 import java.time.Instant;
 import java.util.Map;
 
@@ -61,7 +60,7 @@ public class ConditionalDoor implements ConfigurationSerializable {
      */
     private EvaluationType evaluationType = EvaluationType.AND;
 
-    @Nonnull
+    @NotNull
     private ConditionBag conditionBag;
 
     /**
@@ -232,7 +231,7 @@ public class ConditionalDoor implements ConfigurationSerializable {
                 .build();
     }
 
-    public void setConditionBag(@Nonnull ConditionBag conditionBag) {
+    public void setConditionBag(@NotNull ConditionBag conditionBag) {
         this.conditionBag = conditionBag;
         Bukkit.getPluginManager().callEvent(new DoorModifiedEvent(this));
     }
