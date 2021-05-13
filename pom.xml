@@ -6,12 +6,13 @@
 
     <groupId>de.eldoria</groupId>
     <artifactId>bigdoorsopener</artifactId>
-    <version>2.4.1a</version>
+    <version>2.4.1b</version>
     <name>BigDoorsOpener</name>
     <url>https://github.com/eldoriarpg/BigDoorOpener</url>
     <description>Open and close doors automatically on certain conditions</description>
 
     <properties>
+        <eldoutil.version>LATEST</eldoutil.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
@@ -63,8 +64,8 @@
 
     <repositories>
         <repository>
-            <id>jitpack.io</id>
-            <url>https://jitpack.io</url>
+            <id>EldoNexus</id>
+            <url>https://eldonexus.de/repository/maven-releases/</url>
         </repository>
         <repository>
             <id>spigot-repo</id>
@@ -127,15 +128,9 @@
         </dependency>
         <dependency>
             <groupId>de.eldoria</groupId>
-            <artifactId>EldoUtilitiesCore</artifactId>
-            <version>1.7.11</version>
+            <artifactId>eldo-util</artifactId>
+            <version>${eldoutil.version}</version>
             <scope>compile</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.bstats</groupId>
-                    <artifactId>bstats-bukkit</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>net.kyori</groupId>
@@ -176,13 +171,6 @@
             <artifactId>worldguard-bukkit</artifactId>
             <version>7.0.4-SNAPSHOT</version>
             <scope>provided</scope>
-            <exclusions>
-                <!-- Why the hell do they have a paper api provided... -->
-                <exclusion>
-                    <groupId>com.destroystokyo.paper</groupId>
-                    <artifactId>paper-api</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>me.clip</groupId>
