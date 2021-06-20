@@ -1,24 +1,29 @@
 package de.eldoria.bigdoorsopener.config;
 
-import de.eldoria.bigdoorsopener.BigDoorsOpener;
-import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
-import de.eldoria.bigdoorsopener.doors.conditions.ConditionChain;
-import de.eldoria.bigdoorsopener.doors.conditions.location.Proximity;
-import de.eldoria.bigdoorsopener.doors.conditions.permission.PermissionNode;
-import de.eldoria.bigdoorsopener.doors.conditions.standalone.Time;
-import lombok.Getter;
+import de.eldoria.bigdoorsopener.conditions.location.Proximity;
+import de.eldoria.bigdoorsopener.conditions.permission.PermissionNode;
+import de.eldoria.bigdoorsopener.conditions.standalone.Time;
+import de.eldoria.bigdoorsopener.core.BigDoorsOpener;
+import de.eldoria.bigdoorsopener.core.events.DoorRegisteredEvent;
+import de.eldoria.bigdoorsopener.core.events.DoorUnregisteredEvent;
+import de.eldoria.bigdoorsopener.door.ConditionalDoor;
+import de.eldoria.bigdoorsopener.door.conditioncollections.ConditionBag;
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.util.Vector;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
 import java.util.logging.Logger;
 
-@Getter
 public class Config {
     private final Plugin plugin;
     private final Map<Long, ConditionalDoor> doors = new HashMap<>();
@@ -83,8 +88,7 @@ public class Config {
     }
 
     /**
-     * Updates the config from version 0 to version 1.
-     * Version 0 is identified by a missing version key.
+     * Updates the config from version 0 to version 1. Version 0 is identified by a missing version key.
      */
     @SuppressWarnings("unchecked")
     private void updateVersion0() {
@@ -102,29 +106,29 @@ public class Config {
 
 
             for (TimedDoor tD : timedDoors) {
-                log.info("Converting door " + tD.getDoorUID());
-                ConditionalDoor cD = new ConditionalDoor(tD.getDoorUID(), tD.getWorld(), tD.getPosition());
+                log.info("Converting door " + tD.doorUID());
+                ConditionalDoor cD = new ConditionalDoor(tD.doorUID(), tD.world(), tD.position());
 
-                ConditionChain conditionChain = cD.getConditionChain();
+                ConditionBag conditionBag = cD.conditionBag();
 
-                if (tD.getPermission() != null && !tD.getPermission().isEmpty()) {
-                    conditionChain.setPermission(new PermissionNode(tD.getPermission()));
+                if (tD.permission() != null && !tD.permission().isEmpty()) {
+                    conditionBag.setCondition(new PermissionNode(tD.permission()));
                     log.info("Adding permission condition.");
                 }
 
                 if (!tD.isPermanentlyClosed()) {
-                    conditionChain.setTime(new Time(tD.getTicksOpen(), tD.getTicksClose(), false));
+                    conditionBag.setCondition(new Time(tD.ticksOpen(), tD.ticksClose(), false));
                     log.info("Adding time condition.");
                 }
 
-                if (tD.getOpenRange() > 0) {
-                    conditionChain.setLocation(
+                if (tD.openRange() > 0) {
+                    conditionBag.setCondition(
                             new Proximity(
-                                    new Vector(tD.getOpenRange(), tD.getOpenRange(), tD.getOpenRange()),
+                                    new Vector(tD.openRange(), tD.openRange(), tD.openRange()),
                                     Proximity.ProximityForm.ELLIPSOID));
                     log.info("Adding proximity condition.");
                 }
-                log.info("Door " + tD.getDoorUID() + " successfully converted.");
+                log.info("Door " + tD.doorUID() + " successfully converted.");
                 conditionalDoors.add(cD);
             }
             config.set("doors", conditionalDoors);
@@ -145,8 +149,7 @@ public class Config {
     }
 
     /**
-     * Forces the current actual config values.
-     * Must be always executed after {@link #updateConfig()}
+     * Forces the current actual config values. Must be always executed after {@link #updateConfig()}
      */
     private void forceConfigConsistency() {
         plugin.saveDefaultConfig();
@@ -168,8 +171,7 @@ public class Config {
     }
 
     /**
-     * Discards any internal changes to the config and loads it.
-     * Ensures config consistency.
+     * Discards any internal changes to the config and loads it. Ensures config consistency.
      */
     @SuppressWarnings("unchecked")
     public void reloadConfig() {
@@ -180,7 +182,7 @@ public class Config {
         if (configDoors != null) {
             doors.clear();
             for (ConditionalDoor door : configDoors) {
-                doors.put(door.getDoorUID(), door);
+                doors.put(door.doorUID(), door);
             }
         } else {
             BigDoorsOpener.logger().info("No doors defined.");
@@ -212,6 +214,80 @@ public class Config {
         FileConfiguration config = plugin.getConfig();
         config.set("doors", new ArrayList<>(doors.values()));
         plugin.saveConfig();
+        BigDoorsOpener.logger().fine("Config saved.");
     }
 
+    public ConditionalDoor getDoor(Long key) {
+        return doors.get(key);
+    }
+
+    public Set<Long> keySet() {
+        return doors.keySet();
+    }
+
+    public Collection<ConditionalDoor> getDoors() {
+        return doors.values();
+    }
+
+    public Map<Long, ConditionalDoor> getDoorMap() {
+        return doors;
+    }
+
+    public ConditionalDoor putDoorIfAbsent(Long key, ConditionalDoor value) {
+        ConditionalDoor conditionalDoor = doors.putIfAbsent(key, value);
+        Bukkit.getPluginManager().callEvent(new DoorUnregisteredEvent(conditionalDoor));
+        return conditionalDoor;
+    }
+
+    public boolean removeDoor(Long key) {
+        ConditionalDoor remove = doors.remove(key);
+        safeConfig();
+        Bukkit.getPluginManager().callEvent(new DoorUnregisteredEvent(remove));
+        return remove != null;
+    }
+
+    public ConditionalDoor computeDoorIfAbsent(Long key, @NotNull Function<? super Long, ? extends ConditionalDoor> mappingFunction) {
+        if (doors.containsKey(key)) {
+            return doors.get(key);
+        }
+        ConditionalDoor conditionalDoor = doors.computeIfAbsent(key, mappingFunction);
+        Bukkit.getPluginManager().callEvent(new DoorRegisteredEvent(conditionalDoor));
+        return conditionalDoor;
+    }
+
+    public boolean containsDoor(long key) {
+        return doors.containsKey(key);
+    }
+
+    public int approachRefreshRate() {
+        return approachRefreshRate;
+    }
+
+    public int timedRefreshRate() {
+        return timedRefreshRate;
+    }
+
+    public boolean isEnableMetrics() {
+        return enableMetrics;
+    }
+
+    public String language() {
+        return language;
+    }
+
+    public int refreshRate() {
+        return refreshRate;
+    }
+
+    public boolean isCheckUpdates() {
+        return checkUpdates;
+    }
+
+    public int jsCacheSize() {
+        return jsCacheSize;
+    }
+
+    public Vector playerCheckRadius() {
+        return playerCheckRadius;
+    }
 }

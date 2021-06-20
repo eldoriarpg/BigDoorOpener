@@ -1,11 +1,17 @@
 package de.eldoria.bigdoorsopener.util;
 
-import de.eldoria.bigdoorsopener.doors.ConditionScope;
-import de.eldoria.bigdoorsopener.doors.ConditionalDoor;
-import de.eldoria.bigdoorsopener.doors.conditions.ConditionChain;
-import de.eldoria.bigdoorsopener.doors.conditions.DoorCondition;
+import de.eldoria.bigdoorsopener.conditions.DoorCondition;
+import de.eldoria.bigdoorsopener.core.BigDoorsOpener;
+import de.eldoria.bigdoorsopener.core.conditions.ConditionContainer;
+import de.eldoria.bigdoorsopener.core.conditions.ConditionRegistrar;
+import de.eldoria.bigdoorsopener.core.conditions.Scope;
+import de.eldoria.bigdoorsopener.door.ConditionalDoor;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
+
+import java.util.Collection;
+import java.util.Optional;
+import java.util.logging.Level;
 
 public class ConditionChainEvaluator {
     private Boolean current;
@@ -20,9 +26,9 @@ public class ConditionChainEvaluator {
      * @param conditions   conditions to evaluate
      * @return the result of the chain evaluator
      */
-    public static boolean or(Player player, World world, ConditionalDoor door, boolean currentState, ConditionChain conditions) {
+    public static boolean or(Player player, World world, ConditionalDoor door, boolean currentState, Collection<DoorCondition> conditions) {
         ConditionChainEvaluator evaluator = new ConditionChainEvaluator();
-        for (DoorCondition doorCondition : conditions.getConditions()) {
+        for (DoorCondition doorCondition : conditions) {
             evaluator.or(doorCondition, player, world, door, currentState);
         }
 
@@ -39,9 +45,9 @@ public class ConditionChainEvaluator {
      * @param conditions   conditions to evaluate
      * @return the result of the chain evaluator
      */
-    public static boolean and(Player player, World world, ConditionalDoor door, boolean currentState, ConditionChain conditions) {
+    public static boolean and(Player player, World world, ConditionalDoor door, boolean currentState, Collection<DoorCondition> conditions) {
         ConditionChainEvaluator evaluator = new ConditionChainEvaluator();
-        for (DoorCondition doorCondition : conditions.getConditions()) {
+        for (DoorCondition doorCondition : conditions) {
             evaluator.and(doorCondition, player, world, door, currentState);
         }
 
@@ -63,9 +69,16 @@ public class ConditionChainEvaluator {
 
         if (current != null && current) return this;
 
+        Optional<ConditionContainer> containerByClass = ConditionRegistrar.getContainerByClass(doorCondition.getClass());
+        if (!containerByClass.isPresent()) {
+            BigDoorsOpener.logger().log(Level.WARNING, "Condition " + doorCondition.getClass() + " is requested but not registered.");
+            return this;
+        }
+        ConditionContainer container = containerByClass.get();
+
         Boolean open;
 
-        if (doorCondition.getScope() == ConditionScope.Scope.PLAYER && player == null) {
+        if (container.getScope() == Scope.PLAYER && player == null) {
             open = false;
         } else {
             open = doorCondition.isOpen(player, world, door, currentState);
@@ -101,9 +114,16 @@ public class ConditionChainEvaluator {
 
         if (current != null && !current) return this;
 
+        Optional<ConditionContainer> containerByClass = ConditionRegistrar.getContainerByClass(doorCondition.getClass());
+        if (!containerByClass.isPresent()) {
+            BigDoorsOpener.logger().log(Level.WARNING, "Condition " + doorCondition.getClass() + " is requested but not registered.");
+            return this;
+        }
+        ConditionContainer container = containerByClass.get();
+
         Boolean open;
 
-        if (doorCondition.getScope() == ConditionScope.Scope.PLAYER && player == null) {
+        if (container.getScope() == Scope.PLAYER && player == null) {
             open = false;
         } else {
             open = doorCondition.isOpen(player, world, door, currentState);

@@ -1,18 +1,16 @@
 package de.eldoria.bigdoorsopener.util;
 
-import de.eldoria.bigdoorsopener.BigDoorsOpener;
-import de.eldoria.bigdoorsopener.doors.conditions.ConditionType;
+import de.eldoria.bigdoorsopener.core.BigDoorsOpener;
+import de.eldoria.bigdoorsopener.core.conditions.ConditionRegistrar;
 import de.eldoria.eldoutilities.container.Pair;
 import de.eldoria.eldoutilities.utils.TextUtil;
 import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.entity.Player;
 
 import javax.script.ScriptException;
-import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 public final class JsSyntaxHelper {
 
@@ -20,9 +18,6 @@ public final class JsSyntaxHelper {
     private static final Pattern ALLOWED_OPERATORS = Pattern.compile("&&|\\|\\||!=|==|!");
     private static final Pattern UNALLOWED_OPERATORS = Pattern.compile("&|\\||=");
     private static final Pattern SYNTAX = Pattern.compile("(\\||&|!|=|\\(|\\)|\\s|\\{|}|;)*");
-    private static final String PLACEHOLDER = Arrays.stream(ConditionType.ConditionGroup.values())
-            .map(ConditionType.ConditionGroup::name)
-            .collect(Collectors.joining("|"));
 
 
     private JsSyntaxHelper() {
@@ -50,8 +45,8 @@ public final class JsSyntaxHelper {
     }
 
     /**
-     * This method validates a java script string.
-     * Will call {@link #translateEvaluator(String)} first and check the returned string.
+     * This method validates a java script string. Will call {@link #translateEvaluator(String)} first and check the
+     * returned string.
      *
      * @param evaluator string to evaluate
      * @return pair which returns the result and a optinal string which contains different valued based on the result
@@ -65,7 +60,7 @@ public final class JsSyntaxHelper {
         }
 
 
-        String cleaned = evaluator.replaceAll("(?i)if|true|false|" + PLACEHOLDER + "|currentState|null|else", "");
+        String cleaned = evaluator.replaceAll("(?i)if|true|false|" + getPlaceholder() + "|currentState|null|else", "");
         Matcher matcher = VARIABLE.matcher(cleaned);
         if (matcher.find()) {
             return new Pair<>(ValidatorResult.INVALID_VARIABLE, matcher.group());
@@ -98,7 +93,7 @@ public final class JsSyntaxHelper {
     public static Pair<ValidatorResult, String> checkExecution(String evaluator, CachingJSEngine engine, Player player, boolean vanilla) {
         evaluator = translateEvaluator(evaluator);
 
-        evaluator = evaluator.replaceAll("(?i)currentState|" + PLACEHOLDER, "true");
+        evaluator = evaluator.replaceAll("(?i)currentState|" + getPlaceholder(), "true");
 
         if (BigDoorsOpener.isPlaceholderEnabled() && player != null && !vanilla) {
             evaluator = PlaceholderAPI.setPlaceholders(player, evaluator);
@@ -115,34 +110,34 @@ public final class JsSyntaxHelper {
         return new Pair<>(ValidatorResult.FINE, evaluator);
     }
 
+    private static String getPlaceholder() {
+        return String.join("|", ConditionRegistrar.getGroups());
+
+    }
+
     public enum ValidatorResult {
         /**
          * Indicates that the parenthesis on the string are not balanced
          */
         UNBALANCED_PARENTHESIS,
         /**
-         * Indicates that a variable which is not a key was used.
-         * Will include the part which was not a variable
+         * Indicates that a variable which is not a key was used. Will include the part which was not a variable
          */
         INVALID_VARIABLE,
         /**
-         * Indicates that a invalid operator was used.
-         * Will return the invalid operator.
+         * Indicates that a invalid operator was used. Will return the invalid operator.
          */
         INVALID_OPERATOR,
         /**
-         * Indicates that the overall syntax is innvalid.
-         * Will return all invalid chars.
+         * Indicates that the overall syntax is innvalid. Will return all invalid chars.
          */
         INVALID_SYNTAX,
         /**
-         * Indicates that the execution failed.
-         * Will return the validator which was parsed.
+         * Indicates that the execution failed. Will return the validator which was parsed.
          */
         EXECUTION_FAILED,
         /**
-         * Indicates that the result was not a boolean.
-         * Will return the validator which was parsed.
+         * Indicates that the result was not a boolean. Will return the validator which was parsed.
          */
         NON_BOOLEAN_RESULT,
         /**

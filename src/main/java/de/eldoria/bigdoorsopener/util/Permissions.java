@@ -1,13 +1,16 @@
 package de.eldoria.bigdoorsopener.util;
 
+import de.eldoria.bigdoorsopener.core.conditions.ConditionContainer;
+
 /**
- * Class to store permission values.
- * We dont like to store permissions where we need it. Otheriwse changing them would be a real pain.
+ * Class to store permission values. We dont like to store permissions where we need it. Otheriwse changing them would
+ * be a real pain.
  */
 public final class Permissions {
 
     // permission to use all commands except reload
     public static final String USE = "bdo.command.use";
+    public static final String GIVE_KEY = "bdo.command.givekey";
     // permission to reload the plugin
     public static final String RELOAD = "bdo.command.reload";
     // permission to use a custom js evaluator
@@ -31,7 +34,14 @@ public final class Permissions {
     // permission to access all conditions
     public static final String ALL_CONDITION = "bdo.condition.all";
 
-
     private Permissions() {
+    }
+
+    public static String getConditionPermission(ConditionContainer container) {
+        return getConditionPermission(container.getGroup());
+    }
+
+    public static String getConditionPermission(String group) {
+        return "bdo.condition." + group;
     }
 }

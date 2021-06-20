@@ -2,8 +2,9 @@ package de.eldoria.bigdoorsopener.util;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import de.eldoria.bigdoorsopener.BigDoorsOpener;
-import jdk.nashorn.api.scripting.NashornScriptEngineFactory;
+import de.eldoria.bigdoorsopener.core.BigDoorsOpener;
+import org.bukkit.Bukkit;
+import org.bukkit.plugin.RegisteredServiceProvider;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
@@ -13,9 +14,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
 /**
- * A partly illegal JS engine which can evaluate java scripts.
- * This engine can cache n results defined by cache size of {@link #CachingJSEngine(int)}.
- * As a key the evaluated string is used. This assumes that a result is deterministic, which it should be anyway.
+ * A partly illegal JS engine which can evaluate java scripts. This engine can cache n results defined by cache size of
+ * {@link #CachingJSEngine(int)}. As a key the evaluated string is used. This assumes that a result is deterministic,
+ * which it should be anyway.
  */
 public class CachingJSEngine {
     private final Cache<String, Object> cache;
@@ -23,25 +24,49 @@ public class CachingJSEngine {
 
     public CachingJSEngine(int cacheSize) {
         try {
+            BigDoorsOpener.logger().config("Java version: " + System.getProperty("java.specification.version"));
             String[] versionString = System.getProperty("java.specification.version").split("\\.");
             String version = versionString[versionString.length - 1];
-            if (Integer.parseInt(version) < 11) {
-                this.engine = (new NashornScriptEngineFactory()).getScriptEngine();
+            int verInt = Integer.parseInt(version);
+            BigDoorsOpener.logger().config("Detected version: " + verInt);
+            if (verInt < 11) {
+                BigDoorsOpener.logger().info("Detected legacy java version below 11.");
+                engine = new ScriptEngineManager().getEngineByName("nashorn");
+                BigDoorsOpener.logger().info("Support for java version below 16 will be dropped with the release of MC 1.17.");
+            } else if (verInt < 15) {
+                BigDoorsOpener.logger().info("Java 11 or newer detected.");
+                engine = new ScriptEngineManager().getEngineByName("nashorn");
+                BigDoorsOpener.logger().info("Support for java version below 16 will be dropped with the release of MC 1.17.");
             } else {
-                this.engine = (new NashornScriptEngineFactory()).getScriptEngine("--no-deprecation-warning");
+                BigDoorsOpener.logger().info("Java 15 or newer detected. Searching for external Engine.");
+                RegisteredServiceProvider<ScriptEngineManager> registration = Bukkit.getServer().getServicesManager().getRegistration(ScriptEngineManager.class);
+                if (registration != null) {
+                    engine = registration.getProvider().getEngineByName("js");
+                } else {
+                    BigDoorsOpener.logger().severe("--------------------------------------------------------------------------");
+                    BigDoorsOpener.logger().severe("-> No script engine found.                                              <-");
+                    BigDoorsOpener.logger().severe("-> Custom evaluator and placeholder will not work.                      <-");
+                    BigDoorsOpener.logger().severe("-> When using java 15 or above you have to use the nashorn js provider. <-");
+                    BigDoorsOpener.logger().severe("-> Download here: https://www.spigotmc.org/resources/91204/.            <-");
+                    BigDoorsOpener.logger().severe("--------------------------------------------------------------------------");
+                    engine = null;
+                }
             }
-            this.engine.eval("print('[BigDoorsOpener] nashorn script engine started.')");
+            engine.eval("print('[BigDoorsOpener] " + engine.getFactory().getEngineName() + " script engine started.')");
         } catch (ScriptException e) {
-            BigDoorsOpener.logger().info("No nashorn script engine found. Trying to use JavaScript fallback.");
+            BigDoorsOpener.logger().log(Level.WARNING, "No nashorn script engine found. Trying to use JavaScript fallback.", e);
             engine = new ScriptEngineManager(null).getEngineByName("JavaScript");
             try {
                 engine.eval("print('[BigDoorsOpener] JavaScript script engine started.')");
             } catch (ScriptException ex) {
-                BigDoorsOpener.logger().warning("Could not start script engine. Custom evaluator will not work.");
+                BigDoorsOpener.logger().log(Level.WARNING, "Could not start script engine. Custom evaluator will not work.", e);
             }
+        } catch (NullPointerException e) {
+        } catch (RuntimeException e) {
+            BigDoorsOpener.logger().log(Level.WARNING, "Could not start script engine. Custom evaluator will not work.", e);
         }
 
-        cache = CacheBuilder.newBuilder().expireAfterAccess(24, TimeUnit.MINUTES).maximumSize(500).build();
+        cache = CacheBuilder.newBuilder().expireAfterAccess(24, TimeUnit.MINUTES).maximumSize(cacheSize).build();
     }
 
     /**
@@ -82,6 +107,7 @@ public class CachingJSEngine {
      */
     @SuppressWarnings("unchecked")
     public <T> T evalUnsafe(String string, T defaultValue) throws ExecutionException, ScriptException, ClassCastException {
+        if (engine == null) return defaultValue;
         Object t = cache.get(string, () -> engine.eval(string));
         if (t == null) return defaultValue;
         return (T) t;
