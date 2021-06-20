@@ -8,7 +8,6 @@ import de.eldoria.bigdoorsopener.door.conditioncollections.ConditionChain;
 import de.eldoria.eldoutilities.serialization.SerializationUtil;
 import de.eldoria.eldoutilities.serialization.TypeResolvingMap;
 import de.eldoria.eldoutilities.utils.EnumUtil;
-import lombok.Getter;
 import nl.pim16aap2.bigDoors.Door;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
@@ -28,7 +27,6 @@ import static java.time.temporal.ChronoUnit.SECONDS;
  * A conditional door consists of some basic settings and a condition chain. A conditional door can be open or closed.
  * This dependes on several conditions. Hint: Thats why its called conditional door.
  */
-@Getter
 @SerializableAs("conditionalDoor")
 public class ConditionalDoor implements ConfigurationSerializable {
     /**
@@ -87,7 +85,7 @@ public class ConditionalDoor implements ConfigurationSerializable {
         this(doorUID, world, position, new ConditionBag());
     }
 
-    @SuppressWarnings("casting")
+    @SuppressWarnings({"casting", "RedundantCast"})
     public ConditionalDoor(Map<String, Object> map) {
         TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
         doorUID = (int) resolvingMap.getValue("doorUID");
@@ -115,7 +113,6 @@ public class ConditionalDoor implements ConfigurationSerializable {
      * @param player       player for player sensitive calculations
      * @param world        world of the door
      * @param currentState the current state of the door.
-     *
      * @return true if the door should be open or false if not.
      */
     public boolean getState(Player player, World world, boolean currentState) {
@@ -148,7 +145,7 @@ public class ConditionalDoor implements ConfigurationSerializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ConditionalDoor door = (ConditionalDoor) o;
-        return doorUID == door.getDoorUID();
+        return doorUID == door.doorUID();
     }
 
     @Override
@@ -231,23 +228,66 @@ public class ConditionalDoor implements ConfigurationSerializable {
                 .build();
     }
 
-    public void setConditionBag(@NotNull ConditionBag conditionBag) {
+    public void conditionBag(@NotNull ConditionBag conditionBag) {
         this.conditionBag = conditionBag;
         Bukkit.getPluginManager().callEvent(new DoorModifiedEvent(this));
     }
 
-    public void setInvertOpen(boolean invertOpen) {
+    public void invertOpen(boolean invertOpen) {
         this.invertOpen = invertOpen;
         Bukkit.getPluginManager().callEvent(new DoorModifiedEvent(this));
     }
 
-    public void setEnabled(Boolean state) {
+    public void enabled(Boolean state) {
         enabled = state;
         Bukkit.getPluginManager().callEvent(new DoorModifiedEvent(this));
+    }
+
+    public long doorUID() {
+        return doorUID;
+    }
+
+    public String world() {
+        return world;
+    }
+
+    public Vector position() {
+        return position;
+    }
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public Instant openTill() {
+        return openTill;
+    }
+
+    public String evaluator() {
+        return evaluator;
+    }
+
+    public EvaluationType evaluationType() {
+        return evaluationType;
+    }
+
+    public ConditionBag conditionBag() {
+        return conditionBag;
+    }
+
+    public int stayOpen() {
+        return stayOpen;
+    }
+
+    public boolean isWaitForOpen() {
+        return waitForOpen;
+    }
+
+    public boolean isInvertOpen() {
+        return invertOpen;
     }
 
     public enum EvaluationType {
         CUSTOM, AND, OR
     }
 }
-

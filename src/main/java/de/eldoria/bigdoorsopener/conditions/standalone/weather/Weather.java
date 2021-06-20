@@ -119,9 +119,9 @@ public class Weather implements DoorCondition {
     }
 
     private Boolean isRaining(ConditionalDoor door) {
-        Vector pos = door.getPosition();
+        Vector pos = door.position();
 
-        World world = Bukkit.getWorld(door.getWorld());
+        World world = Bukkit.getWorld(door.world());
         boolean raining = WeatherListener.isRaining(world);
 
 
@@ -184,12 +184,12 @@ public class Weather implements DoorCondition {
 
     @Override
     public String getCreationCommand(ConditionalDoor door) {
-        return SET_COMMAND + door.getDoorUID() + " weather " + weatherType.toString().toLowerCase();
+        return SET_COMMAND + door.doorUID() + " weather " + weatherType.toString().toLowerCase();
     }
 
     @Override
     public String getRemoveCommand(ConditionalDoor door) {
-        return REMOVE_COMMAND + door.getDoorUID() + " weather";
+        return REMOVE_COMMAND + door.doorUID() + " weather";
     }
 
     @Override

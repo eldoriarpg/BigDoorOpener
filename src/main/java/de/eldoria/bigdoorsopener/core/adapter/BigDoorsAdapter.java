@@ -4,7 +4,6 @@ import de.eldoria.bigdoorsopener.core.BigDoorsOpener;
 import de.eldoria.bigdoorsopener.door.ConditionalDoor;
 import de.eldoria.eldoutilities.localization.ILocalizer;
 import de.eldoria.eldoutilities.localization.Replacement;
-import lombok.Getter;
 import nl.pim16aap2.bigDoors.BigDoors;
 import nl.pim16aap2.bigDoors.Commander;
 import nl.pim16aap2.bigDoors.Door;
@@ -20,7 +19,6 @@ import java.util.Set;
 /**
  * Adapter to interact with big doors internally.
  */
-@Getter
 public abstract class BigDoorsAdapter {
     private final Commander commander;
     private final BigDoors bigDoors;
@@ -38,15 +36,14 @@ public abstract class BigDoorsAdapter {
      *
      * @param open true if the door should be open.
      * @param door door to set the state
-     *
      * @return true if the door state was changed succesfully which is indicated by {@link BigDoors#toggleDoor(long)}
      */
     protected boolean setDoorState(boolean open, ConditionalDoor door) {
-        if (commander.isDoorBusy(door.getDoorUID())) {
+        if (commander.isDoorBusy(door.doorUID())) {
             return false;
         }
         if (isOpen(door) == open) return false;
-        return bigDoors.toggleDoor(door.getDoorUID());
+        return bigDoors.toggleDoor(door.doorUID());
     }
 
     /**
@@ -54,48 +51,44 @@ public abstract class BigDoorsAdapter {
      * method.
      *
      * @param door door to check.
-     *
      * @return true when the door is open.
      */
     protected boolean isOpen(ConditionalDoor door) {
-        return door.openInverted(bigDoors.isOpen(door.getDoorUID()));
+        return door.openInverted(bigDoors.isOpen(door.doorUID()));
     }
 
     /**
      * Checks if the world of a door exists and is present in the plugin.
      *
      * @param door door to check
-     *
      * @return true if the door exits
      */
     protected boolean doorExists(ConditionalDoor door) {
-        World world = server.getWorld(door.getWorld());
+        World world = server.getWorld(door.world());
         if (world == null) {
             BigDoorsOpener.logger().info(localizer.getMessage("error.worldIsNull",
-                    Replacement.create("DOOR_NAME", door.getDoorUID())));
+                    Replacement.create("DOOR_NAME", door.doorUID())));
             return false;
         }
 
         // Make sure that this door still exists on the doors plugin.
-        return getDoor(door.getDoorUID()) != null;
+        return getDoor(door.doorUID()) != null;
     }
 
     /**
      * Checks if a door is available. A door is considered available if its not open and not busy
      *
      * @param door door to check
-     *
      * @return true if the door is available
      */
     protected boolean isAvailableToOpen(ConditionalDoor door) {
-        return !isOpen(door) && !isBusy(door) && isDoorLoaded(getDoor(door.getDoorUID()));
+        return !isOpen(door) && !isBusy(door) && isDoorLoaded(getDoor(door.doorUID()));
     }
 
     /**
      * Checks if the chunks of a door are loaded
      *
      * @param door door to check
-     *
      * @return true if chunks around the door are loaded
      */
     protected boolean isDoorLoaded(Door door) {
@@ -106,18 +99,16 @@ public abstract class BigDoorsAdapter {
      * Checks if a door is busy. A door is busy if its closing or opening at the moment.
      *
      * @param door door to check
-     *
      * @return true if the door is busy
      */
     protected boolean isBusy(ConditionalDoor door) {
-        return commander.isDoorBusy(door.getDoorUID());
+        return commander.isDoorBusy(door.doorUID());
     }
 
     /**
      * Get the door with the specified id if the player is the owner of the door.
      *
      * @param uid uid of the door.
-     *
      * @return door with id if exitsts
      */
     @Nullable
@@ -129,7 +120,6 @@ public abstract class BigDoorsAdapter {
      * Get the door with the specified id.
      *
      * @param doorId uid of the door.
-     *
      * @return door with id if exitsts
      */
     @Nullable
@@ -141,7 +131,6 @@ public abstract class BigDoorsAdapter {
      * Get the door with a specific id.
      *
      * @param doorId id of the door as long or string
-     *
      * @return Door with id if exists.
      */
     @Nullable
@@ -154,7 +143,6 @@ public abstract class BigDoorsAdapter {
      *
      * @param player owner of the door.
      * @param doorId id of the door as long or string
-     *
      * @return Door with id if exists.
      */
     @Nullable
@@ -166,7 +154,6 @@ public abstract class BigDoorsAdapter {
      * Get a list of doors owned by the player.
      *
      * @param player Player for which the doors should be retrieved.
-     *
      * @return List of doors which are owned by the player
      */
     protected List<Door> getDoors(Player player) {
@@ -178,7 +165,6 @@ public abstract class BigDoorsAdapter {
      *
      * @param player Player for which the doors should be retrieved.
      * @param name   Get doors which match the name.
-     *
      * @return List of doors which are owned by the player
      */
     protected List<Door> getDoors(Player player, String name) {
@@ -195,6 +181,22 @@ public abstract class BigDoorsAdapter {
     }
 
     protected ILocalizer getLocalizer() {
+        return localizer;
+    }
+
+    public Commander commander() {
+        return commander;
+    }
+
+    public BigDoors bigDoors() {
+        return bigDoors;
+    }
+
+    public Server server() {
+        return server;
+    }
+
+    public ILocalizer localizer() {
         return localizer;
     }
 }

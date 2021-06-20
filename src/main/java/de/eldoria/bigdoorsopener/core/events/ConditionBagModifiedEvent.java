@@ -1,14 +1,12 @@
 package de.eldoria.bigdoorsopener.core.events;
 
 import de.eldoria.bigdoorsopener.door.conditioncollections.ConditionBag;
-import lombok.Getter;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 
 public class ConditionBagModifiedEvent extends Event {
     private static final HandlerList HANDLERS = new HandlerList();
-    @Getter
     private final ConditionBag conditionBag;
 
     /**
@@ -27,5 +25,9 @@ public class ConditionBagModifiedEvent extends Event {
     @Override
     public @NotNull HandlerList getHandlers() {
         return HANDLERS;
+    }
+
+    public ConditionBag conditionBag() {
+        return conditionBag;
     }
 }

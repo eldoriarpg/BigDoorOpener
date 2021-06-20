@@ -93,12 +93,12 @@ public class ConditionBag implements ConditionCollection {
 
     public List<DoorCondition> getConditions(ConditionGroup group) {
         if (group.getScope() == Scope.PLAYER) {
-            return playerScope.computeIfAbsent(group.getName(), k -> new LinkedList<>());
+            return playerScope.computeIfAbsent(group.name(), k -> new LinkedList<>());
         }
         if (group.getScope() == Scope.WORLD) {
-            return worldScope.computeIfAbsent(group.getName(), k -> new LinkedList<>());
+            return worldScope.computeIfAbsent(group.name(), k -> new LinkedList<>());
         }
-        return getConditions(group.getName());
+        return getConditions(group.name());
     }
 
     public List<DoorCondition> getConditions(String group) {

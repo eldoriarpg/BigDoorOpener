@@ -6,7 +6,7 @@ import de.eldoria.bigdoorsopener.door.ConditionalDoor;
 public interface Permission extends DoorCondition {
     @Override
     default String getRemoveCommand(ConditionalDoor door) {
-        return REMOVE_COMMAND + door.getDoorUID() + " permission";
+        return REMOVE_COMMAND + door.doorUID() + " permission";
     }
 
     @Override

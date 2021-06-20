@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "de.eldoria"
-version = "2.4.1b"
+version = "2.4.2"
 var mainPackage = "bigdoorsopener"
 val shadebade = group as String? + "." + mainPackage + "."
 val name = "BigDoorsOpener"
@@ -15,21 +15,15 @@ description = "Open and close doors automatically on certain conditions"
 val lombokVersion = "1.18.20"
 
 repositories {
-    mavenCentral()
-    maven { url = uri("https://repo.maven.apache.org/maven2/") }
-    maven { url = uri("https://eldonexus.de/repository/maven-releases/") }
-    maven { url = uri("https://hub.spigotmc.org/nexus/content/repositories/snapshots/") }
-    maven { url = uri("https://repo.codemc.org/repository/maven-public") }
-    maven { url = uri("https://maven.enginehub.org/repo/") }
-    maven { url = uri("https://oss.sonatype.org/content/repositories/snapshots/") }
-    maven { url = uri("https://repo.extendedclip.com/content/repositories/placeholderapi/") }
-    maven { url = uri("https://mvn.lumine.io/repository/maven-public/") }
-    maven { url = uri("https://repo.maven.apache.org/maven2/") }
+    maven("https://eldonexus.de/repository/maven-releases/")
+    maven("https://eldonexus.de/repository/maven-proxies/")
+    maven("https://repo.extendedclip.com/content/repositories/placeholderapi/")
+    maven("https://mvn.lumine.io/repository/maven-public/")
 }
 
 dependencies {
-    implementation("de.eldoria", "eldo-util", "1.8.4")
-    implementation("net.kyori", "adventure-api", "4.7.0")
+    implementation("de.eldoria", "eldo-util", "1.9.1")
+    implementation("net.kyori", "adventure-api", "4.8.1")
     implementation("net.kyori", "adventure-platform-bukkit", "4.0.0-SNAPSHOT")
     compileOnly("org.spigotmc", "spigot-api", "1.13.2-R0.1-SNAPSHOT")
     compileOnly("org.jetbrains", "annotations", "20.1.0")
@@ -38,10 +32,8 @@ dependencies {
     }
     compileOnly("me.clip", "placeholderapi", "2.10.6")
     compileOnly("io.lumine.xikage", "MythicMobs", "4.9.1")
-    compileOnly(files("../dependency/BigDoors.jar"))
+    compileOnly("nl.pim16aap2", "BigDoors", "0.1.8.28")
     testImplementation("org.junit.jupiter", "junit-jupiter-api", "5.5.2")
-    compileOnly("org.projectlombok", "lombok", lombokVersion)
-    annotationProcessor("org.projectlombok", "lombok", lombokVersion)
     testCompileOnly("org.projectlombok", "lombok", lombokVersion)
     testAnnotationProcessor("org.projectlombok", "lombok", lombokVersion)
 }
@@ -54,13 +46,26 @@ java {
 }
 
 publishing {
+    val publishData = PublishData(project)
     publications.create<MavenPublication>("maven") {
-        artifact(tasks["shadowJar"])
-        artifact(tasks["sourcesJar"])
-        artifact(tasks["javadocJar"])
+        from(components["java"])
         groupId = project.group as String?
-        artifactId = project.name
-        version = project.version as String?
+        artifactId = project.name.toLowerCase()
+        version = publishData.getVersion()
+    }
+
+    repositories {
+        maven {
+            authentication {
+                credentials(PasswordCredentials::class) {
+                    username = System.getenv("NEXUS_USERNAME")
+                    password = System.getenv("NEXUS_PASSWORD")
+                }
+            }
+
+            name = "EldoNexus"
+            url = uri(publishData.getRepository())
+        }
     }
 }
 
@@ -69,9 +74,9 @@ tasks {
         from(sourceSets.main.get().resources.srcDirs) {
             filesMatching("plugin.yml") {
                 expand(
-                        "name" to project.name,
-                        "version" to project.version,
-                        "description" to project.description
+                    "name" to project.name,
+                    "version" to project.version,
+                    "description" to project.description
                 )
             }
             duplicatesStrategy = DuplicatesStrategy.INCLUDE
@@ -86,6 +91,7 @@ tasks {
         relocate("de.eldoria.eldoutilities", shadebade + "eldoutilities")
         relocate("net.kyori", shadebade + "kyori")
         mergeServiceFiles()
+        minimize()
         archiveClassifier.set("")
     }
 
@@ -94,5 +100,41 @@ tasks {
         testLogging {
             events("passed", "skipped", "failed")
         }
+    }
+}
+
+class PublishData(private val project: Project) {
+    private var type: Type = getReleaseType()
+    private var hashLength: Int = 7
+
+    private fun getReleaseType(): Type {
+        val branch = getCheckedOutBranch()
+        return when {
+            branch.contentEquals("master") -> Type.RELEASE
+            branch.startsWith("dev") -> Type.DEV
+            else -> Type.SNAPSHOT
+        }
+    }
+
+    private fun getCheckedOutGitCommitHash(): String = System.getenv("GITHUB_SHA")?.substring(0, hashLength) ?: "local"
+
+    private fun getCheckedOutBranch(): String = System.getenv("GITHUB_REF")?.replace("refs/heads/", "") ?: "local"
+
+    fun getVersion(): String = getVersion(false)
+
+    fun getVersion(appendCommit: Boolean): String =
+        type.append(getVersionString(), appendCommit, getCheckedOutGitCommitHash())
+
+    private fun getVersionString(): String = (project.version as String).replace("-SNAPSHOT", "").replace("-DEV", "")
+
+    fun getRepository(): String = type.repo
+
+    enum class Type(private val append: String, val repo: String, private val addCommit: Boolean) {
+        RELEASE("", "https://eldonexus.de/repository/maven-releases/", false),
+        DEV("-DEV", "https://eldonexus.de/repository/maven-dev/", true),
+        SNAPSHOT("-SNAPSHOT", "https://eldonexus.de/repository/maven-snapshots/", true);
+
+        fun append(name: String, appendCommit: Boolean, commitHash: String): String =
+            name.plus(append).plus(if (appendCommit && addCommit) "-".plus(commitHash) else "")
     }
 }

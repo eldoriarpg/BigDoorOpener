@@ -17,7 +17,6 @@ public interface ConditionCollection extends ConfigurationSerializable, Cloneabl
      * @param world        world of the door
      * @param door         door which is checked
      * @param currentState the current state of the door
-     *
      * @return result of the conditions.
      */
     default boolean or(Player player, World world, ConditionalDoor door, boolean currentState) {
@@ -31,7 +30,6 @@ public interface ConditionCollection extends ConfigurationSerializable, Cloneabl
      * @param world        world of the door
      * @param door         door which is checked
      * @param currentState the current state of the door
-     *
      * @return result of the conditions.
      */
     default boolean and(Player player, World world, ConditionalDoor door, boolean currentState) {
@@ -46,7 +44,6 @@ public interface ConditionCollection extends ConfigurationSerializable, Cloneabl
      * @param world        world of the door
      * @param door         door which is checked
      * @param currentState the current state of the door
-     *
      * @return string with the values replaced.
      */
     String custom(String string, Player player, World world, ConditionalDoor door, boolean currentState);

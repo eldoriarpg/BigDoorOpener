@@ -19,7 +19,6 @@ public final class CommandHelper {
      * @param args   arguments to check
      * @param length min amount of arguments.
      * @param syntax correct syntax
-     *
      * @return true if the arguments are invalid
      */
     public static boolean argumentsInvalid(CommandSender sender, String[] args, int length, String syntax) {
@@ -35,7 +34,6 @@ public final class CommandHelper {
      * @param args          arguments to check
      * @param length        min amount of arguments.
      * @param syntax        correct syntax
-     *
      * @return true if the arguments are invalid
      */
     public static boolean argumentsInvalid(CommandSender sender, MessageSender messageSender, ILocalizer localizer, String[] args, int length, String syntax) {

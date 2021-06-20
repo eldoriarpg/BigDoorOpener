@@ -22,7 +22,7 @@ public class MythicMobsListener extends BigDoorsAdapter implements Listener {
     @EventHandler
     public void onMobDeath(MythicMobDeathEvent event) {
         config.getDoors().forEach(d -> {
-            List<DoorCondition> mythicMobs = d.getConditionBag().getConditions("mythicMob");
+            List<DoorCondition> mythicMobs = d.conditionBag().getConditions("mythicMob");
             if (mythicMobs.isEmpty()) return;
             mythicMobs.forEach(m -> ((MythicMob) m).killed(event, isAvailableToOpen(d)));
         });

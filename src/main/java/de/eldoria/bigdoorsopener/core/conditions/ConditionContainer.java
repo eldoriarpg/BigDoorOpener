@@ -81,7 +81,6 @@ public final class ConditionContainer {
      * @param localizer localizer for argument localization
      * @param args      The arguments passed to the command, including final partial argument to be completed and
      *                  command label
-     *
      * @return A List of possible completions for the final argument, or null to default to the command executor
      */
     public List<String> onTabComplete(CommandSender sender, ILocalizer localizer, String[] args) {
@@ -121,7 +120,6 @@ public final class ConditionContainer {
          * <p>- Use the message sender to send messages.
          *
          * @param create a consumer, which fullfills the rules above.
-         *
          * @return this builder instance
          */
         public Builder withFactory(QuadConsumer<Player, MessageSender, Consumer<DoorCondition>, String[]> create) {
@@ -134,7 +132,6 @@ public final class ConditionContainer {
          * TabCompleter#onTabComplete(CommandSender, Command, String, String[])}
          *
          * @param onTabComplete a quad function which i
-         *
          * @return this builder instance
          */
         public Builder onTabComplete(TriFunction<CommandSender, ILocalizer, String[], List<String>> onTabComplete) {
@@ -147,7 +144,6 @@ public final class ConditionContainer {
          *
          * @param name name and group of the condition. case sensitive.
          * @param cost cost of the condition. describes the costs to calculate the condition in the given scope.
-         *
          * @return this builder instance
          */
         public Builder withMeta(String name, int cost) {
@@ -160,7 +156,6 @@ public final class ConditionContainer {
          * @param name  name of the condition. case sensitive.
          * @param group group of the condition. case sensitive.
          * @param cost  cost of the condition. describes the costs to calculate the condition in the given scope.
-         *
          * @return this builder instance
          */
         public Builder withMeta(String name, String group, int cost) {

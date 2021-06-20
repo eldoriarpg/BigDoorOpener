@@ -118,11 +118,11 @@ public class ItemClick extends ItemInteraction {
 
     @Override
     public String getCreationCommand(ConditionalDoor door) {
-        return SET_COMMAND + door.getDoorUID() + " itemClick " + getItem().getAmount() + " " + isConsumed();
+        return SET_COMMAND + door.doorUID() + " itemClick " + item().getAmount() + " " + isConsumed();
     }
 
     @Override
     public ItemClick clone() {
-        return new ItemClick(getItem().clone(), isConsumed());
+        return new ItemClick(item().clone(), isConsumed());
     }
 }

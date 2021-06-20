@@ -25,6 +25,7 @@ import de.eldoria.bigdoorsopener.conditions.worldlocation.WorldSimpleRegion;
 import de.eldoria.bigdoorsopener.config.Config;
 import de.eldoria.bigdoorsopener.config.TimedDoor;
 import de.eldoria.bigdoorsopener.core.conditions.ConditionRegistrar;
+import de.eldoria.bigdoorsopener.core.exceptions.PluginInitFailed;
 import de.eldoria.bigdoorsopener.core.listener.DoorOpenedListener;
 import de.eldoria.bigdoorsopener.core.listener.ModificationListener;
 import de.eldoria.bigdoorsopener.core.listener.registration.RegisterInteraction;
@@ -44,8 +45,6 @@ import de.eldoria.eldoutilities.messages.MessageSender;
 import de.eldoria.eldoutilities.plugin.EldoPlugin;
 import de.eldoria.eldoutilities.updater.Updater;
 import de.eldoria.eldoutilities.updater.butlerupdater.ButlerUpdateData;
-import lombok.Getter;
-import lombok.SneakyThrows;
 import nl.pim16aap2.bigDoors.BigDoors;
 import nl.pim16aap2.bigDoors.Commander;
 import org.bukkit.Bukkit;
@@ -68,7 +67,6 @@ public class BigDoorsOpener extends EldoPlugin {
     private static CachingJSEngine JS;
     private static boolean placeholderEnabled = false;
     private static boolean mythicMobsEnabled;
-    @Getter
     private static RegionContainer regionContainer = null;
     private static BigDoorsOpener instance;
     private final BukkitScheduler scheduler = Bukkit.getScheduler();
@@ -84,6 +82,10 @@ public class BigDoorsOpener extends EldoPlugin {
     private WeatherListener weatherListener;
     private RegisterInteraction registerInteraction;
     private boolean postStart = false;
+
+    public static RegionContainer regionContainer() {
+        return regionContainer;
+    }
 
     @SuppressWarnings("StaticVariableUsedBeforeInitialization")
     public static CachingJSEngine JS() {
@@ -116,22 +118,20 @@ public class BigDoorsOpener extends EldoPlugin {
         return instance;
     }
 
-    @SneakyThrows
     @Override
     public void onPluginEnable() {
-        ServerVersion.forceVersion(ServerVersion.MC_1_8, ServerVersion.MC_1_16);
+        ServerVersion.forceVersion(ServerVersion.MC_1_8, ServerVersion.MC_1_17);
 
         if (!initialized) {
             BigDoorsOpener.instance = this;
             buildSerializer();
         } else {
-            localizer.setLocale(config.getLanguage());
+            localizer.setLocale(config.language());
             doorChecker.reload();
         }
         initialized = true;
     }
 
-    @SneakyThrows
     @Override
     public void onPostStart() {
         if (postStart) return;
@@ -144,15 +144,15 @@ public class BigDoorsOpener extends EldoPlugin {
         // create config
         config = new Config(instance);
 
-        JS = new CachingJSEngine(config.getJsCacheSize());
+        JS = new CachingJSEngine(config.jsCacheSize());
 
         // Check for updates
         if (config.isCheckUpdates()) {
-            Updater.Butler(new ButlerUpdateData(instance, "bdo.command.reload", true, false, 8, "https://plugins.eldoria.de")).start();
+            Updater.butler(new ButlerUpdateData(instance, "bdo.command.reload", true, false, 8, "https://plugins.eldoria.de")).start();
         }
 
         localizer = ILocalizer.create(instance, "de_DE", "en_US");
-        localizer.setLocale(config.getLanguage());
+        localizer.setLocale(config.language());
 
         //enable metrics
         enableMetrics();
@@ -180,13 +180,13 @@ public class BigDoorsOpener extends EldoPlugin {
         }
     }
 
-    @SuppressWarnings( {"AssignmentToStaticFieldFromInstanceMethod", "VariableNotUsedInsideIf"})
-    private void loadExternalSources() throws InstantiationException {
+    @SuppressWarnings({"AssignmentToStaticFieldFromInstanceMethod", "VariableNotUsedInsideIf"})
+    private void loadExternalSources() throws PluginInitFailed {
 
         if (!getPluginManager().isPluginEnabled("BigDoors")) {
             logger().warning("Big Doors is disabled.");
             getPluginManager().disablePlugin(this);
-            throw new InstantiationException("Big Doors is not enabled");
+            throw new PluginInitFailed("Big Doors is not enabled");
         }
 
         Plugin bigDoorsPlugin = getPluginManager().getPlugin("BigDoors");
@@ -197,7 +197,7 @@ public class BigDoorsOpener extends EldoPlugin {
             logger().info("Hooked into Big Doors successfully.");
         } else {
             logger().warning("Big Doors is not ready or not loaded properly");
-            throw new InstantiationException("Big Doors is not enabled");
+            throw new PluginInitFailed("Big Doors is not enabled");
         }
     }
 
@@ -301,7 +301,7 @@ public class BigDoorsOpener extends EldoPlugin {
             Collection<ConditionalDoor> values = config.getDoors();
             for (String group : ConditionRegistrar.getGroups()) {
                 ConditionRegistrar.getConditionGroup(group).ifPresent(g ->
-                        counts.put(group, (int) values.parallelStream().filter(d -> d.getConditionBag().isConditionSet(g)).count()));
+                        counts.put(group, (int) values.parallelStream().filter(d -> d.conditionBag().isConditionSet(g)).count()));
             }
             return counts;
         }));

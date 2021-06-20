@@ -147,7 +147,7 @@ public class Time implements DoorCondition {
     @Override
     public Boolean isOpen(@Nullable Player player, World world, ConditionalDoor door, boolean currentState) {
         try {
-            return STATE_CACHE.get(door.getDoorUID(), () -> Optional.ofNullable(shouldBeOpen(world.getFullTime()))).orElse(null);
+            return STATE_CACHE.get(door.doorUID(), () -> Optional.ofNullable(shouldBeOpen(world.getFullTime()))).orElse(null);
         } catch (ExecutionException e) {
             return null;
         }
@@ -174,12 +174,12 @@ public class Time implements DoorCondition {
 
     @Override
     public String getCreationCommand(ConditionalDoor door) {
-        return SET_COMMAND + door.getDoorUID() + " time " + openTick + " " + closeTick + " " + forceState;
+        return SET_COMMAND + door.doorUID() + " time " + openTick + " " + closeTick + " " + forceState;
     }
 
     @Override
     public String getRemoveCommand(ConditionalDoor door) {
-        return REMOVE_COMMAND + door.getDoorUID() + " time";
+        return REMOVE_COMMAND + door.doorUID() + " time";
     }
 
     @Override

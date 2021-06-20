@@ -134,7 +134,7 @@ public class Proximity implements Location {
     @Override
     public Boolean isOpen(Player player, World world, ConditionalDoor door, boolean currentState) {
         Vector vector = player.getLocation().toVector();
-        return proximityForm.check.apply(door.getPosition(),
+        return proximityForm.check.apply(door.position(),
                 new Vector(vector.getBlockX(), vector.getBlockY(), vector.getBlockZ()),
                 dimensions);
     }
@@ -157,7 +157,7 @@ public class Proximity implements Location {
 
     @Override
     public String getCreationCommand(ConditionalDoor door) {
-        return SET_COMMAND + door.getDoorUID() + " proximity "
+        return SET_COMMAND + door.doorUID() + " proximity "
                 + dimensions.getX() + "," + dimensions.getY() + "," + dimensions.getZ()
                 + " " + proximityForm.name().toLowerCase();
     }
@@ -194,11 +194,11 @@ public class Proximity implements Location {
                             + Math.pow(target.getZ() - point.getZ(), 2) / Math.pow(dimensions.getZ(), 2) <= 1;
                 });
 
+        public final String localKey;
         /**
          * point, target, dimension
          */
         public TriFunction<Vector, Vector, Vector, Boolean> check;
-        public final String localKey;
 
         ProximityForm(String localKey, TriFunction<Vector, Vector, Vector, Boolean> check) {
             this.localKey = localKey;

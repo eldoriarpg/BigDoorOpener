@@ -13,8 +13,6 @@ import de.eldoria.bigdoorsopener.util.C;
 import de.eldoria.bigdoorsopener.util.ConditionChainEvaluator;
 import de.eldoria.eldoutilities.serialization.SerializationUtil;
 import de.eldoria.eldoutilities.serialization.TypeResolvingMap;
-import lombok.Getter;
-import lombok.Setter;
 import org.bukkit.World;
 import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.entity.Player;
@@ -30,8 +28,6 @@ import java.util.Map;
  * @deprecated This class is only present for serialization reasons and will be removed in the next major release. Use
  * {@link ConditionBag} instead
  */
-@Setter
-@Getter
 @SerializableAs("conditionChain")
 @Deprecated
 public class ConditionChain implements ConditionCollection {
@@ -74,7 +70,6 @@ public class ConditionChain implements ConditionCollection {
      * @param world        world of the door
      * @param door         door which is checked
      * @param currentState the current state of the door
-     *
      * @return result of the conditions.
      */
     @Override
@@ -91,7 +86,6 @@ public class ConditionChain implements ConditionCollection {
      * @param world        world of the door
      * @param door         door which is checked
      * @param currentState the current state of the door
-     *
      * @return result of the conditions.
      */
     @Override
@@ -109,7 +103,6 @@ public class ConditionChain implements ConditionCollection {
      * @param world        world of the door
      * @param door         door which is checked
      * @param currentState the current state of the door
-     *
      * @return string with the values replaced.
      */
     @Override
@@ -202,5 +195,61 @@ public class ConditionChain implements ConditionCollection {
 
     public Collection<DoorCondition> getConditions() {
         return Arrays.asList(location, time, weather, mythicMob, permission, item, placeholder);
+    }
+
+    public Item item() {
+        return item;
+    }
+
+    public void item(Item item) {
+        this.item = item;
+    }
+
+    public Location location() {
+        return location;
+    }
+
+    public void location(Location location) {
+        this.location = location;
+    }
+
+    public Permission permission() {
+        return permission;
+    }
+
+    public void permission(Permission permission) {
+        this.permission = permission;
+    }
+
+    public Time time() {
+        return time;
+    }
+
+    public void time(Time time) {
+        this.time = time;
+    }
+
+    public Weather weather() {
+        return weather;
+    }
+
+    public void weather(Weather weather) {
+        this.weather = weather;
+    }
+
+    public Placeholder placeholder() {
+        return placeholder;
+    }
+
+    public void placeholder(Placeholder placeholder) {
+        this.placeholder = placeholder;
+    }
+
+    public MythicMob mythicMob() {
+        return mythicMob;
+    }
+
+    public void mythicMob(MythicMob mythicMob) {
+        this.mythicMob = mythicMob;
     }
 }

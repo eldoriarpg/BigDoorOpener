@@ -30,7 +30,6 @@ public interface DoorCondition extends ConfigurationSerializable, Cloneable {
      * @param world        world of the door
      * @param door         door data
      * @param currentState the current state of the door.
-     *
      * @return true if the key settings are matched.
      */
     Boolean isOpen(@Nullable Player player, @NotNull World world, @NotNull ConditionalDoor door, @NotNull boolean currentState);
@@ -39,7 +38,6 @@ public interface DoorCondition extends ConfigurationSerializable, Cloneable {
      * Get the description of the door condition.
      *
      * @param localizer localizer instance for translation
-     *
      * @return text component with description.
      */
     Component getDescription(ILocalizer localizer);
@@ -48,7 +46,6 @@ public interface DoorCondition extends ConfigurationSerializable, Cloneable {
      * Get the command to set this condition with the current settings.
      *
      * @param door door of condition
-     *
      * @return creation command as string.
      */
     String getCreationCommand(ConditionalDoor door);
@@ -57,7 +54,6 @@ public interface DoorCondition extends ConfigurationSerializable, Cloneable {
      * Get the command to remove this condition
      *
      * @param door door of condition
-     *
      * @return creation command as string.
      */
     String getRemoveCommand(ConditionalDoor door);

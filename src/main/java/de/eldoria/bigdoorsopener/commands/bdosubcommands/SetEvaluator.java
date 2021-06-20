@@ -114,7 +114,7 @@ public class SetEvaluator extends BigDoorsAdapterCommand {
                 break;
         }
         messageSender().sendLocalizedMessage(sender, "setEvaluator.custom",
-                Replacement.create("EVALUATOR", door.first.getEvaluator()).addFormatting('6'));
+                Replacement.create("EVALUATOR", door.first.evaluator()).addFormatting('6'));
         return true;
     }
 

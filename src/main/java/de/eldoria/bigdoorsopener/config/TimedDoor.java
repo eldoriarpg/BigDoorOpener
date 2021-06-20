@@ -3,8 +3,6 @@ package de.eldoria.bigdoorsopener.config;
 import com.google.common.base.Objects;
 import de.eldoria.eldoutilities.serialization.SerializationUtil;
 import de.eldoria.eldoutilities.serialization.TypeResolvingMap;
-import lombok.Getter;
-import lombok.Setter;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.entity.Player;
@@ -15,8 +13,6 @@ import java.util.Map;
 /**
  * @deprecated Only exists for config migration. will be removed later.
  */
-@Getter
-@Setter
 @Deprecated
 @SerializableAs("timedDoor")
 public class TimedDoor implements ConfigurationSerializable {
@@ -102,8 +98,8 @@ public class TimedDoor implements ConfigurationSerializable {
             return false;
         }
 
-        long openInTicks = getDiff(fulltime, getTicksOpen());
-        long closedInTicks = getDiff(fulltime, getTicksClose());
+        long openInTicks = getDiff(fulltime, ticksOpen());
+        long closedInTicks = getDiff(fulltime, ticksClose());
         return openInTicks > closedInTicks;
     }
 
@@ -154,5 +150,57 @@ public class TimedDoor implements ConfigurationSerializable {
     public void setTicks(int open, int close) {
         ticksOpen = open;
         ticksClose = close;
+    }
+
+    public long doorUID() {
+        return doorUID;
+    }
+
+    public String world() {
+        return world;
+    }
+
+    public Vector position() {
+        return position;
+    }
+
+    public String permission() {
+        return permission;
+    }
+
+    public void permission(String permission) {
+        this.permission = permission;
+    }
+
+    public int ticksClose() {
+        return ticksClose;
+    }
+
+    public void ticksClose(int ticksClose) {
+        this.ticksClose = ticksClose;
+    }
+
+    public int ticksOpen() {
+        return ticksOpen;
+    }
+
+    public void ticksOpen(int ticksOpen) {
+        this.ticksOpen = ticksOpen;
+    }
+
+    public double openRange() {
+        return openRange;
+    }
+
+    public void openRange(double openRange) {
+        this.openRange = openRange;
+    }
+
+    public boolean isInvertOpen() {
+        return invertOpen;
+    }
+
+    public void invertOpen(boolean invertOpen) {
+        this.invertOpen = invertOpen;
     }
 }

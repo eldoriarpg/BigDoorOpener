@@ -86,7 +86,7 @@ public class DoorPermission extends BigDoorsAdapter implements Permission {
                 })
                 .onTabComplete((sender, localizer, args) -> {
                     if (args.length == 1) {
-                        return ArrayUtil.startingWithInArray(args[0], new String[] {"owner", "editor", "user"}).collect(Collectors.toList());
+                        return ArrayUtil.startingWithInArray(args[0], new String[]{"owner", "editor", "user"}).collect(Collectors.toList());
                     }
                     return Collections.emptyList();
                 })
@@ -98,7 +98,7 @@ public class DoorPermission extends BigDoorsAdapter implements Permission {
     public Boolean isOpen(Player player, World world, ConditionalDoor door, boolean currentState) {
         try {
             return cache.get(player.getUniqueId(), () -> {
-                Door d = getDoor(player, door.getDoorUID());
+                Door d = getDoor(player, door.doorUID());
                 if (d == null) return false;
                 int permission = d.getPermission();
                 return permission <= permissionLevel && permission >= 0;
@@ -124,7 +124,7 @@ public class DoorPermission extends BigDoorsAdapter implements Permission {
 
     @Override
     public String getCreationCommand(ConditionalDoor door) {
-        return SET_COMMAND + door.getDoorUID() + " doorPerm " + permissionLevel;
+        return SET_COMMAND + door.doorUID() + " doorPerm " + permissionLevel;
     }
 
     @Override
