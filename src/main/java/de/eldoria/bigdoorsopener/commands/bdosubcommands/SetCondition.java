@@ -76,11 +76,11 @@ public class SetCondition extends BigDoorsAdapterCommand {
             conditionArgs = Arrays.copyOfRange(args, 2, args.length);
         }
 
-        condition.create(player, messageSender(), c -> conditionalDoor.getConditionBag().setCondition(c), conditionArgs);
+        condition.create(player, messageSender(), c -> conditionalDoor.conditionBag().setCondition(c), conditionArgs);
 
-        if (conditionalDoor.getEvaluationType() == ConditionalDoor.EvaluationType.CUSTOM) {
+        if (conditionalDoor.evaluationType() == ConditionalDoor.EvaluationType.CUSTOM) {
             Pattern compile = Pattern.compile(group, Pattern.CASE_INSENSITIVE);
-            if (!compile.matcher(conditionalDoor.getEvaluator()).find()) {
+            if (!compile.matcher(conditionalDoor.evaluator()).find()) {
                 messageSender().sendLocalizedError(player, "warning.valueNotInEvaluator",
                         Replacement.create("VALUE", group).addFormatting('6'));
             }

@@ -10,9 +10,7 @@ public final class ConditionHelper {
      * Get the serialized of the class based on {@link SerializableAs}
      *
      * @param condition condition to check
-     *
      * @return serialized name of class
-     *
      * @throws IllegalStateException when the annotation is not present.
      */
     public static String serializedName(Class<? extends DoorCondition> condition) throws IllegalStateException {

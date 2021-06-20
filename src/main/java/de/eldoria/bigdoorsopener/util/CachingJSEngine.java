@@ -75,7 +75,6 @@ public class CachingJSEngine {
      * @param string       string to evaluate
      * @param defaultValue default value which should be returned if anything goes wrong.
      * @param <T>          type which should be returned
-     *
      * @return evaluated value or default value
      */
     @SuppressWarnings("unchecked")
@@ -101,9 +100,7 @@ public class CachingJSEngine {
      * @param string       string to evaluate
      * @param defaultValue default value which should be returned if anything goes wrong.
      * @param <T>          type which should be returned
-     *
      * @return evaluated value or default value if evaluated value is null.
-     *
      * @throws ExecutionException if a exception occured while creating the cached value
      * @throws ScriptException    if a exception orccured while executing the js script
      * @throws ClassCastException if the received object cant be cast on the requested type

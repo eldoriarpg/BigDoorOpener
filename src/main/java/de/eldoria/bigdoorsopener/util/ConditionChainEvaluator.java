@@ -24,7 +24,6 @@ public class ConditionChainEvaluator {
      * @param door         the acutal door which is checked
      * @param currentState the current state of the door
      * @param conditions   conditions to evaluate
-     *
      * @return the result of the chain evaluator
      */
     public static boolean or(Player player, World world, ConditionalDoor door, boolean currentState, Collection<DoorCondition> conditions) {
@@ -44,7 +43,6 @@ public class ConditionChainEvaluator {
      * @param door         the acutal door which is checked
      * @param currentState the current state of the door
      * @param conditions   conditions to evaluate
-     *
      * @return the result of the chain evaluator
      */
     public static boolean and(Player player, World world, ConditionalDoor door, boolean currentState, Collection<DoorCondition> conditions) {
@@ -64,7 +62,6 @@ public class ConditionChainEvaluator {
      * @param world         world the door is in
      * @param door          the acutal door which is checked
      * @param currentState  the current state of the door
-     *
      * @return chain evaluator with result evaluated.
      */
     public ConditionChainEvaluator or(DoorCondition doorCondition, Player player, World world, ConditionalDoor door, boolean currentState) {
@@ -110,7 +107,6 @@ public class ConditionChainEvaluator {
      * @param world         world the door is in
      * @param door          the acutal door which is checked
      * @param currentState  the current state of the door
-     *
      * @return chain evaluator with result evaluated.
      */
     public ConditionChainEvaluator and(DoorCondition doorCondition, Player player, World world, ConditionalDoor door, boolean currentState) {
@@ -145,7 +141,6 @@ public class ConditionChainEvaluator {
      * Get the result of the chain
      *
      * @param currentState the current state of the door
-     *
      * @return the result or the current state if the result is null.
      */
     public boolean result(boolean currentState) {

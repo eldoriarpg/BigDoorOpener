@@ -51,17 +51,17 @@ public class CloneDoor extends BigDoorsAdapterCommand {
 
         if (targetDoor == null) return true;
 
-        targetDoor.setConditionBag(sourceDoor.getConditionBag().copy());
+        targetDoor.conditionBag(sourceDoor.conditionBag().copy());
 
-        targetDoor.setStayOpen(sourceDoor.getStayOpen());
+        targetDoor.setStayOpen(sourceDoor.stayOpen());
 
-        if (sourceDoor.getEvaluationType() == ConditionalDoor.EvaluationType.CUSTOM) {
-            targetDoor.setEvaluator(sourceDoor.getEvaluator());
+        if (sourceDoor.evaluationType() == ConditionalDoor.EvaluationType.CUSTOM) {
+            targetDoor.setEvaluator(sourceDoor.evaluator());
         } else {
-            targetDoor.setEvaluator(sourceDoor.getEvaluationType());
+            targetDoor.setEvaluator(sourceDoor.evaluationType());
         }
 
-        targetDoor.setInvertOpen(sourceDoor.isInvertOpen());
+        targetDoor.invertOpen(sourceDoor.isInvertOpen());
 
         Bukkit.getPluginManager().callEvent(new DoorModifiedEvent(targetDoor));
 

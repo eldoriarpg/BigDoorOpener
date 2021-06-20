@@ -58,7 +58,7 @@ public class GiveKey extends BigDoorsAdapterCommand {
             return true;
         }
 
-        List<DoorCondition> condition = door.first.getConditionBag().getConditions("item");
+        List<DoorCondition> condition = door.first.conditionBag().getConditions("item");
 
         if (!condition.isEmpty()) {
             messageSender().sendLocalizedError(sender, "error.noItemConditionSet");
@@ -77,7 +77,7 @@ public class GiveKey extends BigDoorsAdapterCommand {
             return true;
         }
 
-        ItemStack item = ((Item) condition.get(optionalInt.getAsInt())).getItem();
+        ItemStack item = ((Item) condition.get(optionalInt.getAsInt())).item();
 
         OptionalInt amount = ArgumentUtils.getOptionalParameter(args, 1, OptionalInt.of(64), Parser::parseInt);
 

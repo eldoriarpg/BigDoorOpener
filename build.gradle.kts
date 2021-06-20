@@ -34,8 +34,6 @@ dependencies {
     compileOnly("io.lumine.xikage", "MythicMobs", "4.9.1")
     compileOnly("nl.pim16aap2", "BigDoors", "0.1.8.28")
     testImplementation("org.junit.jupiter", "junit-jupiter-api", "5.5.2")
-    compileOnly("org.projectlombok", "lombok", lombokVersion)
-    annotationProcessor("org.projectlombok", "lombok", lombokVersion)
     testCompileOnly("org.projectlombok", "lombok", lombokVersion)
     testAnnotationProcessor("org.projectlombok", "lombok", lombokVersion)
 }

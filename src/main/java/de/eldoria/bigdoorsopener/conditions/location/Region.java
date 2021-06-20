@@ -61,13 +61,13 @@ public class Region implements Location {
         TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
         worldName = resolvingMap.getValue("world");
         regionId = resolvingMap.getValue("region");
-        if (BigDoorsOpener.getRegionContainer() != null) {
+        if (BigDoorsOpener.regionContainer() != null) {
             world = Bukkit.getWorld(worldName);
             if (world == null) {
                 region = null;
                 return;
             }
-            region = BigDoorsOpener.getRegionContainer().get(BukkitAdapter.adapt(world)).getRegion(regionId);
+            region = BigDoorsOpener.regionContainer().get(BukkitAdapter.adapt(world)).getRegion(regionId);
             return;
         }
         world = null;
@@ -78,7 +78,7 @@ public class Region implements Location {
     public static ConditionContainer getConditionContainer() {
         return ConditionContainer.ofClass(Region.class, Scope.PLAYER)
                 .withFactory((player, messageSender, conditionBag, arguments) -> {
-                    final RegionContainer regionContainer = BigDoorsOpener.getRegionContainer();
+                    final RegionContainer regionContainer = BigDoorsOpener.regionContainer();
                     ILocalizer localizer = BigDoorsOpener.localizer();
                     if (regionContainer == null) {
                         messageSender.sendError(player, localizer.getMessage("error.wgNotEnabled"));
@@ -152,7 +152,7 @@ public class Region implements Location {
 
     @Override
     public String getCreationCommand(ConditionalDoor door) {
-        return SET_COMMAND + door.getDoorUID() + " region " + regionId;
+        return SET_COMMAND + door.doorUID() + " region " + regionId;
     }
 
     @Override

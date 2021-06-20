@@ -100,7 +100,7 @@ public class MythicMob implements DoorCondition {
         if (BigDoorsOpener.isMythicMobsEnabled()) {
             return state;
         }
-        BigDoorsOpener.logger().warning("A mythic mobs condition on door " + door.getDoorUID() + " was called but MythicMobs is not active.");
+        BigDoorsOpener.logger().warning("A mythic mobs condition on door " + door.doorUID() + " was called but MythicMobs is not active.");
         return null;
     }
 
@@ -119,12 +119,12 @@ public class MythicMob implements DoorCondition {
 
     @Override
     public String getCreationCommand(ConditionalDoor door) {
-        return SET_COMMAND + door.getDoorUID() + " mythicMobs " + mobType;
+        return SET_COMMAND + door.doorUID() + " mythicMobs " + mobType;
     }
 
     @Override
     public String getRemoveCommand(ConditionalDoor door) {
-        return REMOVE_COMMAND + door.getDoorUID() + " mythicMob";
+        return REMOVE_COMMAND + door.doorUID() + " mythicMob";
     }
 
     @Override

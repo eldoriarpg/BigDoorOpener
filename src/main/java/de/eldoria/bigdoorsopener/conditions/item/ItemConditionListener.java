@@ -26,7 +26,7 @@ public class ItemConditionListener extends BigDoorsAdapter implements Listener {
     public void onItemInteract(PlayerInteractEvent event) {
         config.getDoors().forEach(d -> {
             if (!d.isEnabled()) return;
-            List<DoorCondition> items = d.getConditionBag().getConditions("item");
+            List<DoorCondition> items = d.conditionBag().getConditions("item");
             if ((items.isEmpty())) return;
             for (DoorCondition item : items) {
                 if (item instanceof ItemInteraction) {

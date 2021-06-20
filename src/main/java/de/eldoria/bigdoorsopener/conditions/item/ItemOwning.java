@@ -114,11 +114,11 @@ public class ItemOwning extends Item {
 
     @Override
     public String getCreationCommand(ConditionalDoor door) {
-        return SET_COMMAND + door.getDoorUID() + " itemOwning " + getItem().getAmount() + " " + isConsumed();
+        return SET_COMMAND + door.doorUID() + " itemOwning " + item().getAmount() + " " + isConsumed();
     }
 
     @Override
     public ItemOwning clone() {
-        return new ItemOwning(getItem().clone(), isConsumed());
+        return new ItemOwning(item().clone(), isConsumed());
     }
 }

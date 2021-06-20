@@ -14,7 +14,6 @@ import de.eldoria.eldoutilities.serialization.SerializationUtil;
 import de.eldoria.eldoutilities.serialization.TypeResolvingMap;
 import de.eldoria.eldoutilities.utils.ArgumentUtils;
 import de.eldoria.eldoutilities.utils.Parser;
-import lombok.Setter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.World;
@@ -38,12 +37,11 @@ import static de.eldoria.bigdoorsopener.commands.CommandHelper.argumentsInvalid;
 @SerializableAs("itemBlockCondition")
 public class ItemBlock extends ItemInteraction {
 
-    @Setter
     private BlockVector position;
 
     /**
      * Creates a new item block condition without a set position. This object is incomplete and has to be initialized
-     * with the {@link #setPosition(BlockVector)} method before using.
+     * with the {@link #position(BlockVector)} method before using.
      *
      * @param item
      * @param consumed
@@ -122,7 +120,7 @@ public class ItemBlock extends ItemInteraction {
                         }
                         if (event.getClickedBlock() == null) return false;
                         BlockVector blockVector = event.getClickedBlock().getLocation().toVector().toBlockVector();
-                        itemBlock.setPosition(blockVector);
+                        itemBlock.position(blockVector);
                         conditionBag.accept(itemBlock);
                         event.setCancelled(true);
                         mSender.sendMessage(player, localizer.getMessage("setCondition.itemBlockRegistered"));
@@ -182,11 +180,15 @@ public class ItemBlock extends ItemInteraction {
 
     @Override
     public String getCreationCommand(ConditionalDoor door) {
-        return SET_COMMAND + door.getDoorUID() + " itemBlock " + getItem().getAmount() + " " + isConsumed();
+        return SET_COMMAND + door.doorUID() + " itemBlock " + item().getAmount() + " " + isConsumed();
     }
 
     @Override
     public ItemBlock clone() {
-        return new ItemBlock(position, getItem(), isConsumed());
+        return new ItemBlock(position, item(), isConsumed());
+    }
+
+    public void position(BlockVector position) {
+        this.position = position;
     }
 }

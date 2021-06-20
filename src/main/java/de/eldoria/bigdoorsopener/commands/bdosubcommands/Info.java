@@ -66,32 +66,32 @@ public class Info extends BigDoorsAdapterCommand {
                 .append(Component.text(localizer().getMessage(cDoor.isEnabled() ? "info.state.enabled" : "info.state.disabled"), C.highlightColor))
                 .append(Component.newline())
                 .append(Component.text(localizer().getMessage("info.world") + " ", C.baseColor))
-                .append(Component.text(cDoor.getWorld(), C.highlightColor))
+                .append(Component.text(cDoor.world(), C.highlightColor))
                 .append(Component.newline())
                 .append(Component.text(""));
 
         // append evaluator
         component.append(Component.text(localizer().getMessage("info.evaluator") + " ", C.baseColor));
-        if (cDoor.getEvaluationType() == ConditionalDoor.EvaluationType.CUSTOM) {
-            component.append(Component.text(cDoor.getEvaluator() + " ", C.highlightColor))
+        if (cDoor.evaluationType() == ConditionalDoor.EvaluationType.CUSTOM) {
+            component.append(Component.text(cDoor.evaluator() + " ", C.highlightColor))
                     .append(Component.text("[" + localizer().getMessage("info.edit") + "]", NamedTextColor.GREEN, TextDecoration.UNDERLINED)
-                            .clickEvent(ClickEvent.suggestCommand("/bdo setEvaluator " + cDoor.getDoorUID() + " custom " + cDoor.getEvaluator())));
+                            .clickEvent(ClickEvent.suggestCommand("/bdo setEvaluator " + cDoor.doorUID() + " custom " + cDoor.evaluator())));
         } else {
-            component.append(Component.text(cDoor.getEvaluationType().name(), C.highlightColor));
+            component.append(Component.text(cDoor.evaluationType().name(), C.highlightColor));
         }
         component.append(Component.newline());
 
         // append open time
         component.append(Component.text(localizer().getMessage("info.stayOpen") + " ", C.baseColor))
-                .append(Component.text(cDoor.getStayOpen() + " ", C.highlightColor))
+                .append(Component.text(cDoor.stayOpen() + " ", C.highlightColor))
                 .append(Component.text("[" + localizer().getMessage("info.edit") + "]", NamedTextColor.GREEN, TextDecoration.UNDERLINED)
-                        .clickEvent(ClickEvent.suggestCommand("/bdo stayOpen " + cDoor.getDoorUID() + " " + cDoor.getStayOpen())))
+                        .clickEvent(ClickEvent.suggestCommand("/bdo stayOpen " + cDoor.doorUID() + " " + cDoor.stayOpen())))
                 .append(Component.newline());
 
         // start of key list
         component.append(Component.text(localizer().getMessage("info.conditions"), C.highlightColor, TextDecoration.BOLD));
 
-        ConditionBag conditionBag = cDoor.getConditionBag();
+        ConditionBag conditionBag = cDoor.conditionBag();
 
         Map<String, Integer> groupCount = new HashMap<>();
 

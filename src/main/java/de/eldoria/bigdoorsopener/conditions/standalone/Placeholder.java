@@ -112,7 +112,7 @@ public class Placeholder implements DoorCondition {
             PlaceholderAPI.setPlaceholders(player, evaluator);
             return BigDoorsOpener.JS().eval(PlaceholderAPI.setPlaceholders(player, evaluator), null);
         }
-        BigDoorsOpener.logger().warning("A placeholder condition on door " + door.getDoorUID() + " was called but PlaceholderAPI is not active.");
+        BigDoorsOpener.logger().warning("A placeholder condition on door " + door.doorUID() + " was called but PlaceholderAPI is not active.");
         return null;
     }
 
@@ -131,12 +131,12 @@ public class Placeholder implements DoorCondition {
 
     @Override
     public String getCreationCommand(ConditionalDoor door) {
-        return SET_COMMAND + door.getDoorUID() + " placeholder " + evaluator;
+        return SET_COMMAND + door.doorUID() + " placeholder " + evaluator;
     }
 
     @Override
     public String getRemoveCommand(ConditionalDoor door) {
-        return REMOVE_COMMAND + door.getDoorUID() + " placeholder";
+        return REMOVE_COMMAND + door.doorUID() + " placeholder";
     }
 
     @Override

@@ -124,7 +124,7 @@ public class SimpleRegion implements Location {
 
     @Override
     public String getCreationCommand(ConditionalDoor door) {
-        return SET_COMMAND + door.getDoorUID() + " simpleRegion";
+        return SET_COMMAND + door.doorUID() + " simpleRegion";
     }
 
     @Override

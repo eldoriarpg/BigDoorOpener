@@ -69,14 +69,14 @@ public class CopyCondition extends BigDoorsAdapterCommand {
             return true;
         }
 
-        ConditionBag sourceBag = sourceDoor.getConditionBag();
+        ConditionBag sourceBag = sourceDoor.conditionBag();
 
         if (args.length == 2) {
             if (denyAccess(sender, Permissions.ALL_CONDITION)) {
                 return true;
             }
 
-            targetDoor.setConditionBag(sourceBag.copy());
+            targetDoor.conditionBag(sourceBag.copy());
             messageSender().sendLocalizedMessage(sender, "copyCondition.copiedAll",
                     Replacement.create("SOURCE", playerSourceDoor.getName()).addFormatting('6'),
                     Replacement.create("TARGET", playerTargetDoor.getName()).addFormatting('6'));
@@ -92,11 +92,11 @@ public class CopyCondition extends BigDoorsAdapterCommand {
 
         ConditionGroup conditionGroup = optionalGroup.get();
 
-        if (denyAccess(sender, Permissions.getConditionPermission(conditionGroup.getName()), Permissions.ALL_CONDITION)) {
+        if (denyAccess(sender, Permissions.getConditionPermission(conditionGroup.name()), Permissions.ALL_CONDITION)) {
             return true;
         }
 
-        ConditionBag targetBag = targetDoor.getConditionBag();
+        ConditionBag targetBag = targetDoor.conditionBag();
 
 
         String id = ArgumentUtils.getOrDefault(args, 2, "0");
@@ -121,7 +121,7 @@ public class CopyCondition extends BigDoorsAdapterCommand {
         targetBag.setCondition(condition.get(optionalInt.getAsInt()).clone());
 
         messageSender().sendLocalizedMessage(sender, "copyCondition.copiedSingle",
-                Replacement.create("CONDITION", conditionGroup.getName()).addFormatting('6'),
+                Replacement.create("CONDITION", conditionGroup.name()).addFormatting('6'),
                 Replacement.create("SOURCE", playerSourceDoor.getName()).addFormatting('6'),
                 Replacement.create("TARGET", playerTargetDoor.getName()).addFormatting('6'));
         return true;

@@ -46,7 +46,6 @@ public abstract class BigDoorsAdapterCommand extends EldoCommand {
      * Get the door with a specific id.
      *
      * @param doorId id of the door as long or string
-     *
      * @return Door with id if exists.
      */
     @Nullable
@@ -59,7 +58,6 @@ public abstract class BigDoorsAdapterCommand extends EldoCommand {
      *
      * @param player owner of the door.
      * @param doorId id of the door as long or string
-     *
      * @return Door with id if exists.
      */
     @Nullable
@@ -71,7 +69,6 @@ public abstract class BigDoorsAdapterCommand extends EldoCommand {
      * Get a list of doors owned by the player.
      *
      * @param player Player for which the doors should be retrieved.
-     *
      * @return List of doors which are owned by the player
      */
     public List<Door> getDoors(Player player) {
@@ -83,7 +80,6 @@ public abstract class BigDoorsAdapterCommand extends EldoCommand {
      *
      * @param player Player for which the doors should be retrieved.
      * @param name   Get doors which match the name.
-     *
      * @return List of doors which are owned by the player
      */
     protected List<Door> getDoors(Player player, String name) {
@@ -106,7 +102,6 @@ public abstract class BigDoorsAdapterCommand extends EldoCommand {
      *
      * @param doorUID uid or name of the door.
      * @param player  player which performed the request.
-     *
      * @return door if the door exists and the player is allowed to access it. Otherwise null.
      */
     protected Door getPlayerDoor(String doorUID, Player player) {
@@ -162,7 +157,6 @@ public abstract class BigDoorsAdapterCommand extends EldoCommand {
      *
      * @param door   door to get.
      * @param player player which wants to get the door.
-     *
      * @return door or null if the door does not exist in BD.
      */
     protected ConditionalDoor getOrRegister(Door door, Player player) {
@@ -194,7 +188,6 @@ public abstract class BigDoorsAdapterCommand extends EldoCommand {
      *
      * @param doorUID uid or name of the door
      * @param player  player which requests this door.
-     *
      * @return door with conditional door or null if the door is not registered or the user has no access.
      */
     public Pair<ConditionalDoor, Door> getConditionalPlayerDoor(String doorUID, Player player) {
@@ -261,4 +254,3 @@ public abstract class BigDoorsAdapterCommand extends EldoCommand {
                 .collect(Collectors.toList());
     }
 }
-

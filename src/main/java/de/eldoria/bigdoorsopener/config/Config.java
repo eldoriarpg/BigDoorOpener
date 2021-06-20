@@ -8,7 +8,6 @@ import de.eldoria.bigdoorsopener.core.events.DoorRegisteredEvent;
 import de.eldoria.bigdoorsopener.core.events.DoorUnregisteredEvent;
 import de.eldoria.bigdoorsopener.door.ConditionalDoor;
 import de.eldoria.bigdoorsopener.door.conditioncollections.ConditionBag;
-import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -28,21 +27,13 @@ import java.util.logging.Logger;
 public class Config {
     private final Plugin plugin;
     private final Map<Long, ConditionalDoor> doors = new HashMap<>();
-    @Getter
     private int approachRefreshRate;
-    @Getter
     private int timedRefreshRate;
-    @Getter
     private boolean enableMetrics;
-    @Getter
     private String language;
-    @Getter
     private int refreshRate;
-    @Getter
     private boolean checkUpdates;
-    @Getter
     private int jsCacheSize;
-    @Getter
     private Vector playerCheckRadius;
 
     public Config(Plugin plugin) {
@@ -115,29 +106,29 @@ public class Config {
 
 
             for (TimedDoor tD : timedDoors) {
-                log.info("Converting door " + tD.getDoorUID());
-                ConditionalDoor cD = new ConditionalDoor(tD.getDoorUID(), tD.getWorld(), tD.getPosition());
+                log.info("Converting door " + tD.doorUID());
+                ConditionalDoor cD = new ConditionalDoor(tD.doorUID(), tD.world(), tD.position());
 
-                ConditionBag conditionBag = cD.getConditionBag();
+                ConditionBag conditionBag = cD.conditionBag();
 
-                if (tD.getPermission() != null && !tD.getPermission().isEmpty()) {
-                    conditionBag.setCondition(new PermissionNode(tD.getPermission()));
+                if (tD.permission() != null && !tD.permission().isEmpty()) {
+                    conditionBag.setCondition(new PermissionNode(tD.permission()));
                     log.info("Adding permission condition.");
                 }
 
                 if (!tD.isPermanentlyClosed()) {
-                    conditionBag.setCondition(new Time(tD.getTicksOpen(), tD.getTicksClose(), false));
+                    conditionBag.setCondition(new Time(tD.ticksOpen(), tD.ticksClose(), false));
                     log.info("Adding time condition.");
                 }
 
-                if (tD.getOpenRange() > 0) {
+                if (tD.openRange() > 0) {
                     conditionBag.setCondition(
                             new Proximity(
-                                    new Vector(tD.getOpenRange(), tD.getOpenRange(), tD.getOpenRange()),
+                                    new Vector(tD.openRange(), tD.openRange(), tD.openRange()),
                                     Proximity.ProximityForm.ELLIPSOID));
                     log.info("Adding proximity condition.");
                 }
-                log.info("Door " + tD.getDoorUID() + " successfully converted.");
+                log.info("Door " + tD.doorUID() + " successfully converted.");
                 conditionalDoors.add(cD);
             }
             config.set("doors", conditionalDoors);
@@ -191,7 +182,7 @@ public class Config {
         if (configDoors != null) {
             doors.clear();
             for (ConditionalDoor door : configDoors) {
-                doors.put(door.getDoorUID(), door);
+                doors.put(door.doorUID(), door);
             }
         } else {
             BigDoorsOpener.logger().info("No doors defined.");
@@ -266,5 +257,37 @@ public class Config {
 
     public boolean containsDoor(long key) {
         return doors.containsKey(key);
+    }
+
+    public int approachRefreshRate() {
+        return approachRefreshRate;
+    }
+
+    public int timedRefreshRate() {
+        return timedRefreshRate;
+    }
+
+    public boolean isEnableMetrics() {
+        return enableMetrics;
+    }
+
+    public String language() {
+        return language;
+    }
+
+    public int refreshRate() {
+        return refreshRate;
+    }
+
+    public boolean isCheckUpdates() {
+        return checkUpdates;
+    }
+
+    public int jsCacheSize() {
+        return jsCacheSize;
+    }
+
+    public Vector playerCheckRadius() {
+        return playerCheckRadius;
     }
 }

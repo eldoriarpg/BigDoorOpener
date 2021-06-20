@@ -20,7 +20,6 @@ public class WeatherListener implements Listener {
      * Get if its raining in a world. Is only really correct if the weather changed after plugin initialization.
      *
      * @param world world to check
-     *
      * @return true if its currently raining in the world
      */
     public static boolean isRaining(World world) {

@@ -65,13 +65,13 @@ public class RemoveCondition extends BigDoorsAdapterCommand {
         }
         ConditionGroup container = optionalGroup.get();
 
-        String group = container.getName();
+        String group = container.name();
 
         if (denyAccess(sender, Permissions.getConditionPermission(group), Permissions.ALL_CONDITION)) {
             return true;
         }
 
-        ConditionBag conditionBag = cDoor.getConditionBag();
+        ConditionBag conditionBag = cDoor.conditionBag();
 
         if (!conditionBag.isConditionSet(container)) {
             messageSender().sendLocalizedError(sender, "error.conditionNotSet");
@@ -92,9 +92,9 @@ public class RemoveCondition extends BigDoorsAdapterCommand {
         messageSender().sendLocalizedMessage(sender, "removeCondition." + group);
 
         // check if condition is in evaluator if a custom evaluator is present.
-        if (cDoor.getEvaluationType() == ConditionalDoor.EvaluationType.CUSTOM) {
+        if (cDoor.evaluationType() == ConditionalDoor.EvaluationType.CUSTOM) {
             Pattern compile = Pattern.compile(group, Pattern.CASE_INSENSITIVE);
-            if (compile.matcher(cDoor.getEvaluator()).find()) {
+            if (compile.matcher(cDoor.evaluator()).find()) {
                 messageSender().sendLocalizedError(sender, "warning.valueStillUsed",
                         Replacement.create("VALUE", group).addFormatting('6'));
             }

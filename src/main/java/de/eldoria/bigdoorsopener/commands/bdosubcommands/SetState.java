@@ -56,7 +56,7 @@ public class SetState extends BigDoorsAdapterCommand {
         } else {
             messageSender().sendLocalizedError(sender, "setState.disabled");
         }
-        door.first.setEnabled(state.get());
+        door.first.enabled(state.get());
         return true;
     }
 
@@ -66,7 +66,7 @@ public class SetState extends BigDoorsAdapterCommand {
             return getDoorCompletion(sender, args[0]);
         }
         if (args.length == 2) {
-            return ArrayUtil.startingWithInArray(args[1], new String[] {"enabled", "disabled"}).collect(Collectors.toList());
+            return ArrayUtil.startingWithInArray(args[1], new String[]{"enabled", "disabled"}).collect(Collectors.toList());
         }
 
         return Collections.emptyList();

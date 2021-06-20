@@ -27,7 +27,6 @@ public final class JsSyntaxHelper {
      * Translates the alternative easier syntax to the true javascript syntax.
      *
      * @param evaluator evaluator to translate
-     *
      * @return the translated evaluator string.
      */
     public static String translateEvaluator(String evaluator) {
@@ -50,7 +49,6 @@ public final class JsSyntaxHelper {
      * returned string.
      *
      * @param evaluator string to evaluate
-     *
      * @return pair which returns the result and a optinal string which contains different valued based on the result
      */
     public static Pair<ValidatorResult, String> validateEvaluator(String evaluator, CachingJSEngine engine) {
@@ -90,7 +88,6 @@ public final class JsSyntaxHelper {
      * @param engine    engine to use
      * @param player    player to check for. can be null
      * @param vanilla   set to true to disable third party replacements
-     *
      * @return a pair which indicates if the execution was successful or the fail reason
      */
     public static Pair<ValidatorResult, String> checkExecution(String evaluator, CachingJSEngine engine, Player player, boolean vanilla) {

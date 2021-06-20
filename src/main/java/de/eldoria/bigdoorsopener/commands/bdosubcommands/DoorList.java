@@ -38,8 +38,8 @@ public class DoorList extends BigDoorsAdapterCommand {
 
         if (sender.hasPermission(Permissions.ACCESS_ALL)) {
             for (ConditionalDoor value : doors.values()) {
-                Door door = getDoor(String.valueOf(value.getDoorUID()));
-                builder.append(value.getDoorUID()).append(" | ")
+                Door door = getDoor(String.valueOf(value.doorUID()));
+                builder.append(value.doorUID()).append(" | ")
                         .append("§6").append(door.getName()).append("§r")
                         .append(" (").append(door.getWorld().getName()).append(")\n");
             }

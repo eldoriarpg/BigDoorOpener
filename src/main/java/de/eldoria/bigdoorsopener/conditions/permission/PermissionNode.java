@@ -85,7 +85,7 @@ public class PermissionNode implements Permission {
 
     @Override
     public String getCreationCommand(ConditionalDoor door) {
-        return SET_COMMAND + door.getDoorUID() + " permNode " + permission;
+        return SET_COMMAND + door.doorUID() + " permNode " + permission;
     }
 
     @Override

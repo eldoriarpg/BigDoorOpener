@@ -52,14 +52,14 @@ public class DoorChecker extends BigDoorsAdapter implements Runnable, Listener {
 
     @EventHandler
     public void onDoorRegister(DoorRegisteredEvent event) {
-        if (!doors.contains(event.getDoor())) {
-            doors.add(event.getDoor());
+        if (!doors.contains(event.door())) {
+            doors.add(event.door());
         }
     }
 
     @EventHandler
     public void onDoorUnregister(DoorUnregisteredEvent event) {
-        doors.remove(event.getDoor());
+        doors.remove(event.door());
     }
 
     /**
@@ -77,7 +77,7 @@ public class DoorChecker extends BigDoorsAdapter implements Runnable, Listener {
     public void run() {
         if (doors.isEmpty()) return;
 
-        doorUpdateInterval += doors.size() / (double) config.getRefreshRate();
+        doorUpdateInterval += doors.size() / (double) config.refreshRate();
 
 
         open.clear();
@@ -93,20 +93,20 @@ public class DoorChecker extends BigDoorsAdapter implements Runnable, Listener {
             assert door != null : "Door is null. How could this happen?";
 
             if (!doorExists(door)) {
-                config.removeDoor(door.getDoorUID());
-                BigDoorsOpener.logger().info("Door with id " + door.getDoorUID() + " has been deleted. Removing.");
+                config.removeDoor(door.doorUID());
+                BigDoorsOpener.logger().info("Door with id " + door.doorUID() + " has been deleted. Removing.");
                 continue;
             }
 
             doors.add(door);
 
-            World world = server.getWorld(door.getWorld());
+            World world = server.getWorld(door.world());
             // If the world of the door does not exists, why should we evaluate it.
             if (world == null) continue;
 
             // check if chunk of door is loaded. if not skip.
             try {
-                if (chunkStateCache.get(door.getDoorUID(), () -> !isDoorLoaded(getDoor(door.getDoorUID())))) {
+                if (chunkStateCache.get(door.doorUID(), () -> !isDoorLoaded(getDoor(door.doorUID())))) {
                     // Skip doors in unloaded chunks
                     continue;
                 }
@@ -117,7 +117,7 @@ public class DoorChecker extends BigDoorsAdapter implements Runnable, Listener {
             }
 
             // skip busy doors. bcs why should we try to open/close a door we cant open/close
-            if (getCommander().isDoorBusy(door.getDoorUID()) || !door.isEnabled()) {
+            if (commander().isDoorBusy(door.doorUID()) || !door.isEnabled()) {
                 continue;
             }
 
@@ -133,9 +133,9 @@ public class DoorChecker extends BigDoorsAdapter implements Runnable, Listener {
                 try {
                     boolean checked = false;
                     for (Player player : worldPlayers.get(world.getName(), world::getPlayers)) {
-                        if (!proximity.apply(door.getPosition(),
+                        if (!proximity.apply(door.position(),
                                 player.getLocation().toVector(),
-                                config.getPlayerCheckRadius())) {
+                                config.playerCheckRadius())) {
                             continue;
                         }
                         checked = true;
@@ -144,7 +144,7 @@ public class DoorChecker extends BigDoorsAdapter implements Runnable, Listener {
                             // only open the door if its not yet open. because why open it then.
                             if (!open) {
                                 this.open.add(door);
-                                openedBy.put(door.getDoorUID(), player);
+                                openedBy.put(door.doorUID(), player);
                             }
                             break;
                         }
@@ -155,7 +155,7 @@ public class DoorChecker extends BigDoorsAdapter implements Runnable, Listener {
                             // only open the door if its not yet open. because why open it then.
                             if (!open) {
                                 this.open.add(door);
-                                openedBy.put(door.getDoorUID(), null);
+                                openedBy.put(door.doorUID(), null);
                             }
                             break;
                         }
@@ -183,7 +183,7 @@ public class DoorChecker extends BigDoorsAdapter implements Runnable, Listener {
         // Open doors
         for (ConditionalDoor conditionalDoor : open) {
             if (setDoorState(true, conditionalDoor)) {
-                conditionalDoor.opened(openedBy.get(conditionalDoor.getDoorUID()));
+                conditionalDoor.opened(openedBy.get(conditionalDoor.doorUID()));
             }
         }
 
