@@ -119,7 +119,7 @@ public class BigDoorsOpener extends EldoPlugin {
     @SneakyThrows
     @Override
     public void onPluginEnable() {
-        ServerVersion.forceVersion(ServerVersion.MC_1_8, ServerVersion.MC_1_16);
+        ServerVersion.forceVersion(ServerVersion.MC_1_8, ServerVersion.MC_1_17);
 
         if (!initialized) {
             BigDoorsOpener.instance = this;
@@ -148,7 +148,7 @@ public class BigDoorsOpener extends EldoPlugin {
 
         // Check for updates
         if (config.isCheckUpdates()) {
-            Updater.Butler(new ButlerUpdateData(instance, "bdo.command.reload", true, false, 8, "https://plugins.eldoria.de")).start();
+            Updater.butler(new ButlerUpdateData(instance, "bdo.command.reload", true, false, 8, "https://plugins.eldoria.de")).start();
         }
 
         localizer = ILocalizer.create(instance, "de_DE", "en_US");
