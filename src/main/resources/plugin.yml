@@ -1,7 +1,7 @@
-name: ${project.name}
-description: ${project.description}
+name: ${name}
+description: ${description}
 author: Hadde
-version: ${project.version}
+version: ${version}
 main: de.eldoria.bigdoorsopener.core.BigDoorsOpener
 website: www.spigotmc.org/resources/80805/
 api-version: 1.13
