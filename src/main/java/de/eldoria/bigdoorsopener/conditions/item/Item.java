@@ -33,7 +33,7 @@ public abstract class Item implements DoorCondition {
 
     private final VersionFunction<Player, Boolean> handCheck = VersionFunctionBuilder.functionBuilder(Player.class, Boolean.class)
             .addVersionFunctionBetween(
-                    ServerVersion.MC_1_9, ServerVersion.MC_1_16,
+                    ServerVersion.MC_1_9, ServerVersion.MC_1_20,
                     p -> hasPlayerItemInMainHand(p) || hasPlayerItemInOffHand(p))
             .addVersionFunction((p) -> {
                 ItemStack item = p.getItemInHand();
@@ -45,7 +45,7 @@ public abstract class Item implements DoorCondition {
 
     private final VersionFunction<Player, Boolean> takeFromHand = VersionFunctionBuilder.functionBuilder(Player.class, Boolean.class)
             .addVersionFunctionBetween(
-                    ServerVersion.MC_1_9, ServerVersion.MC_1_16,
+                    ServerVersion.MC_1_9, ServerVersion.MC_1_20,
                     (p) -> {
                         if (hasPlayerItemInMainHand(p)) {
                             takeFromMainHand(p);
