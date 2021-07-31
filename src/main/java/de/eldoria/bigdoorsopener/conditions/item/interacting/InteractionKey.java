@@ -1,2 +1,4 @@
-package de.eldoria.bigdoorsopener.conditions.item.interacting;public interface InteractionKey {
+package de.eldoria.bigdoorsopener.conditions.item.interacting;
+
+public interface InteractionKey {
 }
