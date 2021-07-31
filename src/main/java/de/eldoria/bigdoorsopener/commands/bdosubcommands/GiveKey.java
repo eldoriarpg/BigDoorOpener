@@ -60,7 +60,7 @@ public class GiveKey extends BigDoorsAdapterCommand {
 
         List<DoorCondition> condition = door.first.conditionBag().getConditions("item");
 
-        if (!condition.isEmpty()) {
+        if (condition.isEmpty()) {
             messageSender().sendLocalizedError(sender, "error.noItemConditionSet");
             return true;
         }
