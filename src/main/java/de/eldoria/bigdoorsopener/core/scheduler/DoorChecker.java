@@ -93,6 +93,7 @@ public class DoorChecker extends BigDoorsAdapter implements Runnable, Listener {
         openedBy.clear();
 
         while (doorUpdateInterval > 1) {
+            evaluateNextDoor();
             doorUpdateInterval--;
         }
 
@@ -151,11 +152,15 @@ public class DoorChecker extends BigDoorsAdapter implements Runnable, Listener {
         // collect all doors we evaluated.
         evaluated.add(door);
 
-        boolean open = isOpen(door);
+        if (getDoor(door.doorUID()).isLocked()) {
+            return;
+        }
 
         //Check if the door really needs a per player evaluation
         if (door.requiresPlayerEvaluation()) {
+            evaluatePlayer(door, world);
         } else {
+            evaluateWorld(door, world);
         }
     }
 
