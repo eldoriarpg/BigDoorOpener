@@ -4,6 +4,7 @@ import de.eldoria.bigdoorsopener.conditions.DoorCondition;
 import de.eldoria.bigdoorsopener.conditions.item.interacting.ItemInteraction;
 import de.eldoria.bigdoorsopener.config.Config;
 import de.eldoria.bigdoorsopener.core.adapter.BigDoorsAdapter;
+import de.eldoria.bigdoorsopener.core.events.ConditionBagModifiedEvent;
 import nl.pim16aap2.bigDoors.BigDoors;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -20,6 +21,10 @@ public class ItemConditionListener extends BigDoorsAdapter implements Listener {
     public ItemConditionListener(BigDoors bigDoors, Config config) {
         super(bigDoors);
         this.config = config;
+    }
+
+    public void onConditionBag(ConditionBagModifiedEvent event) {
+        event.conditionBag();
     }
 
     @EventHandler
