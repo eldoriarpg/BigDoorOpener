@@ -70,12 +70,13 @@ publishing {
 }
 
 tasks {
+    val data = PublishData(project)
     processResources {
         from(sourceSets.main.get().resources.srcDirs) {
             filesMatching("plugin.yml") {
                 expand(
                     "name" to project.name,
-                    "version" to project.version,
+                    "version" to data.getVersion(true),
                     "description" to project.description
                 )
             }
