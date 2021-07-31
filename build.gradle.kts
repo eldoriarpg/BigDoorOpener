@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "de.eldoria"
-version = "2.4.3"
+version = "2.4.4"
 var mainPackage = "bigdoorsopener"
 val shadebade = group as String? + "." + mainPackage + "."
 val name = "BigDoorsOpener"

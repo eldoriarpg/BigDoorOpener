@@ -60,19 +60,19 @@ public class GiveKey extends BigDoorsAdapterCommand {
 
         List<DoorCondition> condition = door.first.conditionBag().getConditions("item");
 
-        if (!condition.isEmpty()) {
+        if (condition.isEmpty()) {
             messageSender().sendLocalizedError(sender, "error.noItemConditionSet");
             return true;
         }
 
-        String id = ArgumentUtils.getOrDefault(args, 1, "0");
+        String id = ArgumentUtils.getOrDefault(args, 3, "0");
         OptionalInt optionalInt = Parser.parseInt(id);
         if (!optionalInt.isPresent()) {
             messageSender().sendLocalizedError(sender, "error.invalidNumber");
             return true;
         }
 
-        if (condition.size() < optionalInt.getAsInt()) {
+        if(optionalInt.getAsInt() >= condition.size()){
             messageSender().sendLocalizedError(sender, "error.conditionNotSet");
             return true;
         }

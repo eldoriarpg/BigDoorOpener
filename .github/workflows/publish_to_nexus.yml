@@ -6,6 +6,7 @@ on:
       - master
       - dev*
       - feature/*
+      - fix/*
 jobs:
   build:
     environment: build
