@@ -6,7 +6,9 @@ import de.eldoria.bigdoorsopener.core.conditions.ConditionContainer;
 import de.eldoria.bigdoorsopener.core.conditions.ConditionGroup;
 import de.eldoria.bigdoorsopener.core.conditions.ConditionRegistrar;
 import de.eldoria.bigdoorsopener.core.conditions.Scope;
+import de.eldoria.bigdoorsopener.core.events.ConditionAddedEvent;
 import de.eldoria.bigdoorsopener.core.events.ConditionBagModifiedEvent;
+import de.eldoria.bigdoorsopener.core.events.ConditionRemovedEvent;
 import de.eldoria.bigdoorsopener.core.exceptions.ConditionCreationException;
 import de.eldoria.bigdoorsopener.door.ConditionalDoor;
 import de.eldoria.eldoutilities.serialization.SerializationUtil;
@@ -15,6 +17,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -32,8 +35,8 @@ public class ConditionBag implements ConditionCollection {
     private final Map<String, List<DoorCondition>> worldScope = new LinkedHashMap<>();
 
     private ConditionBag(Collection<DoorCondition> playerScope, Collection<DoorCondition> worldScope) {
-        playerScope.forEach(this::addCondition);
-        worldScope.forEach(this::addCondition);
+        playerScope.forEach(this::addConditionSilent);
+        worldScope.forEach(this::addConditionSilent);
     }
 
     public ConditionBag() {
@@ -48,7 +51,7 @@ public class ConditionBag implements ConditionCollection {
                 continue;
             }
             BigDoorsOpener.logger().fine("Added condition \"" + condition.getClass().getSimpleName() + "\" to condition bag");
-            addCondition(condition);
+            addConditionSilent(condition);
         }
     }
 
@@ -61,24 +64,31 @@ public class ConditionBag implements ConditionCollection {
                 .build();
     }
 
-    public void setCondition(DoorCondition condition) {
+    public void setCondition(ConditionalDoor door, DoorCondition condition) {
         List<DoorCondition> conditions = getConditions(condition);
+        for (DoorCondition doorCondition : conditions) {
+            Bukkit.getPluginManager().callEvent(new ConditionRemovedEvent(door, this, doorCondition));
+        }
         conditions.clear();
         conditions.add(condition);
-        Bukkit.getPluginManager().callEvent(new ConditionBagModifiedEvent(this));
+        Bukkit.getPluginManager().callEvent(new ConditionAddedEvent(door, this, condition));
     }
 
-    public void addCondition(DoorCondition condition) {
+    public void addCondition(ConditionalDoor door,DoorCondition condition) {
         getConditions(condition).add(condition);
-        Bukkit.getPluginManager().callEvent(new ConditionBagModifiedEvent(this));
+        Bukkit.getPluginManager().callEvent(new ConditionAddedEvent(door, this, condition));
     }
 
-    public boolean removeCondition(ConditionGroup group, int index) {
+    public void addConditionSilent(DoorCondition condition) {
+        getConditions(condition).add(condition);
+    }
+
+    public boolean removeCondition(ConditionalDoor door,ConditionGroup group, int index) {
         if (getConditions(group).size() < index) {
             return false;
         }
-        getConditions(group).remove(index);
-        Bukkit.getPluginManager().callEvent(new ConditionBagModifiedEvent(this));
+        DoorCondition condition = getConditions(group).remove(index);
+        Bukkit.getPluginManager().callEvent(new ConditionRemovedEvent(door, this, condition));
         return true;
     }
 

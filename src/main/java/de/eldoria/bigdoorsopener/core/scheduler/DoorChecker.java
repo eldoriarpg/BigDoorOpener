@@ -39,6 +39,7 @@ public class DoorChecker extends BigDoorsAdapter implements Runnable, Listener {
     private final Set<ConditionalDoor> open = new HashSet<>();
     private final Set<ConditionalDoor> close = new HashSet<>();
     private final Set<ConditionalDoor> evaluated = new HashSet<>();
+    Map<Long, Player> openedBy = new HashMap<>();
     private final Cache<String, List<Player>> worldPlayers = C.getShortExpiringCache();
     private final Cache<Long, Boolean> chunkStateCache = C.getShortExpiringCache();
     private final TriFunction<Vector, Vector, Vector, Boolean> proximity = Proximity.ProximityForm.CUBOID.check;
@@ -48,6 +49,12 @@ public class DoorChecker extends BigDoorsAdapter implements Runnable, Listener {
         super(bigDoors);
         this.config = config;
         doors.addAll(config.getDoors());
+    }
+
+    public static DoorChecker start(BigDoorsOpener bigDoorsOpener, Config config, BigDoors doors) {
+        DoorChecker doorChecker = new DoorChecker(config, doors);
+        bigDoorsOpener.getServer().getScheduler().scheduleSyncRepeatingTask(bigDoorsOpener, doorChecker, 0, 1);
+        return doorChecker;
     }
 
     @EventHandler
@@ -83,101 +90,10 @@ public class DoorChecker extends BigDoorsAdapter implements Runnable, Listener {
         open.clear();
         close.clear();
         evaluated.clear();
-
-        Map<Long, Player> openedBy = new HashMap<>();
+        openedBy.clear();
 
         while (doorUpdateInterval > 1) {
             doorUpdateInterval--;
-            // poll from queue and append door again.
-            ConditionalDoor door = doors.poll();
-            assert door != null : "Door is null. How could this happen?";
-
-            if (!doorExists(door)) {
-                config.removeDoor(door.doorUID());
-                BigDoorsOpener.logger().info("Door with id " + door.doorUID() + " has been deleted. Removing.");
-                continue;
-            }
-
-            doors.add(door);
-
-            World world = server.getWorld(door.world());
-            // If the world of the door does not exists, why should we evaluate it.
-            if (world == null) continue;
-
-            // check if chunk of door is loaded. if not skip.
-            try {
-                if (chunkStateCache.get(door.doorUID(), () -> !isDoorLoaded(getDoor(door.doorUID())))) {
-                    // Skip doors in unloaded chunks
-                    continue;
-                }
-            } catch (ExecutionException e) {
-                BigDoorsOpener.logger().log(Level.WARNING,
-                        "An error occured while calculating the chunk cache state. Please report this.", e);
-                continue;
-            }
-
-            // skip busy doors. bcs why should we try to open/close a door we cant open/close
-            if (commander().isDoorBusy(door.doorUID()) || !door.isEnabled()) {
-                continue;
-            }
-
-            // collect all doors we evaluated.
-            evaluated.add(door);
-
-            boolean open = isOpen(door);
-
-            //Check if the door really needs a per player evaluation
-            if (door.requiresPlayerEvaluation()) {
-                boolean opened = false;
-                // Evaluate door per player. If one player can open it, it will open.
-                try {
-                    boolean checked = false;
-                    for (Player player : worldPlayers.get(world.getName(), world::getPlayers)) {
-                        if (!proximity.apply(door.position(),
-                                player.getLocation().toVector(),
-                                config.playerCheckRadius())) {
-                            continue;
-                        }
-                        checked = true;
-                        if (door.getState(player, world, open)) {
-                            opened = true;
-                            // only open the door if its not yet open. because why open it then.
-                            if (!open) {
-                                this.open.add(door);
-                                openedBy.put(door.doorUID(), player);
-                            }
-                            break;
-                        }
-                    }
-                    if (!checked) {
-                        if (door.getState(null, world, open)) {
-                            opened = true;
-                            // only open the door if its not yet open. because why open it then.
-                            if (!open) {
-                                this.open.add(door);
-                                openedBy.put(door.doorUID(), null);
-                            }
-                            break;
-                        }
-                    }
-                } catch (ExecutionException e) {
-                    BigDoorsOpener.logger().log(Level.WARNING, "Failed to compute. Please report this.", e);
-                }
-                if (!opened && open) {
-                    close.add(door);
-                }
-            } else {
-                // Evaluate door.
-                if (door.getState(null, world, open)) {
-                    if (!open) {
-                        this.open.add(door);
-                    }
-                } else {
-                    if (open) {
-                        close.add(door);
-                    }
-                }
-            }
         }
 
         // Open doors
@@ -195,6 +111,103 @@ public class DoorChecker extends BigDoorsAdapter implements Runnable, Listener {
         // Notify doors that they were evaluated.
         for (ConditionalDoor conditionalDoor : evaluated) {
             conditionalDoor.evaluated();
+        }
+    }
+
+    public void evaluateNextDoor() {
+        // poll from queue and append door again.
+        ConditionalDoor door = doors.poll();
+        assert door != null : "Door is null. How could this happen?";
+
+        if (!doorExists(door)) {
+            config.removeDoor(door.doorUID());
+            BigDoorsOpener.logger().info("Door with id " + door.doorUID() + " has been deleted. Removing.");
+            return;
+        }
+
+        doors.add(door);
+
+        World world = server.getWorld(door.world());
+        // If the world of the door does not exists, why should we evaluate it.
+        if (world == null) return;
+
+        // check if chunk of door is loaded. if not skip.
+        try {
+            if (chunkStateCache.get(door.doorUID(), () -> !isDoorLoaded(getDoor(door.doorUID())))) {
+                // Skip doors in unloaded chunks
+                return;
+            }
+        } catch (ExecutionException e) {
+            BigDoorsOpener.logger().log(Level.WARNING,
+                    "An error occured while calculating the chunk cache state. Please report this.", e);
+            return;
+        }
+
+        // skip busy doors. bcs why should we try to open/close a door we cant open/close
+        if (commander().isDoorBusy(door.doorUID()) || !door.isEnabled()) {
+            return;
+        }
+
+        // collect all doors we evaluated.
+        evaluated.add(door);
+
+        boolean open = isOpen(door);
+
+        //Check if the door really needs a per player evaluation
+        if (door.requiresPlayerEvaluation()) {
+        } else {
+        }
+    }
+
+    private void evaluatePlayer(ConditionalDoor door, World world) {
+        boolean open = isOpen(door);
+        boolean opened = false;
+        // Evaluate door per player. If one player can open it, it will open.
+        try {
+            boolean checked = false;
+            for (Player player : worldPlayers.get(world.getName(), world::getPlayers)) {
+                if (!proximity.apply(door.position(), player.getLocation().toVector(), config.playerCheckRadius())) {
+                    continue;
+                }
+                checked = true;
+                if (!door.getState(player, world, open)) continue;
+
+                opened = true;
+                // only open the door if its not yet open. because why open it then.
+                if (!open) {
+                    this.open.add(door);
+                    openedBy.put(door.doorUID(), player);
+                }
+                break;
+            }
+            if (checked && door.getState(null, world, open)) {
+                opened = true;
+                // only open the door if its not yet open. because why open it then.
+                if (open) return;
+
+                this.open.add(door);
+                openedBy.put(door.doorUID(), null);
+                return;
+            }
+        } catch (ExecutionException e) {
+            BigDoorsOpener.logger().log(Level.WARNING, "Failed to compute. Please report this.", e);
+        }
+        if (!opened && open) {
+            close.add(door);
+        }
+    }
+
+    private void evaluateWorld(ConditionalDoor door, World world) {
+        boolean open = isOpen(door);
+        // Evaluate door.
+        if (door.getState(null, world, open)) {
+            if (!open) {
+                this.open.add(door);
+            }
+        } else {
+            if (open) {
+                close.add(door);
+            }
         }
     }
 }
