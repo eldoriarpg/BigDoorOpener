@@ -65,14 +65,14 @@ public class GiveKey extends BigDoorsAdapterCommand {
             return true;
         }
 
-        String id = ArgumentUtils.getOrDefault(args, 1, "0");
+        String id = ArgumentUtils.getOrDefault(args, 3, "0");
         OptionalInt optionalInt = Parser.parseInt(id);
         if (!optionalInt.isPresent()) {
             messageSender().sendLocalizedError(sender, "error.invalidNumber");
             return true;
         }
 
-        if (condition.size() < optionalInt.getAsInt()) {
+        if(optionalInt.getAsInt() >= condition.size()){
             messageSender().sendLocalizedError(sender, "error.conditionNotSet");
             return true;
         }
