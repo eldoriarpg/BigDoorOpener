@@ -149,12 +149,14 @@ public class DoorChecker extends BigDoorsAdapter implements Runnable, Listener {
             return;
         }
 
-        // collect all doors we evaluated.
-        evaluated.add(door);
-
+        // big doors doesnt prevent bdo from opening locked door. We need to check this by ourself
         if (getDoor(door.doorUID()).isLocked()) {
             return;
         }
+
+        // collect all doors we evaluated.
+        evaluated.add(door);
+
 
         //Check if the door really needs a per player evaluation
         if (door.requiresPlayerEvaluation()) {
