@@ -75,7 +75,7 @@ public class AddCondition extends BigDoorsAdapterCommand {
             conditionArgs = Arrays.copyOfRange(args, 2, args.length);
         }
 
-        condition.create(player, messageSender(), c -> conditionalDoor.conditionBag().addCondition(c), conditionArgs);
+        condition.create(player, messageSender(), c -> conditionalDoor.conditionBag().addCondition(conditionalDoor, c), conditionArgs);
 
         if (conditionalDoor.evaluationType() == ConditionalDoor.EvaluationType.CUSTOM) {
             Pattern compile = Pattern.compile(group, Pattern.CASE_INSENSITIVE);

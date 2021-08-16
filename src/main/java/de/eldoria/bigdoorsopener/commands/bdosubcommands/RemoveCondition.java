@@ -83,7 +83,7 @@ public class RemoveCondition extends BigDoorsAdapterCommand {
                 messageSender().sendLocalizedError(sender, "error.invalidNumber");
                 return true;
             }
-            if (!conditionBag.removeCondition(container, optionalInt.getAsInt())) {
+            if (!conditionBag.removeCondition(cDoor, container, optionalInt.getAsInt())) {
                 messageSender().sendLocalizedError(sender, "error.conditionNotSet");
                 return true;
             }

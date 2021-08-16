@@ -76,7 +76,7 @@ public class SetCondition extends BigDoorsAdapterCommand {
             conditionArgs = Arrays.copyOfRange(args, 2, args.length);
         }
 
-        condition.create(player, messageSender(), c -> conditionalDoor.conditionBag().setCondition(c), conditionArgs);
+        condition.create(player, messageSender(), c -> conditionalDoor.conditionBag().setCondition(conditionalDoor, c), conditionArgs);
 
         if (conditionalDoor.evaluationType() == ConditionalDoor.EvaluationType.CUSTOM) {
             Pattern compile = Pattern.compile(group, Pattern.CASE_INSENSITIVE);

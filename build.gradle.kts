@@ -22,7 +22,7 @@ repositories {
 }
 
 dependencies {
-    implementation("de.eldoria", "eldo-util", "1.9.1")
+    implementation("de.eldoria", "eldo-util", "1.9.2-DEV")
     implementation("net.kyori", "adventure-api", "4.8.1")
     implementation("net.kyori", "adventure-platform-bukkit", "4.0.0-SNAPSHOT")
     compileOnly("org.spigotmc", "spigot-api", "1.13.2-R0.1-SNAPSHOT")
@@ -70,12 +70,13 @@ publishing {
 }
 
 tasks {
+    val data = PublishData(project)
     processResources {
         from(sourceSets.main.get().resources.srcDirs) {
             filesMatching("plugin.yml") {
                 expand(
                     "name" to project.name,
-                    "version" to project.version,
+                    "version" to data.getVersion(true),
                     "description" to project.description
                 )
             }

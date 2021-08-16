@@ -100,7 +100,7 @@ public class ConditionalDoor implements ConfigurationSerializable {
             BigDoorsOpener.logger().fine("Converting condition chain to condition bag");
             ConditionChain conditionChain = resolvingMap.getValue("conditionChain");
             conditionBag = new ConditionBag();
-            conditionChain.getConditions().stream().filter(java.util.Objects::nonNull).forEach(c -> conditionBag.setCondition(c));
+            conditionChain.getConditions().stream().filter(java.util.Objects::nonNull).forEach(c -> conditionBag.setCondition(this, c));
         } else {
             conditionBag = resolvingMap.getValueOrDefault("conditionBag", new ConditionBag());
         }

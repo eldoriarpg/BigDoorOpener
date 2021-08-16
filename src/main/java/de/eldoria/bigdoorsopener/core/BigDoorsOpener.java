@@ -3,7 +3,7 @@ package de.eldoria.bigdoorsopener.core;
 import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.protection.regions.RegionContainer;
 import de.eldoria.bigdoorsopener.commands.BDOCommand;
-import de.eldoria.bigdoorsopener.conditions.item.ItemConditionListener;
+import de.eldoria.bigdoorsopener.conditions.item.interacting.ItemConditionListener;
 import de.eldoria.bigdoorsopener.conditions.item.ItemHolding;
 import de.eldoria.bigdoorsopener.conditions.item.ItemOwning;
 import de.eldoria.bigdoorsopener.conditions.item.interacting.ItemBlock;
@@ -161,7 +161,7 @@ public class BigDoorsOpener extends EldoPlugin {
         MessageSender.create(instance, "§6[BDO]");
 
         // start door checker
-        doorChecker = new DoorChecker(config, doors);
+        doorChecker = DoorChecker.start(this, config, doors);
         scheduler.scheduleSyncRepeatingTask(instance, doorChecker, 100, 1);
 
         registerListener();
