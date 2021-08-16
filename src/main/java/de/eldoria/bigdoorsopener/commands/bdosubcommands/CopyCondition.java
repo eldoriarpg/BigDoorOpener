@@ -118,7 +118,7 @@ public class CopyCondition extends BigDoorsAdapterCommand {
             return true;
         }
 
-        targetBag.setCondition(condition.get(optionalInt.getAsInt()).clone());
+        targetBag.setCondition(targetDoor,condition.get(optionalInt.getAsInt()).clone());
 
         messageSender().sendLocalizedMessage(sender, "copyCondition.copiedSingle",
                 Replacement.create("CONDITION", conditionGroup.name()).addFormatting('6'),

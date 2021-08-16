@@ -81,9 +81,9 @@ public class ItemBlock extends ItemInteraction {
 
                     if (argumentsInvalid(player, arguments, 1,
                             "<" + localizer.getMessage("syntax.doorId") + "> <"
-                                    + localizer.getMessage("syntax.condition") + "> <"
-                                    + localizer.getMessage("syntax.amount") + "> ["
-                                    + localizer.getMessage("tabcomplete.consumed") + "]")) {
+                            + localizer.getMessage("syntax.condition") + "> <"
+                            + localizer.getMessage("syntax.amount") + "> ["
+                            + localizer.getMessage("tabcomplete.consumed") + "]")) {
                         return;
                     }
 
@@ -147,13 +147,9 @@ public class ItemBlock extends ItemInteraction {
     }
 
     @Override
-    public void clicked(PlayerInteractEvent event, boolean available) {
-        if (event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
-        if (event.getClickedBlock().getLocation().toVector().toBlockVector().equals(position)) {
-            event.setCancelled(true);
-
-            super.clicked(event, available);
-        }
+    public void clicked(PlayerInteractEvent event) {
+        event.setCancelled(true);
+        super.clicked(event);
     }
 
     @Override
@@ -168,9 +164,9 @@ public class ItemBlock extends ItemInteraction {
         Optional<ConditionContainer> containerByClass = ConditionRegistrar.getContainerByClass(getClass());
 
         return Component.text(
-                localizer.getMessage("conditionDesc.type.itemBlock",
-                        Replacement.create("NAME", containerByClass
-                                .map(ConditionContainer::getName).orElse("undefined"))), NamedTextColor.AQUA)
+                        localizer.getMessage("conditionDesc.type.itemBlock",
+                                Replacement.create("NAME", containerByClass
+                                        .map(ConditionContainer::getName).orElse("undefined"))), NamedTextColor.AQUA)
                 .append(Component.newline())
                 .append(Component.text(localizer.getMessage("conditionDesc.keyhole") + " ", C.baseColor))
                 .append(Component.text(position.toString(), C.highlightColor))
@@ -190,5 +186,9 @@ public class ItemBlock extends ItemInteraction {
 
     public void position(BlockVector position) {
         this.position = position;
+    }
+
+    public BlockVector position() {
+        return position;
     }
 }

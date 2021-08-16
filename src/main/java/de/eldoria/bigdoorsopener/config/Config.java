@@ -27,8 +27,6 @@ import java.util.logging.Logger;
 public class Config {
     private final Plugin plugin;
     private final Map<Long, ConditionalDoor> doors = new HashMap<>();
-    private int approachRefreshRate;
-    private int timedRefreshRate;
     private boolean enableMetrics;
     private String language;
     private int refreshRate;
@@ -112,20 +110,19 @@ public class Config {
                 ConditionBag conditionBag = cD.conditionBag();
 
                 if (tD.permission() != null && !tD.permission().isEmpty()) {
-                    conditionBag.setCondition(new PermissionNode(tD.permission()));
+                    conditionBag.addConditionSilent(new PermissionNode(tD.permission()));
                     log.info("Adding permission condition.");
                 }
 
                 if (!tD.isPermanentlyClosed()) {
-                    conditionBag.setCondition(new Time(tD.ticksOpen(), tD.ticksClose(), false));
+                    conditionBag.addConditionSilent(new Time(tD.ticksOpen(), tD.ticksClose(), false));
                     log.info("Adding time condition.");
                 }
 
                 if (tD.openRange() > 0) {
-                    conditionBag.setCondition(
-                            new Proximity(
-                                    new Vector(tD.openRange(), tD.openRange(), tD.openRange()),
-                                    Proximity.ProximityForm.ELLIPSOID));
+                    conditionBag.addConditionSilent(new Proximity(
+                            new Vector(tD.openRange(), tD.openRange(), tD.openRange()),
+                            Proximity.ProximityForm.ELLIPSOID));
                     log.info("Adding proximity condition.");
                 }
                 log.info("Door " + tD.doorUID() + " successfully converted.");
@@ -257,14 +254,6 @@ public class Config {
 
     public boolean containsDoor(long key) {
         return doors.containsKey(key);
-    }
-
-    public int approachRefreshRate() {
-        return approachRefreshRate;
-    }
-
-    public int timedRefreshRate() {
-        return timedRefreshRate;
     }
 
     public boolean isEnableMetrics() {
