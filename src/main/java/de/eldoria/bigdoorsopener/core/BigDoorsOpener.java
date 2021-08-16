@@ -119,7 +119,7 @@ public class BigDoorsOpener extends EldoPlugin {
     }
 
     @Override
-    public void onPluginEnable() {
+    public void onPluginEnable(boolean reload) {
         ServerVersion.forceVersion(ServerVersion.MC_1_8, ServerVersion.MC_1_17);
 
         if (!initialized) {
@@ -133,7 +133,7 @@ public class BigDoorsOpener extends EldoPlugin {
     }
 
     @Override
-    public void onPostStart() {
+    public void onPostStart(boolean reload) {
         if (postStart) return;
         postStart = true;
         // Load external resources. Must be loaded first.
