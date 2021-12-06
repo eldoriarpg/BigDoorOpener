@@ -1,28 +1,28 @@
 plugins {
-    id("com.github.johnrengelman.shadow") version "6.0.0"
+    id("org.cadixdev.licenser") version "0.6.1"
+    id("com.github.johnrengelman.shadow") version "7.1.0"
     java
     `maven-publish`
     `java-library`
+    id("de.chojo.publishdata") version "1.0.4"
 }
 
 group = "de.eldoria"
-version = "2.4.4"
+version = "2.4.5"
 var mainPackage = "bigdoorsopener"
 val shadebade = group as String? + "." + mainPackage + "."
 val name = "BigDoorsOpener"
 description = "Open and close doors automatically on certain conditions"
 
-val lombokVersion = "1.18.20"
-
 repositories {
-    maven("https://eldonexus.de/repository/maven-releases/")
+    maven("https://eldonexus.de/repository/maven-public/")
     maven("https://eldonexus.de/repository/maven-proxies/")
     maven("https://repo.extendedclip.com/content/repositories/placeholderapi/")
     maven("https://mvn.lumine.io/repository/maven-public/")
 }
 
 dependencies {
-    implementation("de.eldoria", "eldo-util", "1.9.6-DEV")
+    implementation("de.eldoria", "eldo-util", "1.12.9-DEV")
     implementation("net.kyori", "adventure-api", "4.8.1")
     implementation("net.kyori", "adventure-platform-bukkit", "4.0.0-SNAPSHOT")
     compileOnly("org.spigotmc", "spigot-api", "1.13.2-R0.1-SNAPSHOT")
@@ -34,24 +34,28 @@ dependencies {
     compileOnly("io.lumine.xikage", "MythicMobs", "4.9.1")
     compileOnly("nl.pim16aap2", "BigDoors", "0.1.8.28")
     testImplementation("org.junit.jupiter", "junit-jupiter-api", "5.5.2")
-    testCompileOnly("org.projectlombok", "lombok", lombokVersion)
-    testAnnotationProcessor("org.projectlombok", "lombok", lombokVersion)
 }
 
+license {
+    header(rootProject.file("HEADER.txt"))
+    include("**/*.java")
+    exclude("**/ClipboardTransformBaker.java")
+}
 
 java {
     withSourcesJar()
     withJavadocJar()
-    sourceCompatibility = JavaVersion.VERSION_1_8
+    sourceCompatibility = JavaVersion.VERSION_11
+}
+
+publishData{
+    useEldoNexusRepos()
+    publishComponent("java")
 }
 
 publishing {
-    val publishData = PublishData(project)
     publications.create<MavenPublication>("maven") {
-        from(components["java"])
-        groupId = project.group as String?
-        artifactId = project.name.toLowerCase()
-        version = publishData.getVersion()
+        publishData.configurePublication(this)
     }
 
     repositories {
@@ -70,13 +74,12 @@ publishing {
 }
 
 tasks {
-    val data = PublishData(project)
     processResources {
         from(sourceSets.main.get().resources.srcDirs) {
             filesMatching("plugin.yml") {
                 expand(
                     "name" to project.name,
-                    "version" to data.getVersion(true),
+                    "version" to publishData.getVersion(true),
                     "description" to project.description
                 )
             }
@@ -102,40 +105,14 @@ tasks {
             events("passed", "skipped", "failed")
         }
     }
-}
 
-class PublishData(private val project: Project) {
-    private var type: Type = getReleaseType()
-    private var hashLength: Int = 7
-
-    private fun getReleaseType(): Type {
-        val branch = getCheckedOutBranch()
-        return when {
-            branch.contentEquals("master") -> Type.RELEASE
-            branch.startsWith("dev") -> Type.DEV
-            else -> Type.SNAPSHOT
+    register<Copy>("copyToServer") {
+        val path = project.property("targetDir") ?: ""
+        if (path.toString().isEmpty()) {
+            println("targetDir is not set in gradle properties")
+            return@register
         }
-    }
-
-    private fun getCheckedOutGitCommitHash(): String = System.getenv("GITHUB_SHA")?.substring(0, hashLength) ?: "local"
-
-    private fun getCheckedOutBranch(): String = System.getenv("GITHUB_REF")?.replace("refs/heads/", "") ?: "local"
-
-    fun getVersion(): String = getVersion(false)
-
-    fun getVersion(appendCommit: Boolean): String =
-        type.append(getVersionString(), appendCommit, getCheckedOutGitCommitHash())
-
-    private fun getVersionString(): String = (project.version as String).replace("-SNAPSHOT", "").replace("-DEV", "")
-
-    fun getRepository(): String = type.repo
-
-    enum class Type(private val append: String, val repo: String, private val addCommit: Boolean) {
-        RELEASE("", "https://eldonexus.de/repository/maven-releases/", false),
-        DEV("-DEV", "https://eldonexus.de/repository/maven-dev/", true),
-        SNAPSHOT("-SNAPSHOT", "https://eldonexus.de/repository/maven-snapshots/", true);
-
-        fun append(name: String, appendCommit: Boolean, commitHash: String): String =
-            name.plus(append).plus(if (appendCommit && addCommit) "-".plus(commitHash) else "")
+        from(shadowJar)
+        destinationDir = File(path.toString())
     }
 }
