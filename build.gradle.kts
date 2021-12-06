@@ -39,7 +39,6 @@ dependencies {
 license {
     header(rootProject.file("HEADER.txt"))
     include("**/*.java")
-    exclude("**/ClipboardTransformBaker.java")
 }
 
 java {

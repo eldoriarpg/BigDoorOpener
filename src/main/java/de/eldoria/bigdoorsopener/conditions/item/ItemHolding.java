@@ -64,13 +64,13 @@ public class ItemHolding extends Item {
                     }
 
                     // parse amount
-                    OptionalInt amount = Parser.parseInt(arguments[0]);
+                    Optional<Integer> amount = Parser.parseInt(arguments[0]);
                     if (!amount.isPresent()) {
                         messageSender.sendError(player, localizer.getMessage("error.invalidAmount"));
                         return;
                     }
 
-                    if (amount.getAsInt() > 64 || amount.getAsInt() < 1) {
+                    if (amount.get() > 64 || amount.get() < 1) {
                         messageSender.sendError(player, localizer.getMessage("error.invalidRange",
                                 Replacement.create("MIN", 1).addFormatting('6'),
                                 Replacement.create("MAX", 64).addFormatting('6')));
@@ -85,7 +85,7 @@ public class ItemHolding extends Item {
 
                     ItemStack itemInMainHand = player.getInventory().getItemInMainHand().clone();
 
-                    itemInMainHand.setAmount(amount.getAsInt());
+                    itemInMainHand.setAmount(amount.get());
                     conditionBag.accept(new ItemHolding(itemInMainHand, consume.get()));
                     messageSender.sendMessage(player, localizer.getMessage("setCondition.itemHolding"));
 

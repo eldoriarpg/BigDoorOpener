@@ -101,7 +101,7 @@ public class ConditionalDoor implements ConfigurationSerializable {
         enabled = resolvingMap.getValueOrDefault("enabled", true);
         invertOpen = resolvingMap.getValue("invertOpen");
         evaluator = resolvingMap.getValue("evaluator");
-        evaluationType = EnumUtil.parse(resolvingMap.getValue("evaluationType"), EvaluationType.class);
+        evaluationType = EnumUtil.parse(resolvingMap.getValue("evaluationType"), EvaluationType.class, EvaluationType.AND);
         if (resolvingMap.containsKey("conditionChain")) {
             BigDoorsOpener.logger().fine("Converting condition chain to condition bag");
             ConditionChain conditionChain = resolvingMap.getValue("conditionChain");

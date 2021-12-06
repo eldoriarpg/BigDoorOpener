@@ -61,7 +61,7 @@ public class Weather implements DoorCondition {
 
     public Weather(Map<String, Object> map) {
         TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
-        weatherType = EnumUtil.parse(resolvingMap.getValue("weatherType"), WeatherType.class);
+        weatherType = EnumUtil.parse(resolvingMap.getValue("weatherType"), WeatherType.class, WeatherType.DOWNFALL);
         forceState = resolvingMap.getValueOrDefault("forceState", false);
     }
 
