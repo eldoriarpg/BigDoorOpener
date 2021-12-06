@@ -1,3 +1,9 @@
+/*
+ *     SPDX-License-Identifier: AGPL-3.0-only
+ *
+ *     Copyright (C) 2021 EldoriaRPG Team and Contributor
+ */
+
 package de.eldoria.bigdoorsopener.commands.bdosubcommands;
 
 import de.eldoria.bigdoorsopener.config.Config;
@@ -58,7 +64,7 @@ public class SetEvaluator extends BigDoorsAdapterCommand {
             return true;
         }
 
-        ConditionalDoor.EvaluationType type = EnumUtil.parse(args[1], ConditionalDoor.EvaluationType.class, false);
+        ConditionalDoor.EvaluationType type = EnumUtil.parse(args[1], ConditionalDoor.EvaluationType.class).orElse(null);
         if (type == null) {
             messageSender().sendLocalizedError(sender, "error.invalidEvaluationType");
             return true;
@@ -127,7 +133,7 @@ public class SetEvaluator extends BigDoorsAdapterCommand {
             return ArrayUtil.startingWithInArray(args[1], EVALUATOR_TYPES).collect(Collectors.toList());
         }
 
-        ConditionalDoor.EvaluationType parse = EnumUtil.parse(args[1], ConditionalDoor.EvaluationType.class);
+        ConditionalDoor.EvaluationType parse = EnumUtil.parse(args[1], ConditionalDoor.EvaluationType.class).orElse(null);
 
         if (parse == null) {
             return Collections.singletonList(localizer().getMessage("error.invalidEvaluationType"));

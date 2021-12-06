@@ -1,3 +1,9 @@
+/*
+ *     SPDX-License-Identifier: AGPL-3.0-only
+ *
+ *     Copyright (C) 2021 EldoriaRPG Team and Contributor
+ */
+
 package de.eldoria.bigdoorsopener.core;
 
 import com.sk89q.worldguard.WorldGuard;
@@ -120,7 +126,7 @@ public class BigDoorsOpener extends EldoPlugin {
 
     @Override
     public void onPluginEnable(boolean reload) {
-        ServerVersion.forceVersion(ServerVersion.MC_1_8, ServerVersion.MC_1_17);
+        ServerVersion.forceVersion(ServerVersion.MC_1_8, ServerVersion.MC_1_18);
 
         if (!initialized) {
             BigDoorsOpener.instance = this;

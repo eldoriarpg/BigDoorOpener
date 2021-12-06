@@ -1,3 +1,9 @@
+/*
+ *     SPDX-License-Identifier: AGPL-3.0-only
+ *
+ *     Copyright (C) 2021 EldoriaRPG Team and Contributor
+ */
+
 package de.eldoria.bigdoorsopener.commands.bdosubcommands;
 
 import de.eldoria.bigdoorsopener.config.Config;
@@ -17,6 +23,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.OptionalInt;
 
 public class StayOpen extends BigDoorsAdapterCommand {
@@ -44,14 +51,14 @@ public class StayOpen extends BigDoorsAdapterCommand {
             return true;
         }
 
-        OptionalInt optionalInt = Parser.parseInt(args[1]);
+        Optional<Integer> optionalInt = Parser.parseInt(args[1]);
         if (!optionalInt.isPresent()) {
             messageSender().sendLocalizedError(sender, "error.invalidAmount");
             return true;
         }
-        door.first.setStayOpen(optionalInt.getAsInt());
+        door.first.setStayOpen(optionalInt.get());
         messageSender().sendLocalizedMessage(sender, "stayOpen.message",
-                Replacement.create("SECONDS", optionalInt.getAsInt()));
+                Replacement.create("SECONDS", optionalInt.get()));
         return true;
 
     }

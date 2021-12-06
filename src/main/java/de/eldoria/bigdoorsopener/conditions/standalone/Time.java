@@ -1,3 +1,9 @@
+/*
+ *     SPDX-License-Identifier: AGPL-3.0-only
+ *
+ *     Copyright (C) 2021 EldoriaRPG Team and Contributor
+ */
+
 package de.eldoria.bigdoorsopener.conditions.standalone;
 
 import com.google.common.cache.Cache;
@@ -86,26 +92,28 @@ public class Time implements DoorCondition {
                     }
 
                     // parse time
-                    OptionalInt open = Parser.parseInt(arguments[0]);
+                    Optional<Integer> open = Parser.parseInt(arguments[0]);
                     if (!open.isPresent()) {
-                        open = Parser.parseTimeToTicks(arguments[0]);
+                        var time = Parser.parseTimeToTicks(arguments[0]);
                         if (!open.isPresent()) {
                             messageSender.sendError(player, localizer.getMessage("error.invalidOpenTime"));
                             return;
                         }
+                        open = Optional.of(time.getAsInt());
                     }
 
-                    OptionalInt close = Parser.parseInt(arguments[1]);
+                    Optional<Integer> close = Parser.parseInt(arguments[1]);
                     if (!close.isPresent()) {
-                        close = Parser.parseTimeToTicks(arguments[1]);
+                        var time = Parser.parseTimeToTicks(arguments[1]);
                         if (!close.isPresent()) {
                             messageSender.sendError(player, localizer.getMessage("error.invalidCloseTime"));
                             return;
                         }
+                        close = Optional.of(time.getAsInt());
                     }
 
-                    if (close.getAsInt() < 0 || close.getAsInt() > 24000
-                            || open.getAsInt() < 0 || open.getAsInt() > 24000) {
+                    if (close.get() < 0 || close.get() > 24000
+                            || open.get() < 0 || open.get() > 24000) {
                         messageSender.sendError(player, localizer.getMessage("error.invalidRange",
                                 Replacement.create("MIN", 0).addFormatting('6'),
                                 Replacement.create("MAX", 24000).addFormatting('6')));
@@ -119,10 +127,10 @@ public class Time implements DoorCondition {
                         messageSender.sendError(player, localizer.getMessage("error.invalidBoolean"));
                         return;
                     }
-                    conditionBag.accept(new Time(open.getAsInt(), close.getAsInt(), force.get()));
+                    conditionBag.accept(new Time(open.get(), close.get(), force.get()));
                     messageSender.sendMessage(player, localizer.getMessage("setCondition.time",
-                            Replacement.create("OPEN", Parser.parseTicksToTime(open.getAsInt())),
-                            Replacement.create("CLOSE", Parser.parseTicksToTime(close.getAsInt()))));
+                            Replacement.create("OPEN", Parser.parseTicksToTime(open.get())),
+                            Replacement.create("CLOSE", Parser.parseTicksToTime(close.get()))));
 
                 })
                 .onTabComplete((sender, localizer, args) -> {

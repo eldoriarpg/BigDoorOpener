@@ -1,3 +1,9 @@
+/*
+ *     SPDX-License-Identifier: AGPL-3.0-only
+ *
+ *     Copyright (C) 2021 EldoriaRPG Team and Contributor
+ */
+
 package de.eldoria.bigdoorsopener.commands.bdosubcommands;
 
 import de.eldoria.bigdoorsopener.conditions.DoorCondition;
@@ -100,7 +106,7 @@ public class CopyCondition extends BigDoorsAdapterCommand {
 
 
         String id = ArgumentUtils.getOrDefault(args, 2, "0");
-        OptionalInt optionalInt = Parser.parseInt(id);
+        Optional<Integer> optionalInt = Parser.parseInt(id);
         if (!optionalInt.isPresent()) {
             messageSender().sendLocalizedError(sender, "error.invalidNumber");
             return true;
@@ -113,12 +119,12 @@ public class CopyCondition extends BigDoorsAdapterCommand {
             return true;
         }
 
-        if (condition.size() < optionalInt.getAsInt()) {
+        if (condition.size() < optionalInt.get()) {
             messageSender().sendLocalizedError(sender, "error.conditionNotSet");
             return true;
         }
 
-        targetBag.setCondition(targetDoor,condition.get(optionalInt.getAsInt()).clone());
+        targetBag.setCondition(targetDoor,condition.get(optionalInt.get()).clone());
 
         messageSender().sendLocalizedMessage(sender, "copyCondition.copiedSingle",
                 Replacement.create("CONDITION", conditionGroup.name()).addFormatting('6'),

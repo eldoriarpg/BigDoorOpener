@@ -1,3 +1,9 @@
+/*
+ *     SPDX-License-Identifier: AGPL-3.0-only
+ *
+ *     Copyright (C) 2021 EldoriaRPG Team and Contributor
+ */
+
 package de.eldoria.bigdoorsopener.conditions.standalone.weather;
 
 import com.google.common.cache.Cache;
@@ -55,7 +61,7 @@ public class Weather implements DoorCondition {
 
     public Weather(Map<String, Object> map) {
         TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
-        weatherType = EnumUtil.parse(resolvingMap.getValue("weatherType"), WeatherType.class);
+        weatherType = EnumUtil.parse(resolvingMap.getValue("weatherType"), WeatherType.class, WeatherType.DOWNFALL);
         forceState = resolvingMap.getValueOrDefault("forceState", false);
     }
 

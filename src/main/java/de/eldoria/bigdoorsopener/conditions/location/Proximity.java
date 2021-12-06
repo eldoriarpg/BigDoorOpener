@@ -1,3 +1,9 @@
+/*
+ *     SPDX-License-Identifier: AGPL-3.0-only
+ *
+ *     Copyright (C) 2021 EldoriaRPG Team and Contributor
+ */
+
 package de.eldoria.bigdoorsopener.conditions.location;
 
 import de.eldoria.bigdoorsopener.core.BigDoorsOpener;
@@ -50,7 +56,7 @@ public class Proximity implements Location {
         dimensions = resolvingMap.getValue("dimensions");
         String formString = resolvingMap.getValue("proximityForm");
         formString = formString.replaceAll("(?i)elipsoid", "ellipsoid");
-        proximityForm = EnumUtil.parse(formString, ProximityForm.class);
+        proximityForm = EnumUtil.parse(formString, ProximityForm.class, ProximityForm.CUBOID);
     }
 
     public static ConditionContainer getConditionContainer() {
@@ -70,18 +76,18 @@ public class Proximity implements Location {
 
                     // parse the size.
                     if (coords.length == 1) {
-                        OptionalDouble size = Parser.parseDouble(arguments[0]);
+                        Optional<Double> size = Parser.parseDouble(arguments[0]);
                         if (!size.isPresent()) {
                             messageSender.sendError(player, localizer.getMessage("error.invalidNumber"));
                             return;
                         }
-                        vector = new Vector(size.getAsDouble(), size.getAsDouble(), size.getAsDouble());
+                        vector = new Vector(size.get(), size.get(), size.get());
                     } else if (coords.length == 3) {
-                        OptionalDouble x = Parser.parseDouble(coords[0]);
-                        OptionalDouble y = Parser.parseDouble(coords[1]);
-                        OptionalDouble z = Parser.parseDouble(coords[2]);
+                        Optional<Double> x = Parser.parseDouble(coords[0]);
+                        Optional<Double> y = Parser.parseDouble(coords[1]);
+                        Optional<Double> z = Parser.parseDouble(coords[2]);
                         if (x.isPresent() && y.isPresent() && z.isPresent()) {
-                            vector = new Vector(x.getAsDouble(), y.getAsDouble(), z.getAsDouble());
+                            vector = new Vector(x.get(), y.get(), z.get());
                         } else {
                             messageSender.sendError(player, localizer.getMessage("error.invalidNumber"));
                             return;
@@ -101,7 +107,7 @@ public class Proximity implements Location {
                         return;
                     }
 
-                    Proximity.ProximityForm form = ArgumentUtils.getOptionalParameter(arguments, 1, Proximity.ProximityForm.CUBOID, (s) -> EnumUtil.parse(s, Proximity.ProximityForm.class));
+                    Proximity.ProximityForm form = ArgumentUtils.getOptionalParameter(arguments, 1, Optional.of(Proximity.ProximityForm.CUBOID), (s) -> EnumUtil.parse(s, Proximity.ProximityForm.class)).orElse(null);
 
                     if (form == null) {
                         messageSender.sendError(player, localizer.getMessage("error.invalidForm"));

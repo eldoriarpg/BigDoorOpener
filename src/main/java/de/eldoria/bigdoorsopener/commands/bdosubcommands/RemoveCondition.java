@@ -1,3 +1,9 @@
+/*
+ *     SPDX-License-Identifier: AGPL-3.0-only
+ *
+ *     Copyright (C) 2021 EldoriaRPG Team and Contributor
+ */
+
 package de.eldoria.bigdoorsopener.commands.bdosubcommands;
 
 import de.eldoria.bigdoorsopener.config.Config;
@@ -78,12 +84,12 @@ public class RemoveCondition extends BigDoorsAdapterCommand {
             return true;
         } else {
             String id = ArgumentUtils.getOrDefault(args, 2, "0");
-            OptionalInt optionalInt = Parser.parseInt(id);
+            Optional<Integer> optionalInt = Parser.parseInt(id);
             if (!optionalInt.isPresent()) {
                 messageSender().sendLocalizedError(sender, "error.invalidNumber");
                 return true;
             }
-            if (!conditionBag.removeCondition(cDoor, container, optionalInt.getAsInt())) {
+            if (!conditionBag.removeCondition(cDoor, container, optionalInt.get())) {
                 messageSender().sendLocalizedError(sender, "error.conditionNotSet");
                 return true;
             }

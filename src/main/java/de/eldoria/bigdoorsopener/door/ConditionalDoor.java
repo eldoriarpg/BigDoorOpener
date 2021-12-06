@@ -1,3 +1,9 @@
+/*
+ *     SPDX-License-Identifier: AGPL-3.0-only
+ *
+ *     Copyright (C) 2021 EldoriaRPG Team and Contributor
+ */
+
 package de.eldoria.bigdoorsopener.door;
 
 import com.google.common.base.Objects;
@@ -95,7 +101,7 @@ public class ConditionalDoor implements ConfigurationSerializable {
         enabled = resolvingMap.getValueOrDefault("enabled", true);
         invertOpen = resolvingMap.getValue("invertOpen");
         evaluator = resolvingMap.getValue("evaluator");
-        evaluationType = EnumUtil.parse(resolvingMap.getValue("evaluationType"), EvaluationType.class);
+        evaluationType = EnumUtil.parse(resolvingMap.getValue("evaluationType"), EvaluationType.class, EvaluationType.AND);
         if (resolvingMap.containsKey("conditionChain")) {
             BigDoorsOpener.logger().fine("Converting condition chain to condition bag");
             ConditionChain conditionChain = resolvingMap.getValue("conditionChain");

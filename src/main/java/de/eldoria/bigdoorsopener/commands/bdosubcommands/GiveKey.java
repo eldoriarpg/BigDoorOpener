@@ -1,3 +1,9 @@
+/*
+ *     SPDX-License-Identifier: AGPL-3.0-only
+ *
+ *     Copyright (C) 2021 EldoriaRPG Team and Contributor
+ */
+
 package de.eldoria.bigdoorsopener.commands.bdosubcommands;
 
 import de.eldoria.bigdoorsopener.conditions.DoorCondition;
@@ -23,6 +29,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.stream.Collectors;
 
@@ -66,20 +73,20 @@ public class GiveKey extends BigDoorsAdapterCommand {
         }
 
         String id = ArgumentUtils.getOrDefault(args, 3, "0");
-        OptionalInt optionalInt = Parser.parseInt(id);
+        Optional<Integer> optionalInt = Parser.parseInt(id);
         if (!optionalInt.isPresent()) {
             messageSender().sendLocalizedError(sender, "error.invalidNumber");
             return true;
         }
 
-        if(optionalInt.getAsInt() >= condition.size()){
+        if(optionalInt.get() >= condition.size()){
             messageSender().sendLocalizedError(sender, "error.conditionNotSet");
             return true;
         }
 
-        ItemStack item = ((Item) condition.get(optionalInt.getAsInt())).item();
+        ItemStack item = ((Item) condition.get(optionalInt.get())).item();
 
-        OptionalInt amount = ArgumentUtils.getOptionalParameter(args, 1, OptionalInt.of(64), Parser::parseInt);
+        Optional<Integer> amount = ArgumentUtils.getOptionalParameter(args, 1, Optional.of(64), Parser::parseInt);
 
         if (!amount.isPresent()) {
             messageSender().sendLocalizedError(sender, "error.invalidAmount");
@@ -94,11 +101,11 @@ public class GiveKey extends BigDoorsAdapterCommand {
         }
 
         ItemStack clone = item.clone();
-        clone.setAmount(amount.getAsInt());
+        clone.setAmount(amount.get());
         target.getInventory().addItem(clone);
         if (target != playerFromSender) {
             messageSender().sendLocalizedMessage(playerFromSender, "giveKey.send",
-                    Replacement.create("AMOUNT", amount.getAsInt()),
+                    Replacement.create("AMOUNT", amount.get()),
                     Replacement.create("ITEMNAME", item.hasItemMeta() ? (item.getItemMeta().hasDisplayName()
                             ? item.getItemMeta().getDisplayName()
                             : item.getType().name().toLowerCase())
@@ -106,7 +113,7 @@ public class GiveKey extends BigDoorsAdapterCommand {
                     Replacement.create("TARGET", target.getDisplayName()));
         }
         messageSender().sendLocalizedMessage(target, "giveKey.received",
-                Replacement.create("AMOUNT", amount.getAsInt()),
+                Replacement.create("AMOUNT", amount.get()),
                 Replacement.create("ITEMNAME", item.hasItemMeta() ? (item.getItemMeta().hasDisplayName()
                         ? item.getItemMeta().getDisplayName()
                         : item.getType().name().toLowerCase())
