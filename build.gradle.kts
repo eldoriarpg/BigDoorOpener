@@ -31,7 +31,7 @@ dependencies {
         exclude("org.spigotmc", "spigot-api")
     }
     compileOnly("me.clip", "placeholderapi", "2.10.6")
-    compileOnly("io.lumine.xikage", "MythicMobs", "4.9.1")
+    compileOnly("io.lumine.xikage", "MythicMobs", "4.12.0")
     compileOnly("nl.pim16aap2", "BigDoors", "0.1.8.32")
     testImplementation("org.junit.jupiter", "junit-jupiter-api", "5.5.2")
 }
