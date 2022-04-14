@@ -17,8 +17,8 @@ import de.eldoria.eldoutilities.localization.ILocalizer;
 import de.eldoria.eldoutilities.localization.Replacement;
 import de.eldoria.eldoutilities.serialization.SerializationUtil;
 import de.eldoria.eldoutilities.utils.ArrayUtil;
-import io.lumine.xikage.mythicmobs.MythicMobs;
-import io.lumine.xikage.mythicmobs.api.bukkit.events.MythicMobDeathEvent;
+import io.lumine.mythic.bukkit.MythicBukkit;
+import io.lumine.mythic.bukkit.events.MythicMobDeathEvent;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.World;
@@ -60,14 +60,18 @@ public class MythicMob implements DoorCondition {
 
                     if (argumentsInvalid(player, messageSender, localizer(), arguments, 1,
                             "<" + localizer().getMessage("syntax.doorId") + "> <"
-                                    + localizer().getMessage("syntax.condition") + "> <"
-                                    + localizer().getMessage("syntax.mobType") + ">")) {
+                            + localizer().getMessage("syntax.condition") + "> <"
+                            + localizer().getMessage("syntax.mobType") + ">")) {
                         return;
                     }
 
                     String mob = arguments[0];
 
-                    boolean exists = MythicMobs.inst().getAPIHelper().getMythicMob(mob) != null;
+
+                    boolean exists;
+                    try (var mythic = MythicBukkit.inst()) {
+                        exists = mythic.getAPIHelper().getMythicMob(mob) != null;
+                    }
 
                     if (!exists) {
                         messageSender.sendError(player, localizer().getMessage("error.invalidMob"));
@@ -84,11 +88,14 @@ public class MythicMob implements DoorCondition {
 
                         List<String> mythicMobs;
                         try {
-                            mythicMobs = (List<String>) C.PLUGIN_CACHE.get("mythicMobs", () -> MythicMobs.inst()
-                                    .getMobManager().getMobTypes()
-                                    .parallelStream()
-                                    .map(m -> m.getInternalName())
-                                    .collect(Collectors.toList()));
+                            mythicMobs = (List<String>) C.PLUGIN_CACHE.get("mythicMobs", () -> {
+                                try (var mythic = MythicBukkit.inst()) {
+                                    return mythic.getMobManager().getMobTypes()
+                                            .parallelStream()
+                                            .map(mythicMob -> mythicMob.getInternalName())
+                                            .collect(Collectors.toList());
+                                }
+                            });
                         } catch (ExecutionException e) {
                             BigDoorsOpener.logger().log(Level.WARNING, "Could not build mob names.", e);
                             return Collections.emptyList();
@@ -115,9 +122,9 @@ public class MythicMob implements DoorCondition {
         Optional<ConditionContainer> containerByClass = ConditionRegistrar.getContainerByClass(getClass());
 
         return Component.text(
-                localizer().getMessage("conditionDesc.type.mythicMob",
-                        Replacement.create("NAME", containerByClass
-                                .map(ConditionContainer::getName).orElse("undefined"))), NamedTextColor.AQUA)
+                        localizer().getMessage("conditionDesc.type.mythicMob",
+                                Replacement.create("NAME", containerByClass
+                                        .map(ConditionContainer::getName).orElse("undefined"))), NamedTextColor.AQUA)
                 .append(Component.newline())
                 .append(Component.text(localizer().getMessage("conditionDesc.mythicMob") + " ", C.baseColor))
                 .append(Component.text(mobType, C.highlightColor));

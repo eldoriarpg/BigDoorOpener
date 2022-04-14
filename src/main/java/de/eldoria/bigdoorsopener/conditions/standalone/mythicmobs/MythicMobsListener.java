@@ -9,7 +9,7 @@ package de.eldoria.bigdoorsopener.conditions.standalone.mythicmobs;
 import de.eldoria.bigdoorsopener.conditions.DoorCondition;
 import de.eldoria.bigdoorsopener.config.Config;
 import de.eldoria.bigdoorsopener.core.adapter.BigDoorsAdapter;
-import io.lumine.xikage.mythicmobs.api.bukkit.events.MythicMobDeathEvent;
+import io.lumine.mythic.bukkit.events.MythicMobDeathEvent;
 import nl.pim16aap2.bigDoors.BigDoors;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
