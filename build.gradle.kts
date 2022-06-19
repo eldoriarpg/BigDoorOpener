@@ -32,7 +32,7 @@ dependencies {
     }
     compileOnly("me.clip", "placeholderapi", "2.11.1")
     compileOnly("io.lumine.xikage", "MythicMobs", "4.12.0")
-    compileOnly("nl.pim16aap2", "BigDoors", "0.1.8.38-SNAPSHOT")
+    compileOnly("nl.pim16aap2", "BigDoors", "0.1.8.39")
     testImplementation("org.junit.jupiter", "junit-jupiter-api", "5.8.2")
 }
 
