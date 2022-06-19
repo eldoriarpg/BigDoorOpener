@@ -126,7 +126,7 @@ public class BigDoorsOpener extends EldoPlugin {
 
     @Override
     public void onPluginEnable(boolean reload) {
-        ServerVersion.forceVersion(ServerVersion.MC_1_8, ServerVersion.MC_1_18);
+        ServerVersion.forceVersion(ServerVersion.MC_1_8, ServerVersion.MC_1_19);
 
         if (!initialized) {
             BigDoorsOpener.instance = this;

@@ -9,6 +9,7 @@ package de.eldoria.bigdoorsopener.core.listener;
 import de.eldoria.bigdoorsopener.config.Config;
 import de.eldoria.bigdoorsopener.door.ConditionalDoor;
 import nl.pim16aap2.bigDoors.Door;
+import nl.pim16aap2.bigDoors.events.DoorEventAutoToggle;
 import nl.pim16aap2.bigDoors.events.DoorEventToggle;
 import nl.pim16aap2.bigDoors.events.DoorEventToggleEnd;
 import org.bukkit.event.EventHandler;
@@ -19,6 +20,13 @@ public class DoorOpenedListener implements Listener {
 
     public DoorOpenedListener(Config config) {
         this.config = config;
+    }
+
+    @EventHandler
+    public void autoToggle(DoorEventAutoToggle event) {
+        if (config.getDoor(event.getDoor().getDoorUID()) != null) {
+            event.setCancelled(true);
+        }
     }
 
     @EventHandler
