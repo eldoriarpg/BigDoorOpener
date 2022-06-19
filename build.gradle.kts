@@ -1,6 +1,6 @@
 plugins {
     id("org.cadixdev.licenser") version "0.6.1"
-    id("com.github.johnrengelman.shadow") version "7.1.0"
+    id("com.github.johnrengelman.shadow") version "7.1.2"
     java
     `maven-publish`
     `java-library`
@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "de.eldoria"
-version = "2.4.5"
+version = "2.4.6"
 var mainPackage = "bigdoorsopener"
 val shadebade = group as String? + "." + mainPackage + "."
 val name = "BigDoorsOpener"
@@ -22,18 +22,17 @@ repositories {
 }
 
 dependencies {
-    implementation("de.eldoria", "eldo-util", "1.12.9-DEV")
-    implementation("net.kyori", "adventure-api", "4.8.1")
-    implementation("net.kyori", "adventure-platform-bukkit", "4.0.0-SNAPSHOT")
+    implementation("de.eldoria", "eldo-util", "1.13.5")
+    implementation("net.kyori", "adventure-platform-bukkit", "4.1.1")
     compileOnly("org.spigotmc", "spigot-api", "1.13.2-R0.1-SNAPSHOT")
-    compileOnly("org.jetbrains", "annotations", "20.1.0")
+    compileOnly("org.jetbrains", "annotations", "23.0.0")
     compileOnly("com.sk89q.worldguard", "worldguard-bukkit", "7.0.5-SNAPSHOT") {
         exclude("org.spigotmc", "spigot-api")
     }
-    compileOnly("me.clip", "placeholderapi", "2.10.6")
-    compileOnly("io.lumine.xikage", "MythicMobs", "4.9.1")
-    compileOnly("nl.pim16aap2", "BigDoors", "0.1.8.28")
-    testImplementation("org.junit.jupiter", "junit-jupiter-api", "5.5.2")
+    compileOnly("me.clip", "placeholderapi", "2.11.1")
+    compileOnly("io.lumine.xikage", "MythicMobs", "4.12.0")
+    compileOnly("nl.pim16aap2", "BigDoors", "0.1.8.38-SNAPSHOT")
+    testImplementation("org.junit.jupiter", "junit-jupiter-api", "5.8.2")
 }
 
 license {
