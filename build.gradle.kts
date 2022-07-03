@@ -30,7 +30,7 @@ dependencies {
     compileOnly("com.sk89q.worldguard", "worldguard-bukkit", "7.0.5-SNAPSHOT") {
         exclude("org.spigotmc", "spigot-api")
     }
-    compileOnly("me.clip", "placeholderapi", "2.11.1")
+    compileOnly("me.clip", "placeholderapi", "2.11.2")
     compileOnly("io.lumine.xikage", "MythicMobs", "4.12.0")
     compileOnly("nl.pim16aap2", "BigDoors", "0.1.8.39")
     testImplementation("org.junit.jupiter", "junit-jupiter-api", "5.8.2")
