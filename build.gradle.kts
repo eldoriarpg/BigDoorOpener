@@ -23,8 +23,8 @@ repositories {
 
 dependencies {
     implementation("de.eldoria", "eldo-util", "1.13.5")
-    implementation("net.kyori", "adventure-platform-bukkit", "4.1.1")
     implementation("net.kyori", "adventure-api", "4.11.0")
+    implementation("net.kyori", "adventure-platform-bukkit", "4.1.2")
     compileOnly("org.spigotmc", "spigot-api", "1.13.2-R0.1-SNAPSHOT")
     compileOnly("org.jetbrains", "annotations", "23.0.0")
     compileOnly("com.sk89q.worldguard", "worldguard-bukkit", "7.0.5-SNAPSHOT") {
