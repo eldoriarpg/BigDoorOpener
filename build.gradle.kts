@@ -96,7 +96,7 @@ tasks {
         relocate("net.kyori", shadebade + "kyori")
         mergeServiceFiles()
         minimize()
-        archiveClassifier.set("")
+        archiveClassifier.set("all")
         archiveBaseName.set("BigDoorsOpener")
     }
 
