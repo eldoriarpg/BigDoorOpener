@@ -4,7 +4,7 @@ plugins {
     java
     `maven-publish`
     `java-library`
-    id("de.chojo.publishdata") version "1.0.7"
+    id("de.chojo.publishdata") version "1.0.8"
 }
 
 group = "de.eldoria"
@@ -22,8 +22,8 @@ repositories {
 }
 
 dependencies {
-    implementation("de.eldoria", "eldo-util", "1.13.5")
-    implementation("net.kyori", "adventure-platform-bukkit", "4.1.1")
+    implementation("de.eldoria", "eldo-util", "1.13.9")
+    implementation("net.kyori", "adventure-platform-bukkit", "4.1.2")
     compileOnly("org.spigotmc", "spigot-api", "1.13.2-R0.1-SNAPSHOT")
     compileOnly("org.jetbrains", "annotations", "23.0.0")
     compileOnly("com.sk89q.worldguard", "worldguard-bukkit", "7.0.5-SNAPSHOT") {
@@ -33,8 +33,7 @@ dependencies {
     compileOnly("me.clip", "placeholderapi", "2.11.2")
     compileOnly("nl.pim16aap2", "BigDoors", "0.1.8.39")
     compileOnly("io.lumine", "Mythic-Dist", "5.0.5")
-
-    testImplementation("org.junit.jupiter", "junit-jupiter-api", "5.8.2")
+    testImplementation("org.junit.jupiter", "junit-jupiter-api", "5.9.0")
 }
 
 license {
