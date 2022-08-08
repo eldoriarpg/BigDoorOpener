@@ -97,6 +97,7 @@ tasks {
         mergeServiceFiles()
         minimize()
         archiveClassifier.set("")
+        archiveBaseName.set("BigDoorsOpener")
     }
 
     test {
@@ -114,5 +115,9 @@ tasks {
         }
         from(shadowJar)
         destinationDir = File(path.toString())
+    }
+
+    build{
+        dependsOn(shadowJar)
     }
 }
