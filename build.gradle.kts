@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "de.eldoria"
-version = "2.4.6"
+version = "2.5.0"
 var mainPackage = "bigdoorsopener"
 val shadebade = group as String? + "." + mainPackage + "."
 val name = "BigDoorsOpener"
@@ -22,6 +22,7 @@ repositories {
 }
 
 dependencies {
+    implementation("de.eldoria", "eldo-util", "1.13.9")
     implementation("net.kyori", "adventure-api", "4.11.0")
     implementation("net.kyori", "adventure-platform-bukkit", "4.1.2")
     compileOnly("org.spigotmc", "spigot-api", "1.13.2-R0.1-SNAPSHOT")
