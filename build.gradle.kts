@@ -33,7 +33,7 @@ dependencies {
 
     compileOnly("me.clip", "placeholderapi", "2.11.2")
     compileOnly("nl.pim16aap2", "BigDoors", "0.1.8.39")
-    compileOnly("io.lumine", "Mythic-Dist", "5.1.2")
+    compileOnly("io.lumine", "Mythic-Dist", "5.1.4")
     testImplementation("org.junit.jupiter", "junit-jupiter-api", "5.9.0")
 }
 
