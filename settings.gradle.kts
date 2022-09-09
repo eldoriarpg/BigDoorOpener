@@ -1,4 +1,4 @@
-rootProject.name = "BigDoorsOpener"
+rootProject.name = "big-doors-opener"
 
 pluginManagement{
     repositories{
