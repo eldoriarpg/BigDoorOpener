@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "de.eldoria"
-version = "2.5.0"
+version = "2.5.0a"
 var mainPackage = "bigdoorsopener"
 val shadebade = group as String? + "." + mainPackage + "."
 val name = "BigDoorsOpener"
@@ -78,7 +78,7 @@ tasks {
         from(sourceSets.main.get().resources.srcDirs) {
             filesMatching("plugin.yml") {
                 expand(
-                    "name" to project.name,
+                    "name" to "BigDoorsOpener",
                     "version" to publishData.getVersion(true),
                     "description" to project.description
                 )
