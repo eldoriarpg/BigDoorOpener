@@ -4,7 +4,7 @@ plugins {
     java
     `maven-publish`
     `java-library`
-    id("de.chojo.publishdata") version "1.0.8"
+    id("de.chojo.publishdata") version "1.0.9"
 }
 
 group = "de.eldoria"
