@@ -1,6 +1,6 @@
 plugins {
     id("org.cadixdev.licenser") version "0.6.1"
-    id("com.github.johnrengelman.shadow") version "7.1.2"
+    id("com.github.johnrengelman.shadow") version "8.0.0"
     java
     `maven-publish`
     `java-library`
