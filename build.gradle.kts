@@ -26,7 +26,7 @@ dependencies {
     implementation("net.kyori", "adventure-api", "4.12.0")
     implementation("net.kyori", "adventure-platform-bukkit", "4.2.0")
     compileOnly("org.spigotmc", "spigot-api", "1.13.2-R0.1-SNAPSHOT")
-    compileOnly("org.jetbrains", "annotations", "24.0.0")
+    compileOnly("org.jetbrains", "annotations", "24.0.1")
     compileOnly("com.sk89q.worldguard", "worldguard-bukkit", "7.0.5-SNAPSHOT") {
         exclude("org.spigotmc", "spigot-api")
     }
