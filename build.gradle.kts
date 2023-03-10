@@ -43,6 +43,7 @@ license {
 }
 
 java {
+    addBuildData()
     withSourcesJar()
     withJavadocJar()
     sourceCompatibility = JavaVersion.VERSION_11
