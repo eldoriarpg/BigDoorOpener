@@ -43,13 +43,13 @@ license {
 }
 
 java {
-    addBuildData()
     withSourcesJar()
     withJavadocJar()
     sourceCompatibility = JavaVersion.VERSION_11
 }
 
 publishData{
+    addBuildData()
     useEldoNexusRepos()
     publishComponent("java")
 }
