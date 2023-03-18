@@ -31,7 +31,7 @@ dependencies {
         exclude("org.spigotmc", "spigot-api")
     }
 
-    compileOnly("me.clip", "placeholderapi", "2.11.2")
+    compileOnly("me.clip", "placeholderapi", "2.11.3")
     compileOnly("nl.pim16aap2", "BigDoors", "0.1.8.43")
     compileOnly("io.lumine", "Mythic-Dist", "5.2.3")
     testImplementation("org.junit.jupiter", "junit-jupiter-api", "5.9.2")
