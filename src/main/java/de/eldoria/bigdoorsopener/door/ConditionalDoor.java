@@ -298,10 +298,11 @@ public class ConditionalDoor implements ConfigurationSerializable {
         locked = true;
     }
 
-    public void unlock(){
-        locked =false;
+    public void unlock() {
+        locked = false;
     }
-    public boolean isLocked(){
+
+    public boolean isLocked() {
         return locked;
     }
 
