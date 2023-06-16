@@ -51,6 +51,7 @@ import de.eldoria.eldoutilities.messages.MessageSender;
 import de.eldoria.eldoutilities.plugin.EldoPlugin;
 import de.eldoria.eldoutilities.updater.Updater;
 import de.eldoria.eldoutilities.updater.butlerupdater.ButlerUpdateData;
+import de.eldoria.eldoutilities.updater.lynaupdater.LynaUpdateData;
 import nl.pim16aap2.bigDoors.BigDoors;
 import nl.pim16aap2.bigDoors.Commander;
 import org.bukkit.Bukkit;
@@ -126,7 +127,7 @@ public class BigDoorsOpener extends EldoPlugin {
 
     @Override
     public void onPluginEnable(boolean reload) {
-        ServerVersion.forceVersion(ServerVersion.MC_1_8, ServerVersion.MC_1_19);
+        ServerVersion.forceVersion(ServerVersion.MC_1_13, ServerVersion.MC_1_20);
 
         if (!initialized) {
             BigDoorsOpener.instance = this;
@@ -154,7 +155,11 @@ public class BigDoorsOpener extends EldoPlugin {
 
         // Check for updates
         if (config.isCheckUpdates()) {
-            Updater.butler(new ButlerUpdateData(instance, "bdo.command.reload", true, false, 8, "https://plugins.eldoria.de")).start();
+            Updater.lyna(LynaUpdateData.builder(this,3 )
+                            .notifyPermission("bdo.command.reload")
+                            .updateUrl("https://discord.gg/JJdx3xe")
+                            .build())
+                    .start();
         }
 
         localizer = ILocalizer.create(instance, "de_DE", "en_US");

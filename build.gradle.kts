@@ -1,14 +1,14 @@
 plugins {
     id("org.cadixdev.licenser") version "0.6.1"
-    id("com.github.johnrengelman.shadow") version "7.1.2"
+    id("com.github.johnrengelman.shadow") version "8.1.1"
     java
     `maven-publish`
     `java-library`
-    id("de.chojo.publishdata") version "1.0.8"
+    id("de.chojo.publishdata") version "1.2.4"
 }
 
 group = "de.eldoria"
-version = "2.5.1"
+version = "2.5.2"
 var mainPackage = "bigdoorsopener"
 val shadebade = group as String? + "." + mainPackage + "."
 val name = "BigDoorsOpener"
@@ -22,19 +22,19 @@ repositories {
 }
 
 dependencies {
-    implementation("de.eldoria", "eldo-util", "1.13.9")
-    implementation("net.kyori", "adventure-api", "4.11.0")
-    implementation("net.kyori", "adventure-platform-bukkit", "4.1.2")
+    implementation("de.eldoria", "eldo-util", "1.14.4")
+    implementation("net.kyori", "adventure-api", "4.14.0")
+    implementation("net.kyori", "adventure-platform-bukkit", "4.3.0")
     compileOnly("org.spigotmc", "spigot-api", "1.13.2-R0.1-SNAPSHOT")
-    compileOnly("org.jetbrains", "annotations", "23.0.0")
-    compileOnly("com.sk89q.worldguard", "worldguard-bukkit", "7.0.5-SNAPSHOT") {
+    compileOnly("org.jetbrains", "annotations", "24.0.1")
+    compileOnly("com.sk89q.worldguard", "worldguard-bukkit", "7.0.8") {
         exclude("org.spigotmc", "spigot-api")
     }
 
-    compileOnly("me.clip", "placeholderapi", "2.11.2")
-    compileOnly("nl.pim16aap2", "BigDoors", "0.1.8.39")
-    compileOnly("io.lumine", "Mythic-Dist", "5.1.4")
-    testImplementation("org.junit.jupiter", "junit-jupiter-api", "5.9.0")
+    compileOnly("me.clip", "placeholderapi", "2.11.3")
+    compileOnly("nl.pim16aap2", "BigDoors", "0.1.8.46")
+    compileOnly("io.lumine", "Mythic-Dist", "5.3.0")
+    testImplementation("org.junit.jupiter", "junit-jupiter-api", "5.9.3")
 }
 
 license {
@@ -45,10 +45,13 @@ license {
 java {
     withSourcesJar()
     withJavadocJar()
-    sourceCompatibility = JavaVersion.VERSION_11
+    toolchain{
+        languageVersion.set(JavaLanguageVersion.of(17))
+    }
 }
 
 publishData{
+    addBuildData()
     useEldoNexusRepos()
     publishComponent("java")
 }

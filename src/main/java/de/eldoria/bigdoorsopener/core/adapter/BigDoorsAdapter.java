@@ -21,6 +21,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Adapter to interact with big doors internally.
@@ -44,12 +45,18 @@ public abstract class BigDoorsAdapter {
      * @param door door to set the state
      * @return true if the door state was changed succesfully which is indicated by {@link BigDoors#toggleDoor(long)}
      */
-    protected boolean setDoorState(boolean open, ConditionalDoor door) {
+    protected CompletableFuture<Boolean> setDoorState(boolean open, ConditionalDoor door) {
         if (commander.isDoorBusy(door.doorUID())) {
-            return false;
+            return CompletableFuture.completedFuture(false);
         }
-        if (isOpen(door) == open) return false;
-        return bigDoors.toggleDoor(door.doorUID());
+        if (isOpen(door) == open) return CompletableFuture.completedFuture(false);
+        if (door.isLocked()) return CompletableFuture.completedFuture(false);
+        door.lock();
+        return bigDoors.toggleDoorFuture(door.doorUID())
+                .thenApply(res -> {
+                    door.unlock();
+                    return res;
+                });
     }
 
     /**
