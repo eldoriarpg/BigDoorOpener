@@ -23,7 +23,7 @@ repositories {
 
 dependencies {
     implementation("de.eldoria", "eldo-util", "1.14.4")
-    implementation("net.kyori", "adventure-api", "4.13.1")
+    implementation("net.kyori", "adventure-api", "4.14.0")
     implementation("net.kyori", "adventure-platform-bukkit", "4.3.0")
     compileOnly("org.spigotmc", "spigot-api", "1.13.2-R0.1-SNAPSHOT")
     compileOnly("org.jetbrains", "annotations", "24.0.1")
@@ -33,7 +33,7 @@ dependencies {
 
     compileOnly("me.clip", "placeholderapi", "2.11.3")
     compileOnly("nl.pim16aap2", "BigDoors", "0.1.8.43")
-    compileOnly("io.lumine", "Mythic-Dist", "5.2.6")
+    compileOnly("io.lumine", "Mythic-Dist", "5.3.0")
     testImplementation("org.junit.jupiter", "junit-jupiter-api", "5.9.3")
 }
 
@@ -45,7 +45,9 @@ license {
 java {
     withSourcesJar()
     withJavadocJar()
-    sourceCompatibility = JavaVersion.VERSION_11
+    toolchain{
+        languageVersion.set(JavaLanguageVersion.of(17))
+    }
 }
 
 publishData{
