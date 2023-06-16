@@ -35,6 +35,7 @@ import static java.time.temporal.ChronoUnit.SECONDS;
  */
 @SerializableAs("conditionalDoor")
 public class ConditionalDoor implements ConfigurationSerializable {
+    private transient boolean locked;
     /**
      * UID of the door from {@link Door}.
      */
@@ -291,6 +292,17 @@ public class ConditionalDoor implements ConfigurationSerializable {
 
     public boolean isInvertOpen() {
         return invertOpen;
+    }
+
+    public void lock() {
+        locked = true;
+    }
+
+    public void unlock(){
+        locked =false;
+    }
+    public boolean isLocked(){
+        return locked;
     }
 
     public enum EvaluationType {
