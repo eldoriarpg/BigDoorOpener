@@ -105,9 +105,9 @@ public class DoorChecker extends BigDoorsAdapter implements Runnable, Listener {
 
         // Open doors
         for (ConditionalDoor conditionalDoor : open) {
-            if (setDoorState(true, conditionalDoor)) {
-                conditionalDoor.opened(openedBy.get(conditionalDoor.doorUID()));
-            }
+            setDoorState(true, conditionalDoor).whenComplete((res, err) -> {
+                if (res) conditionalDoor.opened(openedBy.get(conditionalDoor.doorUID()));
+            });
         }
 
         // Close doors
