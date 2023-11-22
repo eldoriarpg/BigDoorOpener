@@ -341,4 +341,9 @@ public class BigDoorsOpener extends EldoPlugin {
         }
         return new Pair<>(versionString, buildString);
     }
+    
+    @NotNull
+    public Config getDoorsConfig() {
+        return config;
+    }
 }
