@@ -66,6 +66,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -155,7 +156,7 @@ public class BigDoorsOpener extends EldoPlugin {
 
         // Check for updates
         if (config.isCheckUpdates()) {
-            Updater.lyna(LynaUpdateData.builder(this,3 )
+            Updater.lyna(LynaUpdateData.builder(this, 3)
                             .notifyPermission("bdo.command.reload")
                             .updateUrl("https://discord.gg/JJdx3xe")
                             .build())
@@ -341,9 +342,16 @@ public class BigDoorsOpener extends EldoPlugin {
         }
         return new Pair<>(versionString, buildString);
     }
-    
+
+    /**
+     * Returns the configuration for the doors.
+     * <p>
+     * The config is loaded after the server ticked for the first time.
+     *
+     * @return The configuration
+     */
     @NotNull
     public Config getDoorsConfig() {
-        return config;
+        return Objects.requireNonNull(config, "Do not call before server is fully initialized.");
     }
 }
