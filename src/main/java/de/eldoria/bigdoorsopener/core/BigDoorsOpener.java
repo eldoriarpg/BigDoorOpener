@@ -354,4 +354,12 @@ public class BigDoorsOpener extends EldoPlugin {
     public Config getDoorsConfig() {
         return Objects.requireNonNull(config, "Do not call before server is fully initialized.");
     }
+
+    /**
+     * Reloads the configuration and door checker.
+     */
+    public void reload() {
+        config.reloadConfig();
+        doorChecker.reload();
+    }
 }
