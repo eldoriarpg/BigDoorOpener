@@ -29,6 +29,7 @@ dependencies {
     compileOnly("org.jetbrains", "annotations", "24.1.0")
     compileOnly("com.sk89q.worldguard", "worldguard-bukkit", "7.0.9") {
         exclude("org.spigotmc", "spigot-api")
+        exclude("com.sk89q.worldedit.worldedit-libs", "core")
     }
 
     compileOnly("me.clip", "placeholderapi", "2.11.6")
