@@ -51,7 +51,7 @@ public class CachingJSEngine {
                     for (String currentEngine : List.of("js", "JavaScript", "nashornjs", "nashorn")) {
                         try {
                             engine = registration.getProvider().getEngineByName(currentEngine);
-                        } catch (RuntimeException e) {
+                        } catch (Exception e) {
                             continue;
                         }
                         break;
@@ -76,7 +76,7 @@ public class CachingJSEngine {
             } catch (ScriptException ex) {
                 BigDoorsOpener.logger().log(Level.WARNING, "Could not start script engine. Custom evaluator will not work.", e);
             }
-        } catch (RuntimeException e) {
+        } catch (Exception e) {
             BigDoorsOpener.logger().log(Level.WARNING, "Could not start script engine. Custom evaluator will not work.", e);
         }
 
