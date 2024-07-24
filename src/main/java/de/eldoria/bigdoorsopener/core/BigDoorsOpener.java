@@ -52,6 +52,7 @@ import de.eldoria.eldoutilities.plugin.EldoPlugin;
 import de.eldoria.eldoutilities.updater.Updater;
 import de.eldoria.eldoutilities.updater.butlerupdater.ButlerUpdateData;
 import de.eldoria.eldoutilities.updater.lynaupdater.LynaUpdateData;
+import de.eldoria.eldoutilities.utils.Version;
 import nl.pim16aap2.bigDoors.BigDoors;
 import nl.pim16aap2.bigDoors.Commander;
 import org.bukkit.Bukkit;
@@ -128,7 +129,7 @@ public class BigDoorsOpener extends EldoPlugin {
 
     @Override
     public void onPluginEnable(boolean reload) {
-        ServerVersion.forceVersion(ServerVersion.MC_1_13, ServerVersion.MC_1_20);
+        ServerVersion.forceVersion(Version.of(1,13), Version.of(2));
 
         if (!initialized) {
             BigDoorsOpener.instance = this;

@@ -9,9 +9,6 @@ package de.eldoria.bigdoorsopener.conditions.item;
 import de.eldoria.bigdoorsopener.conditions.DoorCondition;
 import de.eldoria.bigdoorsopener.door.ConditionalDoor;
 import de.eldoria.bigdoorsopener.util.C;
-import de.eldoria.eldoutilities.crossversion.ServerVersion;
-import de.eldoria.eldoutilities.crossversion.builder.VersionFunctionBuilder;
-import de.eldoria.eldoutilities.crossversion.function.VersionFunction;
 import de.eldoria.eldoutilities.localization.ILocalizer;
 import de.eldoria.eldoutilities.serialization.SerializationUtil;
 import de.eldoria.eldoutilities.utils.ObjUtil;
@@ -36,42 +33,6 @@ import java.util.Map;
 public abstract class Item implements DoorCondition {
     private final ItemStack item;
     private final boolean consumed;
-
-    private final VersionFunction<Player, Boolean> handCheck = VersionFunctionBuilder.functionBuilder(Player.class, Boolean.class)
-            .addVersionFunctionBetween(
-                    ServerVersion.MC_1_9, ServerVersion.MC_1_20,
-                    p -> hasPlayerItemInMainHand(p) || hasPlayerItemInOffHand(p))
-            .addVersionFunction((p) -> {
-                ItemStack item = p.getItemInHand();
-                if (item.getAmount() < item().getAmount()) {
-                    return false;
-                }
-                return item.isSimilar(item());
-            }, ServerVersion.MC_1_8).build();
-
-    private final VersionFunction<Player, Boolean> takeFromHand = VersionFunctionBuilder.functionBuilder(Player.class, Boolean.class)
-            .addVersionFunctionBetween(
-                    ServerVersion.MC_1_9, ServerVersion.MC_1_20,
-                    (p) -> {
-                        if (hasPlayerItemInMainHand(p)) {
-                            takeFromMainHand(p);
-                            return true;
-                        } else if (hasPlayerItemInOffHand(p)) {
-                            takeFromOffHand(p);
-                            return true;
-                        }
-                        return false;
-                    }).addVersionFunction(
-                    p -> {
-                        if (handCheck.apply(p)) {
-                            ItemStack item = p.getItemInHand();
-                            item.setAmount(item.getAmount() - item().getAmount());
-                            p.setItemInHand(item);
-                            p.updateInventory();
-                            return true;
-                        }
-                        return false;
-                    }, ServerVersion.MC_1_8).build();
 
     /**
      * Creates a new item key
@@ -112,7 +73,7 @@ public abstract class Item implements DoorCondition {
      * @return true if the player has the item in one of his hands.
      */
     protected boolean hasPlayerItemInHand(Player player) {
-        return handCheck.apply(player);
+        return hasPlayerItemInMainHand(player) || hasPlayerItemInOffHand(player);
     }
 
     /**
@@ -194,7 +155,14 @@ public abstract class Item implements DoorCondition {
      * @param player player to take items from
      */
     protected boolean tryTakeFromHands(Player player) {
-        return takeFromHand.apply(player);
+        if (hasPlayerItemInMainHand(player)) {
+            takeFromMainHand(player);
+            return true;
+        } else if (hasPlayerItemInOffHand(player)) {
+            takeFromOffHand(player);
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -220,7 +188,7 @@ public abstract class Item implements DoorCondition {
             for (Map.Entry<Enchantment, Integer> entry : meta.getEnchants().entrySet()) {
                 builder.append(Component.newline())
                         .append(Component.text(entry.getKey().getKey().getKey() + " "
-                                + entry.getValue().toString(), NamedTextColor.GRAY));
+                                               + entry.getValue().toString(), NamedTextColor.GRAY));
             }
         }
 
