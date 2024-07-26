@@ -45,7 +45,6 @@ import de.eldoria.eldoutilities.bstats.charts.AdvancedPie;
 import de.eldoria.eldoutilities.bstats.charts.DrilldownPie;
 import de.eldoria.eldoutilities.bstats.charts.SimplePie;
 import de.eldoria.eldoutilities.container.Pair;
-import de.eldoria.eldoutilities.crossversion.ServerVersion;
 import de.eldoria.eldoutilities.localization.ILocalizer;
 import de.eldoria.eldoutilities.messages.MessageSender;
 import de.eldoria.eldoutilities.plugin.EldoPlugin;
@@ -129,8 +128,6 @@ public class BigDoorsOpener extends EldoPlugin {
 
     @Override
     public void onPluginEnable(boolean reload) {
-        ServerVersion.forceVersion(Version.of(1,13), Version.of(2));
-
         if (!initialized) {
             BigDoorsOpener.instance = this;
             buildSerializer();
