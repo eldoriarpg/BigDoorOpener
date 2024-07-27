@@ -22,7 +22,7 @@ repositories {
 }
 
 dependencies {
-    implementation("de.eldoria.util", "crossversion", "2.0.11")
+    implementation("de.eldoria.util", "crossversion", "2.1.2")
     implementation("de.eldoria", "eldo-util", "1.14.4")
     implementation("net.kyori", "adventure-api", "4.17.0")
     implementation("net.kyori", "adventure-platform-bukkit", "4.3.3")
