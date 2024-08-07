@@ -25,7 +25,7 @@ dependencies {
     implementation("de.eldoria.util", "crossversion", "2.0.11")
     implementation("de.eldoria", "eldo-util", "1.14.4")
     implementation("net.kyori", "adventure-api", "4.17.0")
-    implementation("net.kyori", "adventure-platform-bukkit", "4.3.3")
+    implementation("net.kyori", "adventure-platform-bukkit", "4.3.4")
     compileOnly("org.spigotmc", "spigot-api", "1.13.2-R0.1-SNAPSHOT")
     compileOnly("org.jetbrains", "annotations", "24.1.0")
     compileOnly("com.sk89q.worldguard", "worldguard-bukkit", "7.0.9") {
