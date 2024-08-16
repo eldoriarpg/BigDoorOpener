@@ -22,7 +22,7 @@ repositories {
 }
 
 dependencies {
-    implementation("de.eldoria", "eldo-util", "1.14.4")
+    implementation("de.eldoria", "eldo-util", "1.14.5")
     implementation("net.kyori", "adventure-api", "4.17.0")
     implementation("net.kyori", "adventure-platform-bukkit", "4.3.4")
     compileOnly("org.spigotmc", "spigot-api", "1.13.2-R0.1-SNAPSHOT")
