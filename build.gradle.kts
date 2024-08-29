@@ -4,11 +4,11 @@ plugins {
     java
     `maven-publish`
     `java-library`
-    id("de.chojo.publishdata") version "1.2.4"
+    id("de.chojo.publishdata") version "1.4.0"
 }
 
 group = "de.eldoria"
-version = "2.5.2"
+version = "2.5.3"
 var mainPackage = "bigdoorsopener"
 val shadebade = group as String? + "." + mainPackage + "."
 val name = "BigDoorsOpener"
@@ -22,19 +22,20 @@ repositories {
 }
 
 dependencies {
-    implementation("de.eldoria", "eldo-util", "1.14.4")
-    implementation("net.kyori", "adventure-api", "4.14.0")
-    implementation("net.kyori", "adventure-platform-bukkit", "4.3.0")
+    implementation("de.eldoria", "eldo-util", "1.14.5")
+    implementation("net.kyori", "adventure-api", "4.17.0")
+    implementation("net.kyori", "adventure-platform-bukkit", "4.3.4")
     compileOnly("org.spigotmc", "spigot-api", "1.13.2-R0.1-SNAPSHOT")
-    compileOnly("org.jetbrains", "annotations", "24.0.1")
-    compileOnly("com.sk89q.worldguard", "worldguard-bukkit", "7.0.8") {
+    compileOnly("org.jetbrains", "annotations", "24.1.0")
+    compileOnly("com.sk89q.worldguard", "worldguard-bukkit", "7.0.9") {
         exclude("org.spigotmc", "spigot-api")
+        exclude("com.sk89q.worldedit.worldedit-libs", "core")
     }
 
-    compileOnly("me.clip", "placeholderapi", "2.11.3")
+    compileOnly("me.clip", "placeholderapi", "2.11.6")
     compileOnly("nl.pim16aap2", "BigDoors", "0.1.8.46")
-    compileOnly("io.lumine", "Mythic-Dist", "5.3.0")
-    testImplementation("org.junit.jupiter", "junit-jupiter-api", "5.9.3")
+    compileOnly("io.lumine", "Mythic-Dist", "5.6.2")
+    testImplementation("org.junit.jupiter", "junit-jupiter-api", "5.11.0")
 }
 
 license {
@@ -45,12 +46,12 @@ license {
 java {
     withSourcesJar()
     withJavadocJar()
-    toolchain{
+    toolchain {
         languageVersion.set(JavaLanguageVersion.of(17))
     }
 }
 
-publishData{
+publishData {
     addBuildData()
     useEldoNexusRepos()
     publishComponent("java")
@@ -120,7 +121,7 @@ tasks {
         destinationDir = File(path.toString())
     }
 
-    build{
+    build {
         dependsOn(shadowJar)
     }
 }

@@ -15,6 +15,7 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -47,8 +48,16 @@ public class CachingJSEngine {
                 BigDoorsOpener.logger().info("Java 15 or newer detected. Searching for external Engine.");
                 RegisteredServiceProvider<ScriptEngineManager> registration = Bukkit.getServer().getServicesManager().getRegistration(ScriptEngineManager.class);
                 if (registration != null) {
-                    engine = registration.getProvider().getEngineByName("js");
-                } else {
+                    for (String currentEngine : List.of("js", "JavaScript", "nashornjs", "nashorn")) {
+                        try {
+                            engine = registration.getProvider().getEngineByName(currentEngine);
+                        } catch (Exception e) {
+                            continue;
+                        }
+                        break;
+                    }
+                }
+                if (engine == null) {
                     BigDoorsOpener.logger().severe("--------------------------------------------------------------------------");
                     BigDoorsOpener.logger().severe("-> No script engine found.                                              <-");
                     BigDoorsOpener.logger().severe("-> Custom evaluator and placeholder will not work.                      <-");
@@ -67,8 +76,7 @@ public class CachingJSEngine {
             } catch (ScriptException ex) {
                 BigDoorsOpener.logger().log(Level.WARNING, "Could not start script engine. Custom evaluator will not work.", e);
             }
-        } catch (NullPointerException e) {
-        } catch (RuntimeException e) {
+        } catch (Exception e) {
             BigDoorsOpener.logger().log(Level.WARNING, "Could not start script engine. Custom evaluator will not work.", e);
         }
 

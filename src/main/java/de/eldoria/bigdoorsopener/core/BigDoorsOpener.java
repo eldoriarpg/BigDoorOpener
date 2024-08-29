@@ -9,11 +9,11 @@ package de.eldoria.bigdoorsopener.core;
 import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.protection.regions.RegionContainer;
 import de.eldoria.bigdoorsopener.commands.BDOCommand;
-import de.eldoria.bigdoorsopener.conditions.item.interacting.ItemConditionListener;
 import de.eldoria.bigdoorsopener.conditions.item.ItemHolding;
 import de.eldoria.bigdoorsopener.conditions.item.ItemOwning;
 import de.eldoria.bigdoorsopener.conditions.item.interacting.ItemBlock;
 import de.eldoria.bigdoorsopener.conditions.item.interacting.ItemClick;
+import de.eldoria.bigdoorsopener.conditions.item.interacting.ItemConditionListener;
 import de.eldoria.bigdoorsopener.conditions.location.Proximity;
 import de.eldoria.bigdoorsopener.conditions.location.Region;
 import de.eldoria.bigdoorsopener.conditions.location.SimpleRegion;
@@ -45,12 +45,10 @@ import de.eldoria.eldoutilities.bstats.charts.AdvancedPie;
 import de.eldoria.eldoutilities.bstats.charts.DrilldownPie;
 import de.eldoria.eldoutilities.bstats.charts.SimplePie;
 import de.eldoria.eldoutilities.container.Pair;
-import de.eldoria.eldoutilities.crossversion.ServerVersion;
 import de.eldoria.eldoutilities.localization.ILocalizer;
 import de.eldoria.eldoutilities.messages.MessageSender;
 import de.eldoria.eldoutilities.plugin.EldoPlugin;
 import de.eldoria.eldoutilities.updater.Updater;
-import de.eldoria.eldoutilities.updater.butlerupdater.ButlerUpdateData;
 import de.eldoria.eldoutilities.updater.lynaupdater.LynaUpdateData;
 import nl.pim16aap2.bigDoors.BigDoors;
 import nl.pim16aap2.bigDoors.Commander;
@@ -66,6 +64,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -127,8 +126,6 @@ public class BigDoorsOpener extends EldoPlugin {
 
     @Override
     public void onPluginEnable(boolean reload) {
-        ServerVersion.forceVersion(ServerVersion.MC_1_13, ServerVersion.MC_1_20);
-
         if (!initialized) {
             BigDoorsOpener.instance = this;
             buildSerializer();
@@ -155,7 +152,7 @@ public class BigDoorsOpener extends EldoPlugin {
 
         // Check for updates
         if (config.isCheckUpdates()) {
-            Updater.lyna(LynaUpdateData.builder(this,3 )
+            Updater.lyna(LynaUpdateData.builder(this, 3)
                             .notifyPermission("bdo.command.reload")
                             .updateUrl("https://discord.gg/JJdx3xe")
                             .build())
@@ -340,5 +337,25 @@ public class BigDoorsOpener extends EldoPlugin {
             buildString = "release";
         }
         return new Pair<>(versionString, buildString);
+    }
+
+    /**
+     * Returns the configuration for the doors.
+     * <p>
+     * The config is loaded after the server ticked for the first time.
+     *
+     * @return The configuration
+     */
+    @NotNull
+    public Config getDoorsConfig() {
+        return Objects.requireNonNull(config, "Do not call before server is fully initialized.");
+    }
+
+    /**
+     * Reloads the configuration and door checker.
+     */
+    public void reload() {
+        config.reloadConfig();
+        doorChecker.reload();
     }
 }
