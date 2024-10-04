@@ -35,7 +35,7 @@ dependencies {
     compileOnly("me.clip", "placeholderapi", "2.11.6")
     compileOnly("nl.pim16aap2", "BigDoors", "0.1.8.46")
     compileOnly("io.lumine", "Mythic-Dist", "5.7.2")
-    testImplementation("org.junit.jupiter", "junit-jupiter-api", "5.11.1")
+    testImplementation("org.junit.jupiter", "junit-jupiter-api", "5.11.2")
 }
 
 license {
