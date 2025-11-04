@@ -41,6 +41,7 @@ import java.util.concurrent.TimeUnit;
 public class BDOCommand extends EldoCommand {
     private final Cache<String, List<?>> pluginCache = C.getExpiringCache(30, TimeUnit.SECONDS);
 
+    @SuppressWarnings("removal")
     public BDOCommand(BigDoorsOpener plugin, BigDoors doors, Config config, DoorChecker doorChecker) {
         super(plugin);
         BukkitAudiences bukkitAudiences = BukkitAudiences.create(plugin);
