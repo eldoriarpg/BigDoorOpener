@@ -86,7 +86,7 @@ tasks {
                 expand(
                     "name" to "BigDoorsOpener",
                     "version" to publishData.getVersion(true),
-                    "description" to project.description
+                    "description" to project.description!!
                 )
             }
             duplicatesStrategy = DuplicatesStrategy.INCLUDE
