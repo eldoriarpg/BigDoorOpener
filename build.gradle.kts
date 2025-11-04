@@ -34,7 +34,7 @@ dependencies {
 
     compileOnly("me.clip", "placeholderapi", "2.11.7")
     compileOnly("nl.pim16aap2", "BigDoors", "0.1.8.58")
-    compileOnly("io.lumine", "Mythic-Dist", "5.7.2")
+    compileOnly("io.lumine", "Mythic-Dist", "5.10.1")
     testImplementation("org.junit.jupiter", "junit-jupiter-api", "6.0.1")
 }
 
@@ -49,7 +49,7 @@ java {
     withSourcesJar()
     withJavadocJar()
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(17))
+        languageVersion.set(JavaLanguageVersion.of(21))
     }
 }
 
