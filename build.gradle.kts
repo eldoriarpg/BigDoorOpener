@@ -32,7 +32,7 @@ dependencies {
         exclude("com.sk89q.worldedit.worldedit-libs", "core")
     }
 
-    compileOnly("me.clip", "placeholderapi", "2.11.6")
+    compileOnly("me.clip", "placeholderapi", "2.11.7")
     compileOnly("nl.pim16aap2", "BigDoors", "0.1.8.58")
     compileOnly("io.lumine", "Mythic-Dist", "5.7.2")
     testImplementation("org.junit.jupiter", "junit-jupiter-api", "6.0.1")
