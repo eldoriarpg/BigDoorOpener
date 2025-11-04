@@ -1,6 +1,6 @@
 plugins {
-    id("org.cadixdev.licenser") version "0.6.1"
-    id("com.github.johnrengelman.shadow") version "8.1.1"
+    id("com.diffplug.spotless") version "8.0.0"
+    id("com.gradleup.shadow") version "9.2.2"
     java
     `maven-publish`
     `java-library`
@@ -38,9 +38,11 @@ dependencies {
     testImplementation("org.junit.jupiter", "junit-jupiter-api", "5.14.1")
 }
 
-license {
-    header(rootProject.file("HEADER.txt"))
-    include("**/*.java")
+spotless {
+    java {
+        licenseHeaderFile(rootProject.file("HEADER.txt"))
+        target("**/*.java")
+    }
 }
 
 java {
