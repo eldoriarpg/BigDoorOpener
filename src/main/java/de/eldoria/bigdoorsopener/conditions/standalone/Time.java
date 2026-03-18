@@ -93,9 +93,9 @@ public class Time implements DoorCondition {
 
                     // parse time
                     Optional<Integer> open = Parser.parseInt(arguments[0]);
-                    if (!open.isPresent()) {
+                    if (open.isEmpty()) {
                         var time = Parser.parseTimeToTicks(arguments[0]);
-                        if (!open.isPresent()) {
+                        if (time.isEmpty()) {
                             messageSender.sendError(player, localizer.getMessage("error.invalidOpenTime"));
                             return;
                         }
@@ -103,9 +103,9 @@ public class Time implements DoorCondition {
                     }
 
                     Optional<Integer> close = Parser.parseInt(arguments[1]);
-                    if (!close.isPresent()) {
+                    if (close.isEmpty()) {
                         var time = Parser.parseTimeToTicks(arguments[1]);
-                        if (!close.isPresent()) {
+                        if (time.isEmpty()) {
                             messageSender.sendError(player, localizer.getMessage("error.invalidCloseTime"));
                             return;
                         }
