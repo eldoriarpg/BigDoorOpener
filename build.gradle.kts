@@ -1,6 +1,6 @@
 plugins {
     id("com.diffplug.spotless") version "8.10.2"
-    id("com.gradleup.shadow") version "9.2.2"
+    id("com.gradleup.shadow") version "9.6.1"
     java
     `maven-publish`
     `java-library`
