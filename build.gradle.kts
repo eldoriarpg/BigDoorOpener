@@ -1,5 +1,5 @@
 plugins {
-    id("com.diffplug.spotless") version "8.10.3"
+    id("com.diffplug.spotless") version "8.10.4"
     id("com.gradleup.shadow") version "9.2.2"
     java
     `maven-publish`
