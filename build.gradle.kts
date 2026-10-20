@@ -1,6 +1,6 @@
 plugins {
     id("com.diffplug.spotless") version "8.10.4"
-    id("com.gradleup.shadow") version "9.2.2"
+    id("com.gradleup.shadow") version "9.6.1"
     java
     `maven-publish`
     `java-library`
@@ -27,7 +27,7 @@ dependencies {
     implementation("net.kyori", "adventure-platform-bukkit", "4.4.1")
     compileOnly("org.spigotmc", "spigot-api", "1.13.2-R0.1-SNAPSHOT")
     compileOnly("org.jetbrains", "annotations", "26.1.0")
-    compileOnly("com.sk89q.worldguard", "worldguard-bukkit", "7.0.17") {
+    compileOnly("com.sk89q.worldguard", "worldguard-bukkit", "7.0.20") {
         exclude("org.spigotmc", "spigot-api")
         exclude("com.sk89q.worldedit.worldedit-libs", "core")
     }
