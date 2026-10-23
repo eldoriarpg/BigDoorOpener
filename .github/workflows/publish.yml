@@ -49,6 +49,18 @@ jobs:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
+      - name: Read the release notes
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for _ in $(seq 1 30); do
+            if gh release view "$GITHUB_REF_NAME" --json body --jq .body > "$RUNNER_TEMP/changelog.md"; then
+              exit 0
+            fi
+            sleep 30
+          done
+          echo "No GitHub release for $GITHUB_REF_NAME" >&2
+          exit 1
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
@@ -57,5 +69,5 @@ jobs:
       - run: ./gradlew modrinth modrinthSyncBody -x test
         env:
           MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
-          MODRINTH_CHANGELOG: ${{ github.event.head_commit.message }}
+          MODRINTH_CHANGELOG_FILE: ${{ runner.temp }}/changelog.md
           PUBLIC_BUILD: "true"

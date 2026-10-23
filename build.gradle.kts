@@ -108,7 +108,7 @@ modrinth {
         optional.project("placeholderapi")
         optional.project("mythicmobs")
     }
-    changelog = providers.environmentVariable("MODRINTH_CHANGELOG").orElse("")
+    changelog = providers.environmentVariable("MODRINTH_CHANGELOG_FILE").map { file(it).readText() }.orElse("")
     syncBodyFrom = rootProject.file("README.md").readText()
 }
 
