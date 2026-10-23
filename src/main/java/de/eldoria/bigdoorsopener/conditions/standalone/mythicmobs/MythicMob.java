@@ -51,11 +51,9 @@ public class MythicMob implements DoorCondition {
                     if (!BigDoorsOpener.isMythicMobsEnabled()) throw CommandException.message("error.mythicMob");
                     ConditionInput.require(args, 1, DoorCondition.localizer(), "<$syntax.mobType$>");
                     String mob = args.asString(0);
-                    boolean exists;
-                    try (var mythic = MythicBukkit.inst()) {
-                        exists = mythic.getAPIHelper().getMythicMob(mob) != null;
+                    if (MythicBukkit.inst().getAPIHelper().getMythicMob(mob) == null) {
+                        throw CommandException.message("error.invalidMob");
                     }
-                    if (!exists) throw CommandException.message("error.invalidMob");
                     conditionBag.accept(new MythicMob(mob));
                     messageSender.sendMessage(sender, "setCondition.mythicMob");
                 })
@@ -64,14 +62,11 @@ public class MythicMob implements DoorCondition {
                     if (args.sizeIs(1)) {
                         List<String> mythicMobs;
                         try {
-                            mythicMobs = (List<String>) C.PLUGIN_CACHE.get("mythicMobs", () -> {
-                                try (var mythic = MythicBukkit.inst()) {
-                                    return mythic.getMobManager().getMobTypes()
+                            mythicMobs = (List<String>) C.PLUGIN_CACHE.get("mythicMobs", () ->
+                                    MythicBukkit.inst().getMobManager().getMobTypes()
                                             .stream()
                                             .map(mythicMob -> mythicMob.getInternalName())
-                                            .toList();
-                                }
-                            });
+                                            .toList());
                         } catch (ExecutionException e) {
                             BigDoorsOpener.logger().log(Level.WARNING, "Could not build mob names.", e);
                             return Collections.emptyList();
