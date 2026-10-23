@@ -162,9 +162,9 @@ public abstract class Item implements DoorCondition {
      * @param player player to take items from
      */
     private void takeFromOffHand(Player player) {
-        ItemStack item = player.getInventory().getItemInMainHand();
+        ItemStack item = player.getInventory().getItemInOffHand();
         item.setAmount(item.getAmount() - item().getAmount());
-        player.getInventory().setItemInMainHand(item);
+        player.getInventory().setItemInOffHand(item);
         player.updateInventory();
     }
 
