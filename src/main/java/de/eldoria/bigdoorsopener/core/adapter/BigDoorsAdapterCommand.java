@@ -102,8 +102,9 @@ public abstract class BigDoorsAdapterCommand extends AdvancedCommand implements 
     }
 
     /**
-     * Finds a door the sender may use. Searches the doors of the player first and all doors by id afterwards. A door
-     * of another player is only returned with {@link Permissions#ACCESS_ALL}. The console may use every door.
+     * Finds a door the sender may manage. Searches the doors of the player first and all doors by id afterwards. A door
+     * of another player is only returned with {@link Permissions#ACCESS_ALL}. Players who are only users of a door in
+     * Big Doors may not manage it. The console may manage every door.
      *
      * @param doorUID uid or name of the door.
      * @param sender  sender which performed the request.
@@ -122,7 +123,7 @@ public abstract class BigDoorsAdapterCommand extends AdvancedCommand implements 
 
         if (doors.isEmpty()) {
             Door door = getDoor(player, doorUID);
-            if (door != null) return door;
+            if (door != null) return editable(door);
 
             door = getDoor(doorUID);
             if (door == null) throw CommandException.message("error.doorNotFound");
@@ -134,7 +135,12 @@ public abstract class BigDoorsAdapterCommand extends AdvancedCommand implements 
 
         if (doors.size() != 1) throw CommandException.message("error.ambiguousDoorName");
 
-        return doors.getFirst();
+        return editable(doors.getFirst());
+    }
+
+    private Door editable(Door door) throws CommandException {
+        if (door.getPermission() > 1) throw CommandException.message("error.notYourDoor");
+        return door;
     }
 
     /**
@@ -173,8 +179,6 @@ public abstract class BigDoorsAdapterCommand extends AdvancedCommand implements 
      */
     public Pair<ConditionalDoor, Door> getConditionalPlayerDoor(String doorUID, CommandSender sender) throws CommandException {
         Door door = getPlayerDoor(doorUID, sender);
-
-        if (door.getPermission() > 1) throw CommandException.message("error.notYourDoor");
 
         ConditionalDoor conditionalDoor = config.getDoor(door.getDoorUID());
         if (conditionalDoor == null) throw CommandException.message("error.doorNotRegistered");

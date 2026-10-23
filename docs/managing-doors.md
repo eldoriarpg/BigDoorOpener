@@ -9,7 +9,8 @@ This page covers everything around a door besides its conditions. All commands a
 
 ## Which doors you can manage
 
-You can manage the doors you own in Big Doors, by name or by id. Players with `bdo.accessAll` can manage every door.
+You can manage the doors you own or may edit in Big Doors, by name or by id. Players who are only users of a door in
+Big Doors cannot manage it. Players with `bdo.accessAll` can manage every door.
 They use the id for doors that belong to someone else. The console can always manage every door by id.
 
 A door becomes a Big Doors Opener door when you give it its first condition. From then on, Big Doors Opener opens and
