@@ -13,137 +13,83 @@ import de.eldoria.bigdoorsopener.core.conditions.ConditionRegistrar;
 import de.eldoria.bigdoorsopener.door.ConditionalDoor;
 import de.eldoria.bigdoorsopener.door.conditioncollections.ConditionBag;
 import de.eldoria.bigdoorsopener.util.Permissions;
-import de.eldoria.eldoutilities.localization.Replacement;
-import de.eldoria.eldoutilities.utils.ArgumentUtils;
-import de.eldoria.eldoutilities.utils.ArrayUtil;
-import de.eldoria.eldoutilities.utils.Parser;
+import de.eldoria.eldoutilities.commands.Completion;
+import de.eldoria.eldoutilities.commands.command.CommandMeta;
+import de.eldoria.eldoutilities.commands.command.util.Arguments;
+import de.eldoria.eldoutilities.commands.command.util.CommandAssertions;
+import de.eldoria.eldoutilities.commands.exceptions.CommandException;
+import de.eldoria.eldoutilities.messages.Replacement;
 import nl.pim16aap2.bigDoors.BigDoors;
 import nl.pim16aap2.bigDoors.Door;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
-import java.util.OptionalInt;
-import java.util.stream.Collectors;
 
+/**
+ * Copies all conditions or the conditions of one group from a door to another door.
+ */
 public class CopyCondition extends BigDoorsAdapterCommand {
 
-    public CopyCondition(BigDoors bigDoors, Config config) {
-        super(bigDoors, config);
+    public CopyCondition(Plugin plugin, BigDoors bigDoors, Config config) {
+        super(plugin, CommandMeta.builder("copyCondition")
+                .withPermission(Permissions.USE)
+                .addArgument("syntax.sourceDoor", true)
+                .addArgument("syntax.targetDoor", true)
+                .addArgument("syntax.condition", false)
+                .build(), bigDoors, config);
     }
 
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        if (denyAccess(sender, Permissions.USE)) {
-            return true;
-        }
-
-        if (argumentsInvalid(sender, args, 2,
-                "<$syntax.sourceDoor$> <$syntax.targetDoor$> [$syntax.condition$]")) {
-            return true;
-        }
-
-        Player playerFromSender = getPlayerFromSender(sender);
-
-        Door playerSourceDoor = getPlayerDoor(args[0], playerFromSender);
-
-        if (playerSourceDoor == null) {
-            return true;
-        }
-
-        ConditionalDoor sourceDoor = getOrRegister(playerSourceDoor, playerFromSender);
-
-        if (sourceDoor == null) {
-            return true;
-        }
-
-        Door playerTargetDoor = getPlayerDoor(args[1], playerFromSender);
-
-        if (playerTargetDoor == null) {
-            return true;
-        }
-
-        ConditionalDoor targetDoor = getOrRegister(playerTargetDoor, playerFromSender);
-
-        if (targetDoor == null) {
-            return true;
-        }
+    public void onCommand(@NotNull CommandSender sender, @NotNull String alias, @NotNull Arguments args) throws CommandException {
+        Door playerSourceDoor = getPlayerDoor(args.asString(0), sender);
+        ConditionalDoor sourceDoor = getOrRegister(playerSourceDoor);
+        Door playerTargetDoor = getPlayerDoor(args.asString(1), sender);
+        ConditionalDoor targetDoor = getOrRegister(playerTargetDoor);
 
         ConditionBag sourceBag = sourceDoor.conditionBag();
 
-        if (args.length == 2) {
-            if (denyAccess(sender, Permissions.ALL_CONDITION)) {
-                return true;
-            }
-
+        if (args.sizeIs(2)) {
+            CommandAssertions.permission(sender, false, Permissions.ALL_CONDITION);
             targetDoor.conditionBag(sourceBag.copy());
-            messageSender().sendLocalizedMessage(sender, "copyCondition.copiedAll",
-                    Replacement.create("SOURCE", playerSourceDoor.getName()).addFormatting('6'),
-                    Replacement.create("TARGET", playerTargetDoor.getName()).addFormatting('6'));
-            return true;
+            messageSender().sendMessage(sender, "copyCondition.copiedAll",
+                    Replacement.unparsed("SOURCE", playerSourceDoor.getName()),
+                    Replacement.unparsed("TARGET", playerTargetDoor.getName()));
+            return;
         }
 
-        Optional<ConditionGroup> optionalGroup = ConditionRegistrar.getConditionGroup(args[2]);
+        ConditionGroup conditionGroup = ConditionRegistrar.getConditionGroup(args.asString(2))
+                .orElseThrow(() -> CommandException.message("error.invalidConditionType"));
 
-        if (!optionalGroup.isPresent()) {
-            messageSender().sendLocalizedError(sender, "error.invalidConditionType");
-            return true;
-        }
+        CommandAssertions.permission(sender, false, Permissions.getConditionPermission(conditionGroup.name()), Permissions.ALL_CONDITION);
 
-        ConditionGroup conditionGroup = optionalGroup.get();
-
-        if (denyAccess(sender, Permissions.getConditionPermission(conditionGroup.name()), Permissions.ALL_CONDITION)) {
-            return true;
-        }
-
-        ConditionBag targetBag = targetDoor.conditionBag();
-
-
-        String id = ArgumentUtils.getOrDefault(args, 2, "0");
-        Optional<Integer> optionalInt = Parser.parseInt(id);
-        if (!optionalInt.isPresent()) {
-            messageSender().sendLocalizedError(sender, "error.invalidNumber");
-            return true;
-        }
-
+        int index = args.asInt(2, 0);
         List<DoorCondition> condition = sourceBag.getConditions(conditionGroup);
+        CommandAssertions.isFalse(condition.isEmpty(), "error.conditionNotSet");
+        CommandAssertions.isFalse(condition.size() < index, "error.conditionNotSet");
 
-        if (condition.isEmpty()) {
-            messageSender().sendLocalizedError(sender, "error.conditionNotSet");
-            return true;
-        }
+        targetDoor.conditionBag().setCondition(targetDoor, condition.get(index).clone());
 
-        if (condition.size() < optionalInt.get()) {
-            messageSender().sendLocalizedError(sender, "error.conditionNotSet");
-            return true;
-        }
-
-        targetBag.setCondition(targetDoor,condition.get(optionalInt.get()).clone());
-
-        messageSender().sendLocalizedMessage(sender, "copyCondition.copiedSingle",
-                Replacement.create("CONDITION", conditionGroup.name()).addFormatting('6'),
-                Replacement.create("SOURCE", playerSourceDoor.getName()).addFormatting('6'),
-                Replacement.create("TARGET", playerTargetDoor.getName()).addFormatting('6'));
-        return true;
+        messageSender().sendMessage(sender, "copyCondition.copiedSingle",
+                Replacement.create("CONDITION", conditionGroup.name()),
+                Replacement.unparsed("SOURCE", playerSourceDoor.getName()),
+                Replacement.unparsed("TARGET", playerTargetDoor.getName()));
     }
 
     @Override
-    public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
-        if (args.length == 1) {
-            return getDoorCompletion(sender, args[0]);
+    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull String alias, @NotNull Arguments args) {
+        if (args.sizeIs(1)) {
+            return getDoorCompletion(sender, args.asString(0));
         }
-        if (args.length == 2) {
-            return getDoorCompletion(sender, args[1]);
+        if (args.sizeIs(2)) {
+            return getDoorCompletion(sender, args.asString(1));
         }
-        if (args.length == 3) {
-            return ArrayUtil.startingWithInArray(args[2], ConditionRegistrar.getGroups().toArray(new String[0])).collect(Collectors.toList());
+        if (args.sizeIs(3)) {
+            return Completion.complete(args.asString(2), ConditionRegistrar.getGroups());
         }
-        if (args.length == 4) {
+        if (args.sizeIs(4)) {
             return Collections.singletonList(localizer().getMessage("tabcomplete.conditionId"));
         }
         return Collections.emptyList();

@@ -8,7 +8,6 @@ package de.eldoria.bigdoorsopener.core.adapter;
 import de.eldoria.bigdoorsopener.core.BigDoorsOpener;
 import de.eldoria.bigdoorsopener.door.ConditionalDoor;
 import de.eldoria.eldoutilities.localization.ILocalizer;
-import de.eldoria.eldoutilities.localization.Replacement;
 import nl.pim16aap2.bigDoors.BigDoors;
 import nl.pim16aap2.bigDoors.Commander;
 import nl.pim16aap2.bigDoors.Door;
@@ -78,8 +77,7 @@ public abstract class BigDoorsAdapter {
     protected boolean doorExists(ConditionalDoor door) {
         World world = server.getWorld(door.world());
         if (world == null) {
-            BigDoorsOpener.logger().info(localizer.getMessage("error.worldIsNull",
-                    Replacement.create("DOOR_NAME", door.doorUID())));
+            BigDoorsOpener.logger().info("The world of door " + door.doorUID() + " is not loaded.");
             return false;
         }
 

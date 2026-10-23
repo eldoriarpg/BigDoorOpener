@@ -6,13 +6,13 @@
 package de.eldoria.bigdoorsopener.core.conditions;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TreeMap;
 
 public class ConditionGroup {
-    private final Map<String, ConditionContainer> conditions = new HashMap<>();
+    private final Map<String, ConditionContainer> conditions = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     private final String name;
 
     public ConditionGroup(String name) {

@@ -5,27 +5,58 @@
  */
 package de.eldoria.bigdoorsopener.conditions;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import de.eldoria.bigdoorsopener.core.BigDoorsOpener;
 import de.eldoria.bigdoorsopener.core.conditions.ConditionContainer;
+import de.eldoria.bigdoorsopener.core.conditions.ConditionRegistrar;
+import de.eldoria.bigdoorsopener.core.conditions.ConditionTypeResolver;
 import de.eldoria.bigdoorsopener.core.conditions.Scope;
 import de.eldoria.bigdoorsopener.door.ConditionalDoor;
 import de.eldoria.eldoutilities.localization.ILocalizer;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.World;
-import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.entity.Player;
+import tools.jackson.databind.annotation.JsonTypeIdResolver;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
  * A interface which represents a condition which opens a door under specific circumstances.
+ * <p>
+ * Conditions are stored with Jackson. The {@code type} property holds the type name of the registered
+ * {@link ConditionContainer}. Fields which only hold runtime state have to be ignored.
  */
-public interface DoorCondition extends ConfigurationSerializable, Cloneable {
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY,
+        getterVisibility = JsonAutoDetect.Visibility.NONE,
+        isGetterVisibility = JsonAutoDetect.Visibility.NONE,
+        setterVisibility = JsonAutoDetect.Visibility.NONE)
+@JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, include = JsonTypeInfo.As.PROPERTY, property = "type")
+@JsonTypeIdResolver(ConditionTypeResolver.class)
+public interface DoorCondition extends Cloneable {
     String SET_COMMAND = "/bdo setCondition ";
     String REMOVE_COMMAND = "/bdo removeCondition ";
 
     static ILocalizer localizer() {
         return BigDoorsOpener.localizer();
+    }
+
+    /**
+     * Builds the headline of a condition description from a message with a {@code <name>} placeholder, which is
+     * replaced by the registered name of the condition.
+     *
+     * @param localizer localizer for the message
+     * @param key       message key of the headline
+     * @param clazz     class of the condition
+     * @return headline component
+     */
+    static Component headline(ILocalizer localizer, String key, Class<? extends DoorCondition> clazz) {
+        String name = ConditionRegistrar.getContainerByClass(clazz).map(ConditionContainer::getName).orElse("undefined");
+        return MiniMessage.miniMessage().deserialize(localizer.getMessage(key), Placeholder.unparsed("name", name))
+                .colorIfAbsent(NamedTextColor.AQUA);
     }
 
     /**

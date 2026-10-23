@@ -5,89 +5,34 @@
  */
 package de.eldoria.bigdoorsopener.conditions.item;
 
-import de.eldoria.bigdoorsopener.core.BigDoorsOpener;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import de.eldoria.bigdoorsopener.conditions.DoorCondition;
 import de.eldoria.bigdoorsopener.core.conditions.ConditionContainer;
-import de.eldoria.bigdoorsopener.core.conditions.ConditionRegistrar;
 import de.eldoria.bigdoorsopener.core.conditions.Scope;
 import de.eldoria.bigdoorsopener.door.ConditionalDoor;
 import de.eldoria.eldoutilities.localization.ILocalizer;
-import de.eldoria.eldoutilities.localization.Replacement;
-import de.eldoria.eldoutilities.serialization.SerializationUtil;
-import de.eldoria.eldoutilities.serialization.TypeResolvingMap;
-import de.eldoria.eldoutilities.utils.ArgumentUtils;
-import de.eldoria.eldoutilities.utils.Parser;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.World;
-import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.Map;
-import java.util.Optional;
-import java.util.OptionalInt;
-
-import static de.eldoria.bigdoorsopener.commands.CommandHelper.argumentsInvalid;
-
 /**
- * A key which will be open when the player is holding a key in his hand.
+ * Opens the door for players holding the key in a hand.
  */
-@SerializableAs("itemHoldingCondition")
+@JsonTypeName("itemHoldingCondition")
 public class ItemHolding extends Item {
-    public ItemHolding(ItemStack item, boolean consumed) {
+    @JsonCreator
+    public ItemHolding(@JsonProperty("item") ItemStack item, @JsonProperty("consumed") boolean consumed) {
         super(item, consumed);
-    }
-
-    public static ItemHolding deserialize(Map<String, Object> map) {
-        TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
-        ItemStack stack = resolvingMap.getValue("item");
-        boolean consumed = resolvingMap.getValue("consumed");
-        return new ItemHolding(stack, consumed);
     }
 
     public static ConditionContainer getConditionContainer() {
         return ConditionContainer.ofClass(ItemHolding.class, Scope.PLAYER)
-                .withFactory((player, messageSender, conditionBag, arguments) -> {
-                    ILocalizer localizer = BigDoorsOpener.localizer();
-                    if (player == null) {
-                        messageSender.sendError(null, localizer.getMessage("error.notAllowedFromConsole"));
-                        return;
-                    }
-
-                    if (argumentsInvalid(player, arguments, 1,
-                            "<" + localizer.getMessage("syntax.doorId") + "> <"
-                                    + localizer.getMessage("syntax.condition") + "> <"
-                                    + localizer.getMessage("syntax.amount") + "> ["
-                                    + localizer.getMessage("tabcomplete.consumed") + "]")) {
-                        return;
-                    }
-
-                    // parse amount
-                    Optional<Integer> amount = Parser.parseInt(arguments[0]);
-                    if (!amount.isPresent()) {
-                        messageSender.sendError(player, localizer.getMessage("error.invalidAmount"));
-                        return;
-                    }
-
-                    if (amount.get() > 64 || amount.get() < 1) {
-                        messageSender.sendError(player, localizer.getMessage("error.invalidRange",
-                                Replacement.create("MIN", 1).addFormatting('6'),
-                                Replacement.create("MAX", 64).addFormatting('6')));
-                        return;
-                    }
-
-                    Optional<Boolean> consume = ArgumentUtils.getOptionalParameter(arguments, 1, Optional.of(false), Parser::parseBoolean);
-                    if (!consume.isPresent()) {
-                        messageSender.sendError(player, localizer.getMessage("error.invalidBoolean"));
-                        return;
-                    }
-
-                    ItemStack itemInMainHand = player.getInventory().getItemInMainHand().clone();
-
-                    itemInMainHand.setAmount(amount.get());
-                    conditionBag.accept(new ItemHolding(itemInMainHand, consume.get()));
-                    messageSender.sendMessage(player, localizer.getMessage("setCondition.itemHolding"));
-
+                .withFactory((sender, messageSender, args, conditionBag) -> {
+                    conditionBag.accept(new ItemHolding(keyFromHand(sender, args), consumed(args)));
+                    messageSender.sendMessage(sender, "setCondition.itemHolding");
                 })
                 .onTabComplete(Item::onTabComplete)
                 .withMeta("itemHolding", "item", ConditionContainer.Builder.Cost.PLAYER_MEDIUM.cost)
@@ -107,18 +52,9 @@ public class ItemHolding extends Item {
 
     @Override
     public Component getDescription(ILocalizer localizer) {
-        Optional<ConditionContainer> containerByClass = ConditionRegistrar.getContainerByClass(getClass());
-        return Component.text(
-                localizer.getMessage("conditionDesc.type.itemHolding",
-                        Replacement.create("NAME", containerByClass
-                                .map(ConditionContainer::getName).orElse("undefined"))), NamedTextColor.AQUA)
+        return DoorCondition.headline(localizer, "conditionDesc.type.itemHolding", getClass())
                 .append(Component.newline())
                 .append(super.getDescription(localizer));
-    }
-
-    @Override
-    public ItemHolding clone() {
-        return new ItemHolding(item().clone(), isConsumed());
     }
 
     @Override
@@ -127,8 +63,7 @@ public class ItemHolding extends Item {
     }
 
     @Override
-    public void evaluated() {
-
+    public ItemHolding clone() {
+        return new ItemHolding(item().clone(), isConsumed());
     }
-
 }

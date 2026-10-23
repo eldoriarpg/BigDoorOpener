@@ -9,12 +9,11 @@ import de.eldoria.bigdoorsopener.conditions.DoorCondition;
 import de.eldoria.bigdoorsopener.door.ConditionalDoor;
 import de.eldoria.bigdoorsopener.util.ConditionChainEvaluator;
 import org.bukkit.World;
-import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.entity.Player;
 
 import java.util.Collection;
 
-public interface ConditionCollection extends ConfigurationSerializable, Cloneable {
+public interface ConditionCollection extends Cloneable {
     /**
      * Evaluates the conditions with an or operator.
      *

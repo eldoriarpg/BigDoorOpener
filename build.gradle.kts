@@ -22,19 +22,30 @@ repositories {
 }
 
 dependencies {
-    implementation(libs.eldoutil.legacy)
-    implementation(libs.adventure.api)
-    implementation(libs.adventure.platform.bukkit)
-    compileOnly(libs.spigot)
+    compileOnly(libs.paper)
+    implementation(libs.bundles.utilities)
+    implementation(platform(libs.jackson.bom))
+    implementation(libs.bundles.jackson)
+    implementation(libs.bstats)
     compileOnly(libs.jetbrains.annotations)
     compileOnly(libs.worldguard.bukkit) {
         exclude("org.spigotmc", "spigot-api")
         exclude("com.sk89q.worldedit.worldedit-libs", "core")
+        exclude("net.kyori")
     }
     compileOnly(libs.placeholderapi)
     compileOnly(libs.bigdoors)
     compileOnly(libs.mythic.dist)
 
+    testImplementation(libs.paper)
+    testImplementation(libs.bigdoors)
+    testImplementation(libs.mythic.dist)
+    testImplementation(libs.placeholderapi)
+    testImplementation(libs.worldguard.bukkit) {
+        exclude("org.spigotmc", "spigot-api")
+        exclude("com.sk89q.worldedit.worldedit-libs", "core")
+        exclude("net.kyori")
+    }
     testImplementation(platform(libs.junit.bom))
     testImplementation(libs.junit.jupiter.api)
     testRuntimeOnly(libs.junit.jupiter.engine)
@@ -97,8 +108,13 @@ tasks {
 
     shadowJar {
         val shadebase = "de.eldoria.bigdoorsopener.libs."
+        relocate("org.bstats", shadebase + "bstats")
+        relocate("com.fasterxml", shadebase + "fasterxml")
+        relocate("tools.jackson", shadebase + "jackson")
+        relocate("org.snakeyaml", shadebase + "snakeyaml")
+        relocate("dev.chojo.ocular", shadebase + "ocular")
+        relocate("de.eldoria.jacksonbukkit", shadebase + "jacksonbukkit")
         relocate("de.eldoria.eldoutilities", shadebase + "utilities")
-        relocate("net.kyori", shadebase + "kyori")
         mergeServiceFiles()
         addMultiReleaseAttribute = false
         exclude("META-INF/versions/**")

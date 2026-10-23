@@ -5,117 +5,72 @@
  */
 package de.eldoria.bigdoorsopener.conditions.worldlocation;
 
-import com.google.common.cache.Cache;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import com.sk89q.worldguard.protection.regions.RegionContainer;
+import de.eldoria.bigdoorsopener.conditions.DoorCondition;
 import de.eldoria.bigdoorsopener.core.BigDoorsOpener;
 import de.eldoria.bigdoorsopener.core.conditions.ConditionContainer;
-import de.eldoria.bigdoorsopener.core.conditions.ConditionRegistrar;
+import de.eldoria.bigdoorsopener.core.conditions.ConditionInput;
 import de.eldoria.bigdoorsopener.core.conditions.Scope;
 import de.eldoria.bigdoorsopener.door.ConditionalDoor;
 import de.eldoria.bigdoorsopener.util.C;
+import de.eldoria.eldoutilities.commands.exceptions.CommandException;
 import de.eldoria.eldoutilities.localization.ILocalizer;
-import de.eldoria.eldoutilities.localization.Replacement;
-import de.eldoria.eldoutilities.serialization.SerializationUtil;
-import de.eldoria.eldoutilities.serialization.TypeResolvingMap;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.World;
-import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
-import java.util.Map;
-import java.util.Optional;
-
-import static de.eldoria.bigdoorsopener.commands.CommandHelper.argumentsInvalid;
 
 /**
- * A condition which opens the door, when a player is inside a world guard region.
+ * Opens the door while any player of the world is inside a WorldGuard region.
+ * <p>
+ * The WorldGuard region is looked up on first use, since WorldGuard and the world may not be loaded when the doors are
+ * read.
  */
-@SerializableAs("worldRegionCondition")
+@JsonTypeName("worldRegionCondition")
 public class WorldRegion implements WorldLocation {
-    private final ProtectedRegion region;
-    private final World world;
+    @JsonProperty("world")
     private final String worldName;
+    @JsonProperty("region")
     private final String regionId;
+    @JsonIgnore
+    private ProtectedRegion region;
 
-    private final Cache<Location, Boolean> cache = C.getExpiringCache();
-
-    public WorldRegion(ProtectedRegion region, World world) {
-        this.region = region;
-        this.world = world;
-        this.worldName = world.getName();
-        this.regionId = region.getId();
-    }
-
-    private WorldRegion(World world, ProtectedRegion region, String regionId, String worldName) {
-        this.world = world;
-        this.region = region;
+    @JsonCreator
+    public WorldRegion(@JsonProperty("world") String worldName, @JsonProperty("region") String regionId) {
         this.worldName = worldName;
         this.regionId = regionId;
     }
 
-    public WorldRegion(Map<String, Object> map) {
-        TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
-        worldName = resolvingMap.getValue("world");
-        regionId = resolvingMap.getValue("region");
-        if (BigDoorsOpener.regionContainer() != null) {
-            world = Bukkit.getWorld(worldName);
-            if (world == null) {
-                region = null;
-                return;
-            }
-            region = BigDoorsOpener.regionContainer().get(BukkitAdapter.adapt(world)).getRegion(regionId);
-            return;
-        }
-        world = null;
-        region = null;
-        BigDoorsOpener.logger().warning("A region key is used but world guard was not found.");
+    public WorldRegion(ProtectedRegion region, World world) {
+        this(world.getName(), region.getId());
+        this.region = region;
     }
 
     public static ConditionContainer getConditionContainer() {
         return ConditionContainer.ofClass(WorldRegion.class, Scope.WORLD)
-                .withFactory((player, messageSender, conditionBag, arguments) -> {
-                    final RegionContainer regionContainer = BigDoorsOpener.regionContainer();
-                    ILocalizer localizer = BigDoorsOpener.localizer();
-                    if (regionContainer == null) {
-                        messageSender.sendError(player, localizer.getMessage("error.wgNotEnabled"));
-                        return;
-                    }
-
-                    if (argumentsInvalid(player, messageSender, localizer, arguments, 1,
-                            "<" + localizer.getMessage("syntax.doorId") + "> <"
-                                    + localizer.getMessage("syntax.condition") + "> <"
-                                    + localizer.getMessage("tabcomplete.regionName") + ">")) {
-                        return;
-                    }
-
-                    if (player == null) {
-                        messageSender.sendError(null, localizer.getMessage("error.notAllowedFromConsole"));
-                        return;
-                    }
+                .withFactory((sender, messageSender, args, conditionBag) -> {
+                    RegionContainer regionContainer = BigDoorsOpener.regionContainer();
+                    if (regionContainer == null) throw CommandException.message("error.wgNotEnabled");
+                    ConditionInput.require(args, 1, DoorCondition.localizer(), "<$tabcomplete.regionName$>");
+                    Player player = ConditionInput.player(sender);
                     RegionManager rm = regionContainer.get(BukkitAdapter.adapt(player.getWorld()));
-                    if (rm == null) {
-                        messageSender.sendError(player, localizer.getMessage("error.regionNotFound"));
-                        return;
-                    }
-                    ProtectedRegion region = rm.getRegion(arguments[0]);
-                    if (region == null) {
-                        messageSender.sendError(player, localizer.getMessage("error.regionNotFound"));
-                        return;
-                    }
+                    if (rm == null) throw CommandException.message("error.regionNotFound");
+                    ProtectedRegion region = rm.getRegion(args.asString(0));
+                    if (region == null) throw CommandException.message("error.regionNotFound");
                     conditionBag.accept(new WorldRegion(region, player.getWorld()));
-                    messageSender.sendMessage(player, localizer.getMessage("setCondition.region"));
-
+                    messageSender.sendMessage(sender, "setCondition.region");
                 })
                 .onTabComplete((sender, localizer, args) -> {
-                    if (args.length == 1) {
+                    if (args.sizeIs(1)) {
                         return Collections.singletonList("<" + localizer.getMessage("tabcomplete.regionName") + ">");
                     }
                     return Collections.emptyList();
@@ -126,24 +81,26 @@ public class WorldRegion implements WorldLocation {
 
     @Override
     public Boolean isOpen(Player player, World world, ConditionalDoor door, boolean currentState) {
-        if (world != this.world) return false;
+        if (!world.getName().equals(worldName)) return false;
+        ProtectedRegion region = region(world);
         if (region == null) return null;
         for (Player worldPlayer : world.getPlayers()) {
-            if (region.contains(BukkitAdapter.asBlockVector(worldPlayer.getLocation()))) {
-                return true;
-            }
+            if (region.contains(BukkitAdapter.asBlockVector(worldPlayer.getLocation()))) return true;
         }
         return false;
     }
 
+    private ProtectedRegion region(World world) {
+        if (region == null && BigDoorsOpener.regionContainer() != null) {
+            RegionManager manager = BigDoorsOpener.regionContainer().get(BukkitAdapter.adapt(world));
+            region = manager == null ? null : manager.getRegion(regionId);
+        }
+        return region;
+    }
+
     @Override
     public Component getDescription(ILocalizer localizer) {
-        Optional<ConditionContainer> containerByClass = ConditionRegistrar.getContainerByClass(getClass());
-
-        return Component.text(
-                localizer.getMessage("conditionDesc.type.region",
-                        Replacement.create("NAME", containerByClass
-                                .map(ConditionContainer::getName).orElse("undefined"))), NamedTextColor.AQUA)
+        return DoorCondition.headline(localizer, "conditionDesc.type.region", getClass())
                 .append(Component.newline())
                 .append(Component.text(localizer.getMessage("conditionDesc.region") + " ", C.baseColor))
                 .append(Component.text(regionId, C.highlightColor))
@@ -159,15 +116,6 @@ public class WorldRegion implements WorldLocation {
 
     @Override
     public WorldRegion clone() {
-        return new WorldRegion(world, region, worldName, regionId);
+        return new WorldRegion(worldName, regionId);
     }
-
-    @Override
-    public @NotNull Map<String, Object> serialize() {
-        return SerializationUtil.newBuilder()
-                .add("world", worldName)
-                .add("region", regionId)
-                .build();
-    }
-
 }

@@ -9,71 +9,53 @@ import de.eldoria.bigdoorsopener.config.Config;
 import de.eldoria.bigdoorsopener.core.adapter.BigDoorsAdapterCommand;
 import de.eldoria.bigdoorsopener.door.ConditionalDoor;
 import de.eldoria.bigdoorsopener.util.Permissions;
+import de.eldoria.eldoutilities.commands.Completion;
+import de.eldoria.eldoutilities.commands.command.CommandMeta;
+import de.eldoria.eldoutilities.commands.command.util.Arguments;
+import de.eldoria.eldoutilities.commands.exceptions.CommandException;
 import de.eldoria.eldoutilities.container.Pair;
-import de.eldoria.eldoutilities.utils.ArrayUtil;
-import de.eldoria.eldoutilities.utils.Parser;
 import nl.pim16aap2.bigDoors.BigDoors;
 import nl.pim16aap2.bigDoors.Door;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
+/**
+ * Enables or disables the automatic opening and closing of a door.
+ */
 public class SetState extends BigDoorsAdapterCommand {
 
-    public SetState(BigDoors bigDoors, Config config) {
-        super(bigDoors, config);
+    public SetState(Plugin plugin, BigDoors bigDoors, Config config) {
+        super(plugin, CommandMeta.builder("setState")
+                .withPermission(Permissions.USE)
+                .addArgument("syntax.doorId", true)
+                .addArgument("syntax.state", true)
+                .build(), bigDoors, config);
     }
 
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        if (denyAccess(sender, Permissions.USE)) {
-            return true;
-        }
-
-        if (argumentsInvalid(sender, args, 2,
-                "<$syntax.doorId$> <$syntax.state$>")) {
-            return true;
-        }
-
-        Player playerFromSender = getPlayerFromSender(sender);
-
-        Pair<ConditionalDoor, Door> door = getConditionalPlayerDoor(args[0], playerFromSender);
-
-        if (door == null) {
-            return true;
-        }
-
-        Optional<Boolean> state = Parser.parseBoolean(args[1], "enabled", "disabled");
-        if (!state.isPresent()) {
-            messageSender().sendLocalizedError(sender, "error.invalidState");
-            return true;
-        }
-
-        if (state.get()) {
-            messageSender().sendLocalizedError(sender, "setState.enabled");
+    public void onCommand(@NotNull CommandSender sender, @NotNull String alias, @NotNull Arguments args) throws CommandException {
+        Pair<ConditionalDoor, Door> door = getConditionalPlayerDoor(args.asString(0), sender);
+        boolean state = args.asBoolean(1, "enabled", "disabled");
+        if (state) {
+            messageSender().sendError(sender, "setState.enabled");
         } else {
-            messageSender().sendLocalizedError(sender, "setState.disabled");
+            messageSender().sendError(sender, "setState.disabled");
         }
-        door.first.enabled(state.get());
-        return true;
+        door.first.enabled(state);
     }
 
     @Override
-    public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
-        if (args.length == 1) {
-            return getDoorCompletion(sender, args[0]);
+    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull String alias, @NotNull Arguments args) {
+        if (args.sizeIs(1)) {
+            return getDoorCompletion(sender, args.asString(0));
         }
-        if (args.length == 2) {
-            return ArrayUtil.startingWithInArray(args[1], new String[]{"enabled", "disabled"}).collect(Collectors.toList());
+        if (args.sizeIs(2)) {
+            return Completion.complete(args.asString(1), "enabled", "disabled");
         }
-
         return Collections.emptyList();
     }
 }

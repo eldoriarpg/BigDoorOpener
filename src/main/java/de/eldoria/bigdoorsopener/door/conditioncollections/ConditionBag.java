@@ -16,14 +16,9 @@ import de.eldoria.bigdoorsopener.core.events.ConditionBagModifiedEvent;
 import de.eldoria.bigdoorsopener.core.events.ConditionRemovedEvent;
 import de.eldoria.bigdoorsopener.core.exceptions.ConditionCreationException;
 import de.eldoria.bigdoorsopener.door.ConditionalDoor;
-import de.eldoria.eldoutilities.serialization.SerializationUtil;
-import de.eldoria.eldoutilities.serialization.TypeResolvingMap;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
-import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitTask;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -31,10 +26,13 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-@SerializableAs("bdoConditionBag")
+/**
+ * The conditions of a door, grouped by condition group and scope.
+ */
 public class ConditionBag implements ConditionCollection {
     private final Map<String, List<DoorCondition>> playerScope = new LinkedHashMap<>();
     private final Map<String, List<DoorCondition>> worldScope = new LinkedHashMap<>();
@@ -47,26 +45,13 @@ public class ConditionBag implements ConditionCollection {
     public ConditionBag() {
     }
 
-    public ConditionBag(Map<String, Object> objectMap) {
-        TypeResolvingMap typeResolvingMap = SerializationUtil.mapOf(objectMap);
-        ArrayList<DoorCondition> conditions = typeResolvingMap.getValueOrDefault("conditions", new ArrayList<>());
-        for (DoorCondition condition : conditions) {
-            if (condition == null) {
-                BigDoorsOpener.logger().fine("Condition is null. Skipping.");
-                continue;
-            }
-            BigDoorsOpener.logger().fine("Added condition \"" + condition.getClass().getSimpleName() + "\" to condition bag");
-            addConditionSilent(condition);
-        }
-    }
-
-    @Override
-    public @NotNull Map<String, Object> serialize() {
-        BigDoorsOpener.logger().fine("Saving Condition bag with " + getConditions().size() + " conditions.");
-        getConditions().forEach(c -> BigDoorsOpener.logger().fine("Saving Condition \"" + c.getClass().getSimpleName() + "\"."));
-        return SerializationUtil.newBuilder()
-                .add("conditions", new ArrayList<>(getConditions()))
-                .build();
+    /**
+     * Creates a bag with the given conditions. Missing conditions are skipped.
+     *
+     * @param conditions conditions of the bag
+     */
+    public ConditionBag(Collection<DoorCondition> conditions) {
+        conditions.stream().filter(Objects::nonNull).forEach(this::addConditionSilent);
     }
 
     public void setCondition(ConditionalDoor door, DoorCondition condition) {

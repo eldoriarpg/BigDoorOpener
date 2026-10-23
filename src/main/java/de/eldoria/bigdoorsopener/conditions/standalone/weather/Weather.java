@@ -5,113 +5,84 @@
  */
 package de.eldoria.bigdoorsopener.conditions.standalone.weather;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.google.common.cache.Cache;
 import de.eldoria.bigdoorsopener.conditions.DoorCondition;
 import de.eldoria.bigdoorsopener.conditions.DoorState;
-import de.eldoria.bigdoorsopener.core.BigDoorsOpener;
 import de.eldoria.bigdoorsopener.core.conditions.ConditionContainer;
-import de.eldoria.bigdoorsopener.core.conditions.ConditionRegistrar;
+import de.eldoria.bigdoorsopener.core.conditions.ConditionInput;
 import de.eldoria.bigdoorsopener.core.conditions.Scope;
 import de.eldoria.bigdoorsopener.door.ConditionalDoor;
 import de.eldoria.bigdoorsopener.util.C;
+import de.eldoria.eldoutilities.commands.Completion;
+import de.eldoria.eldoutilities.commands.exceptions.CommandException;
 import de.eldoria.eldoutilities.localization.ILocalizer;
-import de.eldoria.eldoutilities.localization.Replacement;
-import de.eldoria.eldoutilities.serialization.SerializationUtil;
-import de.eldoria.eldoutilities.serialization.TypeResolvingMap;
-import de.eldoria.eldoutilities.utils.ArgumentUtils;
-import de.eldoria.eldoutilities.utils.ArrayUtil;
+import de.eldoria.eldoutilities.messages.Replacement;
 import de.eldoria.eldoutilities.utils.EnumUtil;
-import de.eldoria.eldoutilities.utils.Parser;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.WeatherType;
 import org.bukkit.World;
-import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
-import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
-
-import static de.eldoria.bigdoorsopener.commands.CommandHelper.argumentsInvalid;
 
 /**
- * A condition which opens the door based on the current weather in the world.
+ * Opens the door on downfall or on clear weather at the door.
+ * <p>
+ * Without {@code forceState} the door is only opened or closed when the weather changes, so it can still be toggled by
+ * hand in between. With it the door is kept in the state the weather asks for.
  */
-@SerializableAs("weatherCondition")
+@JsonTypeName("weatherCondition")
 public class Weather implements DoorCondition {
-    // We use a static cache here for all weather conditions.
-    // The weather condition is not very likely to change out of a sudden so the refresh cycle does not need to be precisely correct.
     private static final Cache<ConditionalDoor, Optional<Boolean>> STATE_CACHE = C.getShortExpiringCache();
+    private static final double RAIN_TEMPERATURE = 0.95;
+    private static final double TEMPERATURE_PER_BLOCK = 0.0016;
     private final WeatherType weatherType;
-    private boolean forceState;
+    private final boolean forceState;
+    @JsonIgnore
     private DoorState state;
 
-    public Weather(WeatherType weatherType, boolean forceState) {
-        this.weatherType = weatherType;
-    }
-
-    public Weather(Map<String, Object> map) {
-        TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
-        weatherType = EnumUtil.parse(resolvingMap.getValue("weatherType"), WeatherType.class, WeatherType.DOWNFALL);
-        forceState = resolvingMap.getValueOrDefault("forceState", false);
+    @JsonCreator
+    public Weather(@JsonProperty("weatherType") WeatherType weatherType, @JsonProperty("forceState") boolean forceState) {
+        this.weatherType = weatherType == null ? WeatherType.DOWNFALL : weatherType;
+        this.forceState = forceState;
     }
 
     public static ConditionContainer getConditionContainer() {
         return ConditionContainer.ofClass(Weather.class, Scope.PLAYER)
-                .withFactory((player, messageSender, conditionBag, arguments) -> {
-                    ILocalizer localizer = BigDoorsOpener.localizer();
-                    if (argumentsInvalid(player, messageSender, localizer, arguments, 1,
-                            "<" + localizer.getMessage("syntax.doorId") + "> <"
-                                    + localizer.getMessage("syntax.condition") + "> <"
-                                    + localizer.getMessage("syntax.weatherType") + ">")) {
-                        return;
-                    }
-
-                    WeatherType weatherType = null;
-                    for (WeatherType value : WeatherType.values()) {
-                        if (value.name().equalsIgnoreCase(arguments[0])) {
-                            weatherType = value;
-                        }
-                    }
-                    if (weatherType == null) {
-                        messageSender.sendError(player, localizer.getMessage("error.invalidWeatherType"));
-                        return;
-                    }
-
-                    Optional<Boolean> forceWeather = ArgumentUtils.getOptionalParameter(arguments, 1, Optional.of(false), Parser::parseBoolean);
-
-                    if (!forceWeather.isPresent()) {
-                        messageSender.sendError(player, localizer.getMessage("error.invalidBoolean"));
-                        return;
-                    }
-
-                    conditionBag.accept(new Weather(weatherType, forceWeather.get()));
-                    messageSender.sendMessage(player, localizer.getMessage("setCondition.weather",
-                            Replacement.create("OPEN", weatherType == WeatherType.CLEAR
-                                    ? localizer.getMessage("conditionDesc.clear")
-                                    : localizer.getMessage("conditionDesc.downfall"))));
-
+                .withFactory((sender, messageSender, args, conditionBag) -> {
+                    ILocalizer localizer = DoorCondition.localizer();
+                    ConditionInput.require(args, 1, localizer, "<$syntax.weatherType$> [$tabcomplete.forceState$]");
+                    WeatherType weatherType = EnumUtil.parse(args.asString(0), WeatherType.class)
+                            .orElseThrow(() -> CommandException.message("error.invalidWeatherType"));
+                    boolean forceWeather = args.asBoolean(1, false);
+                    conditionBag.accept(new Weather(weatherType, forceWeather));
+                    messageSender.sendMessage(sender, "setCondition.weather",
+                            Replacement.create("OPEN", localizer.getMessage(weatherKey(weatherType))));
                 })
                 .onTabComplete((sender, localizer, args) -> {
-                    final String[] weatherType = Arrays.stream(WeatherType.values())
-                            .map(v -> v.name().toLowerCase())
-                            .toArray(String[]::new);
-
-                    if (args.length == 1) {
-                        return ArrayUtil.startingWithInArray(args[0], weatherType).collect(Collectors.toList());
+                    if (args.sizeIs(1)) {
+                        return Completion.complete(args.asString(0), WeatherType.class, true, false);
+                    }
+                    if (args.sizeIs(2)) {
+                        return Completion.completeBoolean(args.asString(1));
                     }
                     return Collections.emptyList();
                 })
                 .withMeta("weather", ConditionContainer.Builder.Cost.WORLD_LOW.cost)
                 .build();
+    }
+
+    private static String weatherKey(WeatherType weatherType) {
+        return weatherType == WeatherType.CLEAR ? "conditionDesc.clear" : "conditionDesc.downfall";
     }
 
     @Override
@@ -125,71 +96,43 @@ public class Weather implements DoorCondition {
 
     private Boolean isRaining(ConditionalDoor door) {
         Vector pos = door.position();
-
         World world = Bukkit.getWorld(door.world());
-        boolean raining = WeatherListener.isRaining(world);
+        if (world == null) return null;
 
+        boolean raining = WeatherListener.isRaining(world) && getTemperature(world, pos) <= RAIN_TEMPERATURE;
+        boolean open = raining == (weatherType == WeatherType.DOWNFALL);
+        DoorState target = open ? DoorState.OPEN : DoorState.CLOSED;
 
-        // check if it can rain at door based on temperature.
-        if (raining) {
-            raining = getTemperature(world, pos) <= 0.95;
-        }
-
-
-        if (raining) {
-            // attemt to open
-            if (weatherType == WeatherType.DOWNFALL) {
-                if (state == null || state == DoorState.CLOSED || forceState) {
-                    state = DoorState.OPEN;
-                    return true;
-                }
-            }
-
-            // attemt to close
-            if (weatherType == WeatherType.CLEAR) {
-                if (state == null || state == DoorState.OPEN || forceState) {
-                    state = DoorState.CLOSED;
-                    return false;
-                }
-            }
-        } else {
-            // attemt to open
-            if (weatherType == WeatherType.CLEAR) {
-                if (state == null || state == DoorState.CLOSED || forceState) {
-                    state = DoorState.OPEN;
-                    return true;
-                }
-            }
-
-            // attemt to close
-            if (weatherType == WeatherType.DOWNFALL) {
-                if (state == null || state == DoorState.OPEN || forceState) {
-                    state = DoorState.CLOSED;
-                    return false;
-                }
-            }
+        if (state == null || state != target || forceState) {
+            state = target;
+            return open;
         }
         return null;
     }
 
+    private double getTemperature(World world, Vector pos) {
+        int seaLevel = world.getSeaLevel();
+        double temperature = world.getTemperature(pos.getBlockX(), seaLevel, pos.getBlockZ());
+        if (pos.getY() > seaLevel) {
+            temperature -= (pos.getY() - seaLevel) * TEMPERATURE_PER_BLOCK;
+        }
+        return temperature;
+    }
+
     @Override
     public Component getDescription(ILocalizer localizer) {
-        Optional<ConditionContainer> containerByClass = ConditionRegistrar.getContainerByClass(getClass());
-
-        return Component.text(
-                localizer.getMessage("conditionDesc.type.weather",
-                        Replacement.create("NAME", containerByClass
-                                .map(ConditionContainer::getName).orElse("undefined"))), NamedTextColor.AQUA)
+        return DoorCondition.headline(localizer, "conditionDesc.type.weather", getClass())
                 .append(Component.newline())
                 .append(Component.text(localizer.getMessage("conditionDesc.openWhen") + " ", C.baseColor))
-                .append(Component.text(weatherType == WeatherType.CLEAR
-                        ? localizer.getMessage("conditionDesc.clear")
-                        : localizer.getMessage("conditionDesc.downfall"), C.highlightColor));
+                .append(Component.text(localizer.getMessage(weatherKey(weatherType)), C.highlightColor))
+                .append(Component.newline())
+                .append(Component.text(localizer.getMessage("conditionDesc.forceState") + " ", C.baseColor))
+                .append(Component.text(Boolean.toString(forceState), C.highlightColor));
     }
 
     @Override
     public String getCreationCommand(ConditionalDoor door) {
-        return SET_COMMAND + door.doorUID() + " weather " + weatherType.toString().toLowerCase();
+        return SET_COMMAND + door.doorUID() + " weather " + weatherType.toString().toLowerCase() + " " + forceState;
     }
 
     @Override
@@ -198,29 +141,7 @@ public class Weather implements DoorCondition {
     }
 
     @Override
-    public void evaluated() {
-
-    }
-
-    @Override
     public Weather clone() {
         return new Weather(weatherType, forceState);
     }
-
-    private double getTemperature(World world, Vector pos) {
-        double temperature = world.getTemperature((int) pos.getX(), (int) pos.getZ());
-        if (pos.getY() > world.getSeaLevel()) {
-            temperature -= (pos.getY() - world.getSeaLevel()) * 0.0016;
-        }
-        return temperature;
-    }
-
-    @Override
-    public @NotNull Map<String, Object> serialize() {
-        return SerializationUtil.newBuilder()
-                .add("weatherType", weatherType)
-                .add("forceState", forceState)
-                .build();
-    }
-
 }

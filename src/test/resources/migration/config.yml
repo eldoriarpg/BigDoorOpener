@@ -1,0 +1,108 @@
+# Dont touch it or at least dont complain when everything burns.
+version: 1
+checkUpdates: false
+refreshRate: 40
+language: de_DE
+enableMetrics: false
+jsCacheSize: 600
+playerCheckRadius: 150
+doors:
+- ==: conditionalDoor
+  doorUID: 1
+  world: world
+  position:
+    ==: Vector
+    x: 10.5
+    y: 64.0
+    z: -3.5
+  enabled: true
+  invertOpen: true
+  evaluator: time && permission
+  evaluationType: CUSTOM
+  stayOpen: 5
+  conditionBag:
+    ==: bdoConditionBag
+    conditions:
+    - ==: timeCondition
+      openTick: 1000
+      closeTick: 13000
+      forceState: true
+    - ==: weatherCondition
+      weatherType: CLEAR
+      forceState: true
+    - ==: permissionCondition
+      permission: door.vip
+    - ==: doorPermissionCondition
+      permissionLevel: 1
+    - ==: proximityCondition
+      dimensions:
+        ==: Vector
+        x: 5.0
+        y: 3.0
+        z: 5.0
+      proximityForm: ELIPSOID
+    - ==: worldProximityCondition
+      dimensions:
+        ==: Vector
+        x: 8.0
+        y: 8.0
+        z: 8.0
+      proximityForm: CYLINDER
+    - ==: regionCondition
+      world: world
+      region: spawn
+    - ==: worldRegionCondition
+      world: world
+      region: market
+    - ==: simpleRegionCondition
+      minimum:
+        ==: BlockVector
+        x: 1.0
+        y: 2.0
+        z: 3.0
+      maximum:
+        ==: BlockVector
+        x: 4.0
+        y: 5.0
+        z: 6.0
+      world: world
+    - ==: worldSimpleRegionCondition
+      minimum:
+        ==: BlockVector
+        x: -1.0
+        y: -2.0
+        z: -3.0
+      maximum:
+        ==: BlockVector
+        x: 7.0
+        y: 8.0
+        z: 9.0
+      world: world_nether
+    - ==: placeholderCondition
+      evaluator: '%player_level% > 10'
+    - ==: mythicMobsCondition
+      mobType: SkeletonKing
+    - ==: someAddonCondition
+      value: 3
+- ==: conditionalDoor
+  doorUID: 2
+  world: world
+  position:
+    ==: Vector
+    x: 0.0
+    y: 70.0
+    z: 0.0
+  invertOpen: false
+  evaluator: ''
+  evaluationType: OR
+  stayOpen: 0
+  conditionChain:
+    ==: conditionChain
+    time:
+      ==: timeCondition
+      openTick: 0
+      closeTick: 12000
+      forceState: false
+    permission:
+      ==: permissionCondition
+      permission: door.old

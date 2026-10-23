@@ -56,12 +56,6 @@ public class DoorChecker extends BigDoorsAdapter implements Runnable, Listener {
         doors.addAll(config.getDoors());
     }
 
-    public static DoorChecker start(BigDoorsOpener bigDoorsOpener, Config config, BigDoors doors) {
-        DoorChecker doorChecker = new DoorChecker(config, doors);
-        bigDoorsOpener.getServer().getScheduler().scheduleSyncRepeatingTask(bigDoorsOpener, doorChecker, 0, 1);
-        return doorChecker;
-    }
-
     @EventHandler
     public void onDoorRegister(DoorRegisteredEvent event) {
         if (!doors.contains(event.door())) {

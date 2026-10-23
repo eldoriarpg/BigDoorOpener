@@ -11,133 +11,86 @@ import de.eldoria.bigdoorsopener.config.Config;
 import de.eldoria.bigdoorsopener.core.adapter.BigDoorsAdapterCommand;
 import de.eldoria.bigdoorsopener.door.ConditionalDoor;
 import de.eldoria.bigdoorsopener.util.Permissions;
+import de.eldoria.eldoutilities.commands.Completion;
+import de.eldoria.eldoutilities.commands.command.CommandMeta;
+import de.eldoria.eldoutilities.commands.command.util.Arguments;
+import de.eldoria.eldoutilities.commands.command.util.CommandAssertions;
+import de.eldoria.eldoutilities.commands.exceptions.CommandException;
 import de.eldoria.eldoutilities.container.Pair;
-import de.eldoria.eldoutilities.localization.Replacement;
-import de.eldoria.eldoutilities.utils.ArgumentUtils;
-import de.eldoria.eldoutilities.utils.Parser;
+import de.eldoria.eldoutilities.messages.Replacement;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import nl.pim16aap2.bigDoors.BigDoors;
 import nl.pim16aap2.bigDoors.Door;
-import org.bukkit.Bukkit;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
-import java.util.OptionalInt;
-import java.util.stream.Collectors;
 
+/**
+ * Gives the item of an item condition of a door to a player.
+ */
 public class GiveKey extends BigDoorsAdapterCommand {
 
-    public GiveKey(BigDoors bigDoors, Config config) {
-        super(bigDoors, config);
+    public GiveKey(Plugin plugin, BigDoors bigDoors, Config config) {
+        super(plugin, CommandMeta.builder("giveKey")
+                .withPermission(Permissions.GIVE_KEY)
+                .addArgument("syntax.doorId", true)
+                .addArgument("syntax.amount", false)
+                .addArgument("syntax.player", false)
+                .addArgument("tabcomplete.conditionId", false)
+                .build(), bigDoors, config);
     }
 
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        if (denyAccess(sender, Permissions.GIVE_KEY)) {
-            return true;
-        }
-
+    public void onCommand(@NotNull CommandSender sender, @NotNull String alias, @NotNull Arguments args) throws CommandException {
         Player playerFromSender = getPlayerFromSender(sender);
-
-        if (!isPlayer(sender)) {
-            if (argumentsInvalid(sender, args, 3,
-                    "<$syntax.doorId$> <$syntax.amount$> <$syntax.player$>")) {
-                return true;
-            }
-        } else {
-            if (argumentsInvalid(sender, args, 1,
-                    "<$syntax.doorId$> [$syntax.amount$] [$syntax.player$]")) {
-                return true;
-            }
+        if (playerFromSender == null) {
+            args.assertLength(3);
         }
 
-        Pair<ConditionalDoor, Door> door = getConditionalPlayerDoor(args[0], playerFromSender);
-
-        if (door == null) {
-            return true;
-        }
+        Pair<ConditionalDoor, Door> door = getConditionalPlayerDoor(args.asString(0), sender);
 
         List<DoorCondition> condition = door.first.conditionBag().getConditions("item");
+        CommandAssertions.isFalse(condition.isEmpty(), "error.noItemConditionSet");
 
-        if (condition.isEmpty()) {
-            messageSender().sendLocalizedError(sender, "error.noItemConditionSet");
-            return true;
-        }
+        int index = args.asInt(3, 0);
+        CommandAssertions.isTrue(index < condition.size(), "error.conditionNotSet");
 
-        String id = ArgumentUtils.getOrDefault(args, 3, "0");
-        Optional<Integer> optionalInt = Parser.parseInt(id);
-        if (!optionalInt.isPresent()) {
-            messageSender().sendLocalizedError(sender, "error.invalidNumber");
-            return true;
-        }
-
-        if(optionalInt.get() >= condition.size()){
-            messageSender().sendLocalizedError(sender, "error.conditionNotSet");
-            return true;
-        }
-
-        ItemStack item = ((Item) condition.get(optionalInt.get())).item();
-
-        Optional<Integer> amount = ArgumentUtils.getOptionalParameter(args, 1, Optional.of(64), Parser::parseInt);
-
-        if (!amount.isPresent()) {
-            messageSender().sendLocalizedError(sender, "error.invalidAmount");
-            return true;
-        }
-
-        Player target = ArgumentUtils.getOptionalParameter(args, 2, playerFromSender, Bukkit::getPlayer);
-
-        if (target == null) {
-            messageSender().sendLocalizedError(sender, "error.playerNotFound");
-            return true;
-        }
+        ItemStack item = ((Item) condition.get(index)).item();
+        int amount = args.asInt(1, 64);
+        Player target = args.asPlayer(2, playerFromSender);
 
         ItemStack clone = item.clone();
-        clone.setAmount(amount.get());
+        clone.setAmount(amount);
         target.getInventory().addItem(clone);
+        String itemName = PlainTextComponentSerializer.plainText().serialize(item.effectiveName());
         if (target != playerFromSender) {
-            messageSender().sendLocalizedMessage(playerFromSender, "giveKey.send",
-                    Replacement.create("AMOUNT", amount.get()),
-                    Replacement.create("ITEMNAME", item.hasItemMeta() ? (item.getItemMeta().hasDisplayName()
-                            ? item.getItemMeta().getDisplayName()
-                            : item.getType().name().toLowerCase())
-                            : item.getType().name().toLowerCase()),
-                    Replacement.create("TARGET", target.getDisplayName()));
+            messageSender().sendMessage(playerFromSender, "giveKey.send",
+                    Replacement.create("AMOUNT", amount),
+                    Replacement.unparsed("ITEMNAME", itemName),
+                    Replacement.unparsed("TARGET", target.getName()));
         }
-        messageSender().sendLocalizedMessage(target, "giveKey.received",
-                Replacement.create("AMOUNT", amount.get()),
-                Replacement.create("ITEMNAME", item.hasItemMeta() ? (item.getItemMeta().hasDisplayName()
-                        ? item.getItemMeta().getDisplayName()
-                        : item.getType().name().toLowerCase())
-                        : item.getType().name().toLowerCase()));
-        return true;
-
+        messageSender().sendMessage(target, "giveKey.received",
+                Replacement.create("AMOUNT", amount),
+                Replacement.unparsed("ITEMNAME", itemName));
     }
 
     @Override
-    public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
-        if (args.length == 1) {
-            return getDoorCompletion(sender, args[0]);
+    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull String alias, @NotNull Arguments args) {
+        if (args.sizeIs(1)) {
+            return getDoorCompletion(sender, args.asString(0));
         }
-
-        if (args.length == 2) {
+        if (args.sizeIs(2)) {
             return Collections.singletonList("<" + localizer().getMessage("syntax.amount") + ">");
         }
-
-        if (args.length == 3) {
-            return Bukkit.getOnlinePlayers().stream()
-                    .filter(p -> p.getName().toLowerCase().startsWith(args[2]))
-                    .map(HumanEntity::getName)
-                    .collect(Collectors.toList());
+        if (args.sizeIs(3)) {
+            return Completion.completeOnlinePlayers(args.asString(2));
         }
-        if (args.length == 4) {
+        if (args.sizeIs(4)) {
             return Collections.singletonList(localizer().getMessage("tabcomplete.conditionId"));
         }
         return Collections.emptyList();

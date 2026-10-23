@@ -24,24 +24,24 @@ public class ModificationListener implements Listener {
     @EventHandler
     public void onConditionBagModification(ConditionBagModifiedEvent event) {
         BigDoorsOpener.logger().fine("Config was modified. Saving config.");
-        config.safeConfig();
+        config.saveDoors();
     }
 
     @EventHandler
     public void onDoorModifiedEvent(DoorModifiedEvent event) {
         BigDoorsOpener.logger().fine("Config was modified. Saving config.");
-        config.safeConfig();
+        config.saveDoors();
     }
 
     @EventHandler
     public void onDoorRegisteredEvent(DoorRegisteredEvent event) {
         BigDoorsOpener.logger().fine("Config was modified. Saving config.");
-        config.safeConfig();
+        config.saveDoors();
     }
 
     @EventHandler
     public void onDoorUnregisteredEvent(DoorUnregisteredEvent event) {
         BigDoorsOpener.logger().fine("Config was modified. Saving config.");
-        config.safeConfig();
+        config.saveDoors();
     }
 }

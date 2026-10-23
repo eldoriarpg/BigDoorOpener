@@ -9,51 +9,42 @@ import de.eldoria.bigdoorsopener.config.Config;
 import de.eldoria.bigdoorsopener.core.adapter.BigDoorsAdapterCommand;
 import de.eldoria.bigdoorsopener.door.ConditionalDoor;
 import de.eldoria.bigdoorsopener.util.Permissions;
+import de.eldoria.eldoutilities.commands.command.CommandMeta;
+import de.eldoria.eldoutilities.commands.command.util.Arguments;
+import de.eldoria.eldoutilities.commands.exceptions.CommandException;
 import de.eldoria.eldoutilities.container.Pair;
 import nl.pim16aap2.bigDoors.BigDoors;
 import nl.pim16aap2.bigDoors.Door;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Inverts the open state of a door, for doors which were created open.
+ */
 public class InvertOpen extends BigDoorsAdapterCommand {
 
-    public InvertOpen(BigDoors bigDoors, Config config) {
-        super(bigDoors, config);
+    public InvertOpen(Plugin plugin, BigDoors bigDoors, Config config) {
+        super(plugin, CommandMeta.builder("invertOpen")
+                .withPermission(Permissions.USE)
+                .addArgument("syntax.doorId", true)
+                .build(), bigDoors, config);
     }
 
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        if (denyAccess(sender, Permissions.USE)) {
-            return true;
-        }
-
-        if (argumentsInvalid(sender, args, 1, "<$syntax.doorId$>")) {
-            return true;
-        }
-
-        Player playerFromSender = getPlayerFromSender(sender);
-
-        Pair<ConditionalDoor, Door> door = getConditionalPlayerDoor(args[0], playerFromSender);
-        if (door == null) {
-            return true;
-        }
-
+    public void onCommand(@NotNull CommandSender sender, @NotNull String alias, @NotNull Arguments args) throws CommandException {
+        Pair<ConditionalDoor, Door> door = getConditionalPlayerDoor(args.asString(0), sender);
         door.first.invertOpen();
-        messageSender().sendLocalizedMessage(sender, "invertOpen.inverted");
-        return true;
-
+        messageSender().sendMessage(sender, "invertOpen.inverted");
     }
 
     @Override
-    public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
-        if (args.length == 1) {
-            return getDoorCompletion(sender, args[0]);
+    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull String alias, @NotNull Arguments args) {
+        if (args.sizeIs(1)) {
+            return getDoorCompletion(sender, args.asString(0));
         }
         return Collections.emptyList();
     }

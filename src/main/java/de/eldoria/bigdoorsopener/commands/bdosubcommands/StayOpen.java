@@ -9,66 +9,48 @@ import de.eldoria.bigdoorsopener.config.Config;
 import de.eldoria.bigdoorsopener.core.adapter.BigDoorsAdapterCommand;
 import de.eldoria.bigdoorsopener.door.ConditionalDoor;
 import de.eldoria.bigdoorsopener.util.Permissions;
+import de.eldoria.eldoutilities.commands.command.CommandMeta;
+import de.eldoria.eldoutilities.commands.command.util.Arguments;
+import de.eldoria.eldoutilities.commands.exceptions.CommandException;
 import de.eldoria.eldoutilities.container.Pair;
-import de.eldoria.eldoutilities.localization.Replacement;
-import de.eldoria.eldoutilities.utils.Parser;
+import de.eldoria.eldoutilities.messages.Replacement;
 import nl.pim16aap2.bigDoors.BigDoors;
 import nl.pim16aap2.bigDoors.Door;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
-import java.util.OptionalInt;
 
+/**
+ * Sets the seconds a door stays open before its conditions are checked again.
+ */
 public class StayOpen extends BigDoorsAdapterCommand {
 
-    public StayOpen(BigDoors bigDoors, Config config) {
-        super(bigDoors, config);
+    public StayOpen(Plugin plugin, BigDoors bigDoors, Config config) {
+        super(plugin, CommandMeta.builder("stayOpen")
+                .withPermission(Permissions.USE)
+                .addArgument("syntax.doorId", true)
+                .addArgument("syntax.seconds", true)
+                .build(), bigDoors, config);
     }
 
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        if (denyAccess(sender, Permissions.USE)) {
-            return true;
-        }
-
-        if (argumentsInvalid(sender, args, 2,
-                "<$syntax.doorId$> <$syntax.seconds$>")) {
-            return true;
-        }
-
-        Player playerFromSender = getPlayerFromSender(sender);
-
-        Pair<ConditionalDoor, Door> door = getConditionalPlayerDoor(args[0], playerFromSender);
-
-        if (door == null) {
-            return true;
-        }
-
-        Optional<Integer> optionalInt = Parser.parseInt(args[1]);
-        if (!optionalInt.isPresent()) {
-            messageSender().sendLocalizedError(sender, "error.invalidAmount");
-            return true;
-        }
-        door.first.setStayOpen(optionalInt.get());
-        messageSender().sendLocalizedMessage(sender, "stayOpen.message",
-                Replacement.create("SECONDS", optionalInt.get()));
-        return true;
-
+    public void onCommand(@NotNull CommandSender sender, @NotNull String alias, @NotNull Arguments args) throws CommandException {
+        Pair<ConditionalDoor, Door> door = getConditionalPlayerDoor(args.asString(0), sender);
+        int seconds = args.asInt(1);
+        door.first.setStayOpen(seconds);
+        messageSender().sendMessage(sender, "stayOpen.message", Replacement.create("SECONDS", seconds));
     }
 
     @Override
-    public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
-        if (args.length == 1) {
-            return getDoorCompletion(sender, args[0]);
+    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull String alias, @NotNull Arguments args) {
+        if (args.sizeIs(1)) {
+            return getDoorCompletion(sender, args.asString(0));
         }
-        if (args.length == 2) {
-            return Collections.singletonList("<" + localizer().getMessage("syntax.amount") + ">");
+        if (args.sizeIs(2)) {
+            return Collections.singletonList("<" + localizer().getMessage("syntax.seconds") + ">");
         }
         return Collections.emptyList();
     }

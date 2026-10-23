@@ -5,63 +5,43 @@
  */
 package de.eldoria.bigdoorsopener.conditions.permission;
 
-import de.eldoria.bigdoorsopener.core.BigDoorsOpener;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import de.eldoria.bigdoorsopener.conditions.DoorCondition;
 import de.eldoria.bigdoorsopener.core.conditions.ConditionContainer;
-import de.eldoria.bigdoorsopener.core.conditions.ConditionRegistrar;
+import de.eldoria.bigdoorsopener.core.conditions.ConditionInput;
 import de.eldoria.bigdoorsopener.core.conditions.Scope;
 import de.eldoria.bigdoorsopener.door.ConditionalDoor;
 import de.eldoria.bigdoorsopener.util.C;
 import de.eldoria.eldoutilities.localization.ILocalizer;
-import de.eldoria.eldoutilities.localization.Replacement;
-import de.eldoria.eldoutilities.serialization.SerializationUtil;
-import de.eldoria.eldoutilities.serialization.TypeResolvingMap;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.World;
-import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
-import java.util.Map;
-import java.util.Optional;
-
-import static de.eldoria.bigdoorsopener.commands.CommandHelper.argumentsInvalid;
 
 /**
- * A condition which opens the door, when a player has a specific permission.
+ * Opens the door for players with a permission.
  */
-@SerializableAs("permissionCondition")
+@JsonTypeName("permissionCondition")
 public class PermissionNode implements Permission {
     private final String permission;
 
-    public PermissionNode(String permission) {
+    @JsonCreator
+    public PermissionNode(@JsonProperty("permission") String permission) {
         this.permission = permission;
-    }
-
-    public PermissionNode(Map<String, Object> map) {
-        TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
-        permission = resolvingMap.getValue("permission");
     }
 
     public static ConditionContainer getConditionContainer() {
         return ConditionContainer.ofClass(PermissionNode.class, Scope.PLAYER)
-                .withFactory((player, messageSender, conditionBag, arguments) -> {
-                    ILocalizer localizer = BigDoorsOpener.localizer();
-
-                    if (argumentsInvalid(player, messageSender, localizer, arguments, 1,
-                            "<" + localizer.getMessage("syntax.doorId") + "> <"
-                                    + localizer.getMessage("syntax.condition") + "> <"
-                                    + localizer.getMessage("tabcomplete.permissionNode") + ">")) {
-                        return;
-                    }
-
-                    conditionBag.accept(new PermissionNode(arguments[0]));
-                    messageSender.sendMessage(player, localizer.getMessage("setCondition.permissionNode"));
-
+                .withFactory((sender, messageSender, args, conditionBag) -> {
+                    ConditionInput.require(args, 1, DoorCondition.localizer(), "<$tabcomplete.permissionNode$>");
+                    conditionBag.accept(new PermissionNode(args.asString(0)));
+                    messageSender.sendMessage(sender, "setCondition.permissionNode");
                 })
                 .onTabComplete((sender, localizer, args) -> {
-                    if (args.length == 1) {
+                    if (args.sizeIs(1)) {
                         return Collections.singletonList("<" + localizer.getMessage("tabcomplete.permissionNode") + ">");
                     }
                     return Collections.emptyList();
@@ -77,12 +57,7 @@ public class PermissionNode implements Permission {
 
     @Override
     public Component getDescription(ILocalizer localizer) {
-        Optional<ConditionContainer> containerByClass = ConditionRegistrar.getContainerByClass(getClass());
-
-        return Component.text(
-                localizer.getMessage("conditionDesc.type.permission",
-                        Replacement.create("NAME", containerByClass
-                                .map(ConditionContainer::getName).orElse("undefined"))), NamedTextColor.AQUA)
+        return DoorCondition.headline(localizer, "conditionDesc.type.permission", getClass())
                 .append(Component.newline())
                 .append(Component.text(localizer.getMessage("conditionDesc.permissionNode") + " ", C.baseColor))
                 .append(Component.text(permission, C.highlightColor));
@@ -94,20 +69,7 @@ public class PermissionNode implements Permission {
     }
 
     @Override
-    public void evaluated() {
-
-    }
-
-    @Override
     public PermissionNode clone() {
         return new PermissionNode(permission);
     }
-
-    @Override
-    public @NotNull Map<String, Object> serialize() {
-        return SerializationUtil.newBuilder()
-                .add("permission", permission)
-                .build();
-    }
-
 }
