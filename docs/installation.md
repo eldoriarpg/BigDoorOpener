@@ -16,6 +16,11 @@ sidebar_position: 2
 Big Doors Opener creates the folder `plugins/BigDoorsOpener`. It holds `config.yml` with the settings, `doors.yml`
 with your doors and a `messages` folder with the language files. See [Configuration](./reference/configuration.md).
 
+:::note Libraries are downloaded on the first start
+Big Doors Opener is a Paper plugin. On the first start Paper downloads the libraries it needs from Maven Central and
+`eldonexus.de` and keeps them in the `libraries` folder of your server. The server needs internet access for that once.
+:::
+
 :::warning Big Doors must be running
 If Big Doors is missing or did not start, Big Doors Opener turns itself off. Look for `Hooked into Big Doors
 successfully.` in your server log.
