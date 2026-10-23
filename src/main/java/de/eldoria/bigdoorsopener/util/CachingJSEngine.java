@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
@@ -30,67 +31,17 @@ public class CachingJSEngine {
     private ScriptEngine engine;
 
     public CachingJSEngine(int cacheSize) {
-        try {
-            BigDoorsOpener.logger().config("Java version: " + System.getProperty("java.specification.version"));
-            String[] versionString =
-                    System.getProperty("java.specification.version").split("\\.");
-            String version = versionString[versionString.length - 1];
-            int verInt = Integer.parseInt(version);
-            BigDoorsOpener.logger().config("Detected version: " + verInt);
-            if (verInt < 11) {
-                BigDoorsOpener.logger().info("Detected legacy java version below 11.");
-                engine = new ScriptEngineManager().getEngineByName("nashorn");
-                BigDoorsOpener.logger()
-                        .info("Support for java version below 16 will be dropped with the release of MC 1.17.");
-            } else if (verInt < 15) {
-                BigDoorsOpener.logger().info("Java 11 or newer detected.");
-                engine = new ScriptEngineManager().getEngineByName("nashorn");
-                BigDoorsOpener.logger()
-                        .info("Support for java version below 16 will be dropped with the release of MC 1.17.");
-            } else {
-                BigDoorsOpener.logger().info("Java 15 or newer detected. Searching for external Engine.");
-                RegisteredServiceProvider<ScriptEngineManager> registration =
-                        Bukkit.getServer().getServicesManager().getRegistration(ScriptEngineManager.class);
-                if (registration != null) {
-                    for (String currentEngine : List.of("js", "JavaScript", "nashornjs", "nashorn")) {
-                        try {
-                            engine = registration.getProvider().getEngineByName(currentEngine);
-                        } catch (Exception e) {
-                            continue;
-                        }
-                        break;
-                    }
-                }
-                if (engine == null) {
-                    BigDoorsOpener.logger()
-                            .severe("--------------------------------------------------------------------------");
-                    BigDoorsOpener.logger()
-                            .severe("-> No script engine found.                                              <-");
-                    BigDoorsOpener.logger()
-                            .severe("-> Custom evaluator and placeholder will not work.                      <-");
-                    BigDoorsOpener.logger()
-                            .severe("-> When using java 15 or above you have to use the nashorn js provider. <-");
-                    BigDoorsOpener.logger()
-                            .severe("-> Download here: https://www.spigotmc.org/resources/91204/.            <-");
-                    BigDoorsOpener.logger()
-                            .severe("--------------------------------------------------------------------------");
-                    engine = null;
-                }
-            }
-            engine.eval("print('[BigDoorsOpener] " + engine.getFactory().getEngineName() + " script engine started.')");
-        } catch (ScriptException e) {
-            BigDoorsOpener.logger()
-                    .log(Level.WARNING, "No nashorn script engine found. Trying to use JavaScript fallback.", e);
-            engine = new ScriptEngineManager(null).getEngineByName("JavaScript");
-            try {
-                engine.eval("print('[BigDoorsOpener] JavaScript script engine started.')");
-            } catch (ScriptException ex) {
-                BigDoorsOpener.logger()
-                        .log(Level.WARNING, "Could not start script engine. Custom evaluator will not work.", e);
-            }
-        } catch (Exception e) {
-            BigDoorsOpener.logger()
-                    .log(Level.WARNING, "Could not start script engine. Custom evaluator will not work.", e);
+        engine = findEngine();
+        if (engine == null) {
+            Logger logger = BigDoorsOpener.logger();
+            logger.severe("--------------------------------------------------------------------------");
+            logger.severe("-> No script engine found.                                              <-");
+            logger.severe("-> Custom evaluator and placeholder will not work.                      <-");
+            logger.severe("-> Install the NashornJs plugin to use them.                            <-");
+            logger.severe("-> Download here: https://www.spigotmc.org/resources/91204/             <-");
+            logger.severe("--------------------------------------------------------------------------");
+        } else {
+            BigDoorsOpener.logger().info("Using the " + engine.getFactory().getEngineName() + " script engine.");
         }
 
         cache = CacheBuilder.newBuilder()
@@ -100,14 +51,21 @@ public class CachingJSEngine {
     }
 
     /**
-     * Evaluates a string with a js engine.
+     * Looks up a JavaScript engine provided by another plugin, usually NashornJs.
      *
-     * @param string       string to evaluate
-     * @param defaultValue default value which should be returned if anything goes wrong.
-     * @param <T>          type which should be returned
-     * @return evaluated value or default value
+     * @return the engine, or null if no plugin provides one
      */
-    @SuppressWarnings("unchecked")
+    private static ScriptEngine findEngine() {
+        RegisteredServiceProvider<ScriptEngineManager> registration =
+                Bukkit.getServicesManager().getRegistration(ScriptEngineManager.class);
+        if (registration == null) return null;
+        for (String name : List.of("js", "JavaScript", "nashornjs", "nashorn")) {
+            ScriptEngine engine = registration.getProvider().getEngineByName(name);
+            if (engine != null) return engine;
+        }
+        return null;
+    }
+
     public <T> T eval(String string, T defaultValue) {
         try {
             return evalUnsafe(string, defaultValue);
