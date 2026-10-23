@@ -40,12 +40,8 @@ public class SetState extends BigDoorsAdapterCommand {
     public void onCommand(@NotNull CommandSender sender, @NotNull String alias, @NotNull Arguments args) throws CommandException {
         Pair<ConditionalDoor, Door> door = getConditionalPlayerDoor(args.asString(0), sender);
         boolean state = args.asBoolean(1, "enabled", "disabled");
-        if (state) {
-            messageSender().sendError(sender, "setState.enabled");
-        } else {
-            messageSender().sendError(sender, "setState.disabled");
-        }
         door.first.enabled(state);
+        messageSender().sendMessage(sender, state ? "setState.enabled" : "setState.disabled");
     }
 
     @Override

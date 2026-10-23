@@ -68,8 +68,8 @@ public class GiveKey extends BigDoorsAdapterCommand {
         clone.setAmount(amount);
         target.getInventory().addItem(clone);
         String itemName = PlainTextComponentSerializer.plainText().serialize(item.effectiveName());
-        if (target != playerFromSender) {
-            messageSender().sendMessage(playerFromSender, "giveKey.send",
+        if (target != sender) {
+            messageSender().sendMessage(sender, "giveKey.send",
                     Replacement.create("AMOUNT", amount),
                     Replacement.unparsed("ITEMNAME", itemName),
                     Replacement.unparsed("TARGET", target.getName()));
