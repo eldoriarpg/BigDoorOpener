@@ -10,10 +10,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.google.common.cache.Cache;
-import com.sk89q.worldedit.bukkit.BukkitAdapter;
-import com.sk89q.worldguard.protection.managers.RegionManager;
-import com.sk89q.worldguard.protection.regions.ProtectedRegion;
-import com.sk89q.worldguard.protection.regions.RegionContainer;
 import de.eldoria.bigdoorsopener.conditions.DoorCondition;
 import de.eldoria.bigdoorsopener.core.BigDoorsOpener;
 import de.eldoria.bigdoorsopener.core.conditions.ConditionContainer;
@@ -34,8 +30,7 @@ import java.util.logging.Level;
 /**
  * Opens the door for players inside a WorldGuard region.
  * <p>
- * The WorldGuard region is looked up on first use, since WorldGuard and the world may not be loaded when the doors are
- * read.
+ * Only the names of world and region are kept, the region is looked up through {@link WorldGuardRegions}.
  */
 @JsonTypeName("regionCondition")
 public class Region implements Location {
@@ -46,9 +41,6 @@ public class Region implements Location {
     private final String regionId;
 
     @JsonIgnore
-    private ProtectedRegion region;
-
-    @JsonIgnore
     private final Cache<org.bukkit.Location, Boolean> cache = C.getExpiringCache();
 
     @JsonCreator
@@ -57,23 +49,17 @@ public class Region implements Location {
         this.regionId = regionId;
     }
 
-    public Region(ProtectedRegion region, World world) {
-        this(world.getName(), region.getId());
-        this.region = region;
-    }
-
     public static ConditionContainer getConditionContainer() {
         return ConditionContainer.ofClass(Region.class, Scope.PLAYER)
                 .withFactory((sender, messageSender, args, conditionBag) -> {
-                    RegionContainer regionContainer = BigDoorsOpener.regionContainer();
-                    if (regionContainer == null) throw CommandException.message("error.wgNotEnabled");
+                    if (!WorldGuardRegions.available()) throw CommandException.message("error.wgNotEnabled");
                     ConditionInput.require(args, 1, DoorCondition.localizer(), "<$tabcomplete.regionName$>");
                     Player player = ConditionInput.player(sender);
-                    RegionManager rm = regionContainer.get(BukkitAdapter.adapt(player.getWorld()));
-                    if (rm == null) throw CommandException.message("error.regionNotFound");
-                    ProtectedRegion region = rm.getRegion(args.asString(0));
-                    if (region == null) throw CommandException.message("error.regionNotFound");
-                    conditionBag.accept(new Region(region, player.getWorld()));
+                    String regionId = args.asString(0);
+                    if (!WorldGuardRegions.exists(player.getWorld(), regionId)) {
+                        throw CommandException.message("error.regionNotFound");
+                    }
+                    conditionBag.accept(new Region(player.getWorld().getName(), regionId));
                     messageSender.sendMessage(sender, "setCondition.region");
                 })
                 .onTabComplete((sender, localizer, args) -> {
@@ -89,23 +75,15 @@ public class Region implements Location {
     @Override
     public Boolean isOpen(Player player, World world, ConditionalDoor door, boolean currentState) {
         if (!world.getName().equals(worldName)) return false;
-        ProtectedRegion region = region(world);
-        if (region == null) return null;
+        if (!WorldGuardRegions.available() || !WorldGuardRegions.exists(world, regionId)) return null;
         try {
             return cache.get(
-                    player.getLocation(), () -> region.contains(BukkitAdapter.asBlockVector(player.getLocation())));
+                    player.getLocation(),
+                    () -> Boolean.TRUE.equals(WorldGuardRegions.contains(world, regionId, player)));
         } catch (ExecutionException e) {
             BigDoorsOpener.logger().log(Level.WARNING, "Could not compute value", e);
         }
         return null;
-    }
-
-    private ProtectedRegion region(World world) {
-        if (region == null && BigDoorsOpener.regionContainer() != null) {
-            RegionManager manager = BigDoorsOpener.regionContainer().get(BukkitAdapter.adapt(world));
-            region = manager == null ? null : manager.getRegion(regionId);
-        }
-        return region;
     }
 
     @Override

@@ -19,8 +19,6 @@ import de.eldoria.bigdoorsopener.util.C;
 import de.eldoria.eldoutilities.commands.Completion;
 import de.eldoria.eldoutilities.commands.exceptions.CommandException;
 import de.eldoria.eldoutilities.localization.ILocalizer;
-import io.lumine.mythic.bukkit.MythicBukkit;
-import io.lumine.mythic.bukkit.events.MythicMobDeathEvent;
 import net.kyori.adventure.text.Component;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -52,7 +50,7 @@ public class MythicMob implements DoorCondition {
                     if (!BigDoorsOpener.isMythicMobsEnabled()) throw CommandException.message("error.mythicMob");
                     ConditionInput.require(args, 1, DoorCondition.localizer(), "<$syntax.mobType$>");
                     String mob = args.asString(0);
-                    if (MythicBukkit.inst().getAPIHelper().getMythicMob(mob) == null) {
+                    if (!MythicMobsAccess.exists(mob)) {
                         throw CommandException.message("error.invalidMob");
                     }
                     conditionBag.accept(new MythicMob(mob));
@@ -63,11 +61,7 @@ public class MythicMob implements DoorCondition {
                     if (args.sizeIs(1)) {
                         List<String> mythicMobs;
                         try {
-                            mythicMobs = (List<String>) C.PLUGIN_CACHE.get(
-                                    "mythicMobs",
-                                    () -> MythicBukkit.inst().getMobManager().getMobTypes().stream()
-                                            .map(mythicMob -> mythicMob.getInternalName())
-                                            .toList());
+                            mythicMobs = (List<String>) C.PLUGIN_CACHE.get("mythicMobs", MythicMobsAccess::mobTypes);
                         } catch (ExecutionException e) {
                             BigDoorsOpener.logger().log(Level.WARNING, "Could not build mob names.", e);
                             return Collections.emptyList();
@@ -119,8 +113,13 @@ public class MythicMob implements DoorCondition {
         return new MythicMob(mobType);
     }
 
-    public void killed(MythicMobDeathEvent event, boolean availableToOpen) {
-        if (event.getMob().getType().getInternalName().equalsIgnoreCase(mobType)) {
+    /**
+     * Called when a MythicMobs mob died.
+     *
+     * @param mobType internal name of the type of the mob
+     */
+    public void killed(String mobType) {
+        if (this.mobType.equalsIgnoreCase(mobType)) {
             state = true;
         }
     }

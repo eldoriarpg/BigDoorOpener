@@ -178,7 +178,7 @@ public class BigDoorsOpener extends EldoPlugin {
                 new RegisterInteraction(getPluginMessageSender(), config),
                 new WeatherListener());
         if (mythicMobsEnabled) {
-            registerListener(new MythicMobsListener(doors, config));
+            registerListener(new MythicMobsListener(config));
         }
     }
 
