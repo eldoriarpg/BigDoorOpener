@@ -108,7 +108,7 @@ modrinth {
         optional.project("mythicmobs")
     }
     changelog = providers.environmentVariable("MODRINTH_CHANGELOG").orElse("")
-    syncBodyFrom = rootProject.file("readme.md").readText()
+    syncBodyFrom = rootProject.file("README.md").readText()
 }
 
 publishing {
