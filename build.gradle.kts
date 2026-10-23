@@ -1,4 +1,5 @@
 import net.minecrell.pluginyml.bukkit.BukkitPluginDescription.Permission.Default.OP
+import net.minecrell.pluginyml.paper.PaperPluginDescription.RelativeLoadOrder
 
 plugins {
     java
@@ -7,7 +8,7 @@ plugins {
     alias(libs.plugins.publishdata)
     alias(libs.plugins.publishdata.manifest)
     alias(libs.plugins.shadow)
-    alias(libs.plugins.pluginyml.bukkit)
+    alias(libs.plugins.pluginyml.paper)
     alias(libs.plugins.runserver)
     alias(libs.plugins.minotaur)
 }
@@ -25,9 +26,8 @@ repositories {
 
 dependencies {
     compileOnly(libs.paper)
-    implementation(libs.bundles.utilities)
-    implementation(platform(libs.jackson.bom))
-    implementation(libs.bundles.jackson)
+    paperLibrary(libs.bundles.utilities)
+    paperLibrary(libs.bundles.jackson)
     implementation(libs.bstats)
     compileOnly(libs.jetbrains.annotations)
     compileOnly(libs.worldguard.bukkit) {
@@ -40,6 +40,7 @@ dependencies {
     compileOnly(libs.mythic.dist)
 
     testImplementation(libs.paper)
+    testImplementation(libs.bundles.utilities)
     testImplementation(libs.bigdoors)
     testImplementation(libs.mythic.dist)
     testImplementation(libs.placeholderapi)
@@ -142,14 +143,7 @@ tasks {
     }
 
     shadowJar {
-        val shadebase = "de.eldoria.bigdoorsopener.libs."
-        relocate("org.bstats", shadebase + "bstats")
-        relocate("com.fasterxml", shadebase + "fasterxml")
-        relocate("tools.jackson", shadebase + "jackson")
-        relocate("org.snakeyaml", shadebase + "snakeyaml")
-        relocate("dev.chojo.ocular", shadebase + "ocular")
-        relocate("de.eldoria.jacksonbukkit", shadebase + "jacksonbukkit")
-        relocate("de.eldoria.eldoutilities", shadebase + "utilities")
+        relocate("org.bstats", "de.eldoria.bigdoorsopener.libs.bstats")
         duplicatesStrategy = DuplicatesStrategy.INCLUDE
         mergeServiceFiles()
         addMultiReleaseAttribute = false
@@ -172,21 +166,25 @@ tasks {
 
 val conditionGroups = listOf("item", "location", "worldLocation", "permission", "time", "weather", "placeholder", "mythicMob", "cooldown", "globalCooldown")
 
-bukkit {
+paper {
     name = "BigDoorsOpener"
     main = "de.eldoria.bigdoorsopener.core.BigDoorsOpener"
+    loader = "de.eldoria.bigdoorsopener.core.BigDoorsOpenerLoader"
+    generateLibrariesJson = true
     version = project.version.toString()
     description = project.description
     apiVersion = "1.21.11"
     authors = listOf("RainbowDashLabs")
     website = "https://github.com/eldoriarpg/BigDoorOpener"
-    depend = listOf("BigDoors")
-    softDepend = listOf("WorldGuard", "PlaceholderAPI", "MythicMobs", "NashornJs")
-
-    commands {
-        register("bigdoorsopener") {
-            description = "Manage conditional doors"
-            aliases = listOf("bdo")
+    serverDependencies {
+        register("BigDoors") {
+            load = RelativeLoadOrder.BEFORE
+        }
+        listOf("WorldGuard", "PlaceholderAPI", "MythicMobs", "NashornJs").forEach { plugin ->
+            register(plugin) {
+                required = false
+                load = RelativeLoadOrder.BEFORE
+            }
         }
     }
 
