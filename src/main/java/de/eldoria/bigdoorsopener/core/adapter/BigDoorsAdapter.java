@@ -69,23 +69,6 @@ public abstract class BigDoorsAdapter {
     }
 
     /**
-     * Checks if the world of a door exists and is present in the plugin.
-     *
-     * @param door door to check
-     * @return true if the door exits
-     */
-    protected boolean doorExists(ConditionalDoor door) {
-        World world = server.getWorld(door.world());
-        if (world == null) {
-            BigDoorsOpener.logger().info("The world of door " + door.doorUID() + " is not loaded.");
-            return false;
-        }
-
-        // Make sure that this door still exists on the doors plugin.
-        return getDoor(door.doorUID()) != null;
-    }
-
-    /**
      * Checks if a door is available. A door is considered available if its not open and not busy
      *
      * @param door door to check

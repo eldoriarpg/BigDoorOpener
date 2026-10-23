@@ -103,9 +103,6 @@ From the console, `amount` and `player` are required.
 
 Removes all Big Doors Opener settings of the door. The door itself stays in Big Doors and works as before.
 
-Doors that you delete in Big Doors are removed from Big Doors Opener on their own.
+Doors that you delete in Big Doors are removed from Big Doors Opener on their own. Doors in worlds that are not loaded
+keep their settings and are skipped until the world is loaded again.
 
-:::warning Unloaded worlds
-Big Doors Opener also removes a door when the world of the door is not loaded while it checks the door. If you unload
-worlds while the server runs, the doors in them lose their Big Doors Opener settings.
-:::

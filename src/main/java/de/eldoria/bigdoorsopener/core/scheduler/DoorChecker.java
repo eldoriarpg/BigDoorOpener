@@ -119,7 +119,7 @@ public class DoorChecker extends BigDoorsAdapter implements Runnable, Listener {
         ConditionalDoor door = doors.poll();
         assert door != null : "Door is null. How could this happen?";
 
-        if (!doorExists(door)) {
+        if (getDoor(door.doorUID()) == null) {
             config.removeDoor(door.doorUID());
             BigDoorsOpener.logger().info("Door with id " + door.doorUID() + " has been deleted. Removing.");
             return;
