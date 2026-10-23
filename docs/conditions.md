@@ -38,12 +38,11 @@ Most conditions are **player conditions**. Big Doors Opener checks them for ever
 default (see `playerCheckRadius` in [Configuration](./reference/configuration.md)). The door opens when **one player**
 meets the conditions on their own. If nobody is near, player conditions count as "no".
 
-This is also true for `time`, `weather`, `placeholder` and `mythicMob`. They only take effect while a player is near
-the door.
+This is also true for `placeholder` and `mythicMob`. They only take effect while a player is near the door.
 
-The `worldLocation` conditions are **world conditions**. They are checked once for the whole world. If a door has only
-world conditions, nobody needs to be near the door. As soon as it also has a player condition, the door only opens
-while a player is near.
+`time`, `weather` and the `worldLocation` conditions are **world conditions**. They are checked once for the whole
+world. If a door has only world conditions, nobody needs to be near the door, so a door with only a `time` condition
+opens and closes on time. As soon as it also has a player condition, the door only opens while a player is near.
 
 ## Overview
 
@@ -246,11 +245,6 @@ This opens the gate at 6:00 and closes it at 18:00. `/bdo setCondition gate time
 Without `force`, the door only opens once at the open time and closes once at the close time. In between, the
 condition has no opinion, so players can still open or close the door by hand. With `force`, the condition says
 "open" for the whole open period and "closed" for the rest.
-
-:::tip Use force when players come and go
-Like all player conditions, `time` only works while a player is near the door. When nobody is near, the door closes.
-Without `force`, it may not open again until the next open time. Set `force` to `true` if that is not what you want.
-:::
 
 ## weather
 

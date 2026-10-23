@@ -74,7 +74,7 @@ public class Time implements DoorCondition {
     }
 
     public static ConditionContainer getConditionContainer() {
-        return ConditionContainer.ofClass(Time.class, Scope.PLAYER)
+        return ConditionContainer.ofClass(Time.class, Scope.WORLD)
                 .withFactory((sender, messageSender, args, conditionBag) -> {
                     ConditionInput.require(
                             args,

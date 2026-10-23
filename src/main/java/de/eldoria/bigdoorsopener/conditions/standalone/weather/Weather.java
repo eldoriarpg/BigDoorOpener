@@ -59,7 +59,7 @@ public class Weather implements DoorCondition {
     }
 
     public static ConditionContainer getConditionContainer() {
-        return ConditionContainer.ofClass(Weather.class, Scope.PLAYER)
+        return ConditionContainer.ofClass(Weather.class, Scope.WORLD)
                 .withFactory((sender, messageSender, args, conditionBag) -> {
                     ILocalizer localizer = DoorCondition.localizer();
                     ConditionInput.require(args, 1, localizer, "<$syntax.weatherType$> [$tabcomplete.forceState$]");
