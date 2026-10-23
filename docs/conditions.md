@@ -40,7 +40,7 @@ meets the conditions on their own. If nobody is near, player conditions count as
 
 This is also true for `placeholder` and `mythicMob`. They only take effect while a player is near the door.
 
-`time`, `weather` and the `worldLocation` conditions are **world conditions**. They are checked once for the whole
+`time`, `weather`, `globalCooldown` and the `worldLocation` conditions are **world conditions**. They are checked once for the whole
 world. If a door has only world conditions, nobody needs to be near the door, so a door with only a `time` condition
 opens and closes on time. As soon as it also has a player condition, the door only opens while a player is near.
 
@@ -64,6 +64,8 @@ opens and closes on time. As soon as it also has a player condition, the door on
 | `weather` | `weather` | the weather matches | |
 | `placeholder` | `placeholder` | a PlaceholderAPI expression is true | PlaceholderAPI, NashornJs |
 | `mythicMob` | `mythicMob` | a MythicMobs mob of a certain type died | MythicMobs |
+| `cooldown` | `cooldown` | the player did not open the door within the last seconds | |
+| `globalCooldown` | `globalCooldown` | nobody opened the door within the last seconds | |
 
 ## Item conditions
 
@@ -305,3 +307,33 @@ The mob type is the internal name you also use to spawn the mob. Tab completion 
 The condition is true for one check after the mob died, anywhere on the server. After that check it is false again, so
 the door closes on the next check. Use `/bdo stayOpen` to keep it open longer. See
 [Managing doors](./managing-doors.md).
+
+## Cooldown conditions
+
+A cooldown keeps a door from opening again too soon. It does not open a door by itself, so combine it with other
+conditions and the `and` evaluator, for example a key and a cooldown.
+
+```text
+/bdo setCondition <door> cooldown <seconds>
+/bdo setCondition <door> globalCooldown <seconds>
+```
+
+| Condition | Who has to wait |
+|---|---|
+| `cooldown` | Only the player who opened the door. Other players can still open it. |
+| `globalCooldown` | Everybody. After the door opened, nobody can open it until the time is over. |
+
+The cooldown starts when Big Doors Opener opens the door. While it runs, a closed door stays closed. An open door is
+not closed by the cooldown, the other conditions decide when it closes. After the cooldown the condition counts as
+"yes".
+
+```text
+/bdo setCondition vault itemHolding 1 true
+/bdo setCondition vault globalCooldown 600
+```
+
+This vault opens for a player holding the key, which is used up, and then stays shut for ten minutes.
+
+:::note
+Cooldowns are not saved. They start over when the server restarts or the plugin reloads.
+:::

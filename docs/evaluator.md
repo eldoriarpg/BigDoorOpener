@@ -67,6 +67,8 @@ Each condition group is a variable. It holds the answer of the condition in that
 | `weather` | `weather` |
 | `placeholder` | `placeholder` |
 | `mythicMob` | `mythicMob` |
+| `cooldown` | `cooldown` |
+| `globalCooldown` | `globalCooldown` |
 | `currentState` | not a condition: `true` if the door is open right now, `false` if it is closed |
 
 A variable is `true` or `false`, or `null` when the condition has no opinion. A variable whose group has no condition

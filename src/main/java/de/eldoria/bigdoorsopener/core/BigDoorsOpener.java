@@ -8,6 +8,8 @@ package de.eldoria.bigdoorsopener.core;
 import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.protection.regions.RegionContainer;
 import de.eldoria.bigdoorsopener.commands.BDOCommand;
+import de.eldoria.bigdoorsopener.conditions.cooldown.GlobalCooldown;
+import de.eldoria.bigdoorsopener.conditions.cooldown.PlayerCooldown;
 import de.eldoria.bigdoorsopener.conditions.item.ItemHolding;
 import de.eldoria.bigdoorsopener.conditions.item.ItemOwning;
 import de.eldoria.bigdoorsopener.conditions.item.interacting.ItemBlock;
@@ -238,6 +240,8 @@ public class BigDoorsOpener extends EldoPlugin {
         ConditionRegistrar.registerCondition(Weather.getConditionContainer());
         ConditionRegistrar.registerCondition(Placeholder.getConditionContainer());
         ConditionRegistrar.registerCondition(MythicMob.getConditionContainer());
+        ConditionRegistrar.registerCondition(PlayerCooldown.getConditionContainer());
+        ConditionRegistrar.registerCondition(GlobalCooldown.getConditionContainer());
     }
 
     private void enableMetrics() {

@@ -10,6 +10,7 @@ import de.eldoria.bigdoorsopener.door.ConditionalDoor;
 import de.eldoria.bigdoorsopener.util.ConditionChainEvaluator;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 
@@ -62,7 +63,7 @@ public interface ConditionCollection extends Cloneable {
      *
      * @param player player which opened the door.
      */
-    void opened(Player player);
+    void opened(@Nullable Player player);
 
     /**
      * Checks if a key is present which needs a player lookup.

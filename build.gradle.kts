@@ -170,7 +170,7 @@ tasks {
     }
 }
 
-val conditionGroups = listOf("item", "location", "worldLocation", "permission", "time", "weather", "placeholder", "mythicMob")
+val conditionGroups = listOf("item", "location", "worldLocation", "permission", "time", "weather", "placeholder", "mythicMob", "cooldown", "globalCooldown")
 
 bukkit {
     name = "BigDoorsOpener"

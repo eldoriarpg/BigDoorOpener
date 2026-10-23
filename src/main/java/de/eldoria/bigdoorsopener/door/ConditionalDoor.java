@@ -160,11 +160,10 @@ public class ConditionalDoor {
     /**
      * This method is called when a door is toggled to change its state from closed to open.
      *
-     * @param player player which opened the door.
+     * @param player player which opened the door, or null when no player was involved
      */
     public void opened(@Nullable Player player) {
         waitForOpen = true;
-        if (player == null) return;
         conditionBag.opened(player);
     }
 

@@ -5,6 +5,8 @@
  */
 package de.eldoria.bigdoorsopener.conditions;
 
+import de.eldoria.bigdoorsopener.conditions.cooldown.GlobalCooldown;
+import de.eldoria.bigdoorsopener.conditions.cooldown.PlayerCooldown;
 import de.eldoria.bigdoorsopener.conditions.item.ItemHolding;
 import de.eldoria.bigdoorsopener.conditions.item.ItemOwning;
 import de.eldoria.bigdoorsopener.conditions.item.interacting.ItemBlock;
@@ -59,7 +61,9 @@ class OptionalPluginTypesTest {
                 Time.class,
                 Weather.class,
                 Placeholder.class,
-                MythicMob.class
+                MythicMob.class,
+                PlayerCooldown.class,
+                GlobalCooldown.class
             })
     void signaturesUseNoOptionalPluginTypes(Class<?> condition) {
         List<String> found = new ArrayList<>();

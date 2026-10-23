@@ -33,6 +33,8 @@ To set, add, remove or copy a condition, a player needs `bdo.command.use` and th
 | `bdo.condition.weather` | `weather` |
 | `bdo.condition.placeholder` | `placeholder` |
 | `bdo.condition.mythicMob` | `mythicMob` |
+| `bdo.condition.cooldown` | `cooldown` |
+| `bdo.condition.globalCooldown` | `globalCooldown` |
 | `bdo.condition.all` | all conditions. Also needed to copy all conditions at once and for `cloneDoor`. |
 
 `bdo.*` gives all permissions of Big Doors Opener.

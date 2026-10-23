@@ -111,10 +111,10 @@ public interface DoorCondition extends Cloneable {
     DoorCondition clone();
 
     /**
-     * This method will be called when a door with this key was opened. Only once. This method will only be called, when
-     * the {@link ConditionContainer#getScope()} is set to {@link Scope#PLAYER}.
+     * Called once when Big Doors Opener opened the door. Conditions with {@link Scope#PLAYER} are only called when a
+     * player opened the door. Conditions with {@link Scope#WORLD} are always called.
      *
-     * @param player player which opened the door.
+     * @param player player which opened the door, null for world conditions when no player was involved
      */
-    default void opened(Player player) {}
+    default void opened(@Nullable Player player) {}
 }

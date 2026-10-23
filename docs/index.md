@@ -22,6 +22,7 @@ work together.
 - **Open doors by world time or weather.** Open the city gate at dawn and close it at dusk.
 - **Use PlaceholderAPI and MythicMobs.** Open a door based on placeholder values, or when a certain MythicMobs mob
   dies.
+- **Add a cooldown.** Make a player, or everybody, wait before a door opens again.
 - **Combine conditions.** All of them must be true, one is enough, or you write your own rule. See
   [The evaluator](./evaluator.md).
 - **Manage many doors.** Copy conditions or whole door settings from one door to another. Clickable chat messages let

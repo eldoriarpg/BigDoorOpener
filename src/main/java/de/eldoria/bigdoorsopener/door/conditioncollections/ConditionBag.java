@@ -18,6 +18,7 @@ import de.eldoria.bigdoorsopener.util.Words;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -151,7 +152,9 @@ public class ConditionBag implements ConditionCollection {
     }
 
     @Override
-    public void opened(Player player) {
+    public void opened(@Nullable Player player) {
+        getWorldConditions().forEach(c -> c.opened(player));
+        if (player == null) return;
         getPlayerConditions().forEach(c -> c.opened(player));
     }
 
