@@ -12,6 +12,7 @@ import de.eldoria.bigdoorsopener.core.conditions.ConditionContainer;
 import de.eldoria.bigdoorsopener.core.conditions.ConditionRegistrar;
 import de.eldoria.bigdoorsopener.door.ConditionalDoor;
 import de.eldoria.bigdoorsopener.util.Permissions;
+import de.eldoria.bigdoorsopener.util.Words;
 import de.eldoria.eldoutilities.commands.Completion;
 import de.eldoria.eldoutilities.commands.command.CommandMeta;
 import de.eldoria.eldoutilities.commands.command.util.Arguments;
@@ -26,7 +27,6 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.regex.Pattern;
 
 /**
  * Creates a condition from the command arguments and hands it to a door. Registers the door if it is not registered
@@ -64,7 +64,7 @@ public abstract class ConditionCreationCommand extends BigDoorsAdapterCommand {
         condition.create(sender, messageSender(), args.subArguments(2), c -> apply(door, c));
 
         if (door.evaluationType() == ConditionalDoor.EvaluationType.CUSTOM
-            && !Pattern.compile(group, Pattern.CASE_INSENSITIVE).matcher(door.evaluator()).find()) {
+            && !Words.pattern(List.of(group)).matcher(door.evaluator()).find()) {
             messageSender().sendError(sender, "warning.valueNotInEvaluator", Replacement.create("VALUE", group));
         }
     }

@@ -12,6 +12,7 @@ import de.eldoria.bigdoorsopener.core.conditions.ConditionRegistrar;
 import de.eldoria.bigdoorsopener.door.ConditionalDoor;
 import de.eldoria.bigdoorsopener.door.conditioncollections.ConditionBag;
 import de.eldoria.bigdoorsopener.util.Permissions;
+import de.eldoria.bigdoorsopener.util.Words;
 import de.eldoria.eldoutilities.commands.Completion;
 import de.eldoria.eldoutilities.commands.command.CommandMeta;
 import de.eldoria.eldoutilities.commands.command.util.Arguments;
@@ -25,7 +26,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.regex.Pattern;
 
 /**
  * Removes a condition of a door by group and index within the group.
@@ -58,7 +58,7 @@ public class RemoveCondition extends BigDoorsAdapterCommand {
         messageSender().sendMessage(sender, "removeCondition." + group);
 
         if (door.evaluationType() == ConditionalDoor.EvaluationType.CUSTOM
-            && Pattern.compile(group, Pattern.CASE_INSENSITIVE).matcher(door.evaluator()).find()) {
+            && Words.pattern(List.of(group)).matcher(door.evaluator()).find()) {
             messageSender().sendError(sender, "warning.valueStillUsed", Replacement.create("VALUE", group));
         }
 

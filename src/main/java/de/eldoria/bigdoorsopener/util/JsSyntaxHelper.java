@@ -13,6 +13,8 @@ import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.entity.Player;
 
 import javax.script.ScriptException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -65,7 +67,7 @@ public final class JsSyntaxHelper {
         }
 
 
-        String cleaned = evaluator.replaceAll("(?i)if|true|false|" + getPlaceholder() + "|currentState|null|else", "");
+        String cleaned = keywords().matcher(evaluator).replaceAll("");
         Matcher matcher = VARIABLE.matcher(cleaned);
         if (matcher.find()) {
             return new Pair<>(ValidatorResult.INVALID_VARIABLE, matcher.group());
@@ -98,11 +100,11 @@ public final class JsSyntaxHelper {
     public static Pair<ValidatorResult, String> checkExecution(String evaluator, CachingJSEngine engine, Player player, boolean vanilla) {
         evaluator = translateEvaluator(evaluator);
 
-        evaluator = evaluator.replaceAll("(?i)currentState|" + getPlaceholder(), "true");
-
         if (BigDoorsOpener.isPlaceholderEnabled() && player != null && !vanilla) {
             evaluator = PlaceholderAPI.setPlaceholders(player, evaluator);
         }
+
+        evaluator = variables().matcher(evaluator).replaceAll("true");
 
         try {
             boolean aTrue = engine.evalUnsafe(evaluator, null);
@@ -115,9 +117,16 @@ public final class JsSyntaxHelper {
         return new Pair<>(ValidatorResult.FINE, evaluator);
     }
 
-    private static String getPlaceholder() {
-        return String.join("|", ConditionRegistrar.getGroups());
+    private static Pattern variables() {
+        List<String> words = new ArrayList<>(ConditionRegistrar.getGroups());
+        words.add("currentState");
+        return Words.pattern(words);
+    }
 
+    private static Pattern keywords() {
+        List<String> words = new ArrayList<>(ConditionRegistrar.getGroups());
+        words.addAll(List.of("if", "true", "false", "currentState", "null", "else"));
+        return Words.pattern(words);
     }
 
     public enum ValidatorResult {

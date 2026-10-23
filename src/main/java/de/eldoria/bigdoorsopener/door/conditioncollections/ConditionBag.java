@@ -16,12 +16,14 @@ import de.eldoria.bigdoorsopener.core.events.ConditionBagModifiedEvent;
 import de.eldoria.bigdoorsopener.core.events.ConditionRemovedEvent;
 import de.eldoria.bigdoorsopener.core.exceptions.ConditionCreationException;
 import de.eldoria.bigdoorsopener.door.ConditionalDoor;
+import de.eldoria.bigdoorsopener.util.Words;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -113,36 +115,35 @@ public class ConditionBag implements ConditionCollection {
         return !getConditions(container).isEmpty();
     }
 
+    /**
+     * Replaces the condition groups in a custom evaluator with their state. The conditions of a group are combined
+     * like the {@code and} evaluator does: conditions without an opinion are skipped, the group is {@code null} when no
+     * condition has one. Groups without conditions become {@code null}.
+     */
     @Override
     public String custom(String string, Player player, World world, ConditionalDoor door, boolean currentState) {
-        String evaluationString = string;
-
+        Map<String, Boolean> groupStates = new HashMap<>();
         for (DoorCondition condition : getConditions()) {
+            ConditionContainer container = ConditionRegistrar.getContainerByClass(condition.getClass())
+                    .orElseThrow(() -> new ConditionCreationException("The requested condition is not registered"));
+
             Boolean state;
-
-            Optional<ConditionContainer> containerByClass = ConditionRegistrar.getContainerByClass(condition.getClass());
-            if (!containerByClass.isPresent()) {
-                throw new ConditionCreationException("The requested condition is not registered");
-            }
-            ConditionContainer container = containerByClass.get();
-
             if (container.getScope() == Scope.PLAYER && player == null) {
                 state = false;
             } else {
                 state = condition.isOpen(player, world, door, currentState);
             }
-            evaluationString = evaluationString.replaceAll("(?i)" + container.getGroup(),
-                    String.valueOf(state));
+            Boolean groupState = groupStates.get(container.getGroup());
+            if (state != null) {
+                groupState = groupState == null ? state : groupState && state;
+            }
+            groupStates.put(container.getGroup(), groupState);
         }
 
-        evaluationString = evaluationString.replaceAll("(?i)currentState",
-                String.valueOf(currentState));
-
-        // make sure that calculation does not fail even when the condition is not set.
-        for (String value : ConditionRegistrar.getGroups()) {
-            evaluationString = evaluationString.replaceAll("(?i)" + value, "null");
+        String evaluationString = Words.replace(string, "currentState", String.valueOf(currentState));
+        for (String group : ConditionRegistrar.getGroups()) {
+            evaluationString = Words.replace(evaluationString, group, String.valueOf(groupStates.get(group)));
         }
-
         return evaluationString;
     }
 

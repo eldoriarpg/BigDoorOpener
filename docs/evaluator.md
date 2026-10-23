@@ -72,8 +72,9 @@ Each condition group is a variable. It holds the answer of the condition in that
 A variable is `true` or `false`, or `null` when the condition has no opinion. A variable whose group has no condition
 on the door is also `null`.
 
-If a group holds more than one condition (added with `addCondition`), only the first one counts in a custom
-evaluator.
+If a group holds more than one condition (added with `addCondition`), the variable is `true` only when all of them are
+`true`, like with the `and` evaluator. Conditions without an opinion are left out; when none of them has one, the
+variable is `null`.
 
 ### Words and signs
 
@@ -155,8 +156,3 @@ When you use a custom evaluator, Big Doors Opener watches your changes:
 - If you set a condition whose group is not in the expression, you get a warning. That condition has no effect until
   you add its variable.
 - If you remove a condition whose variable is still in the expression, you get a warning too.
-
-:::warning Do not use `location` and `worldLocation` together
-In version 2.5.3, a custom evaluator that contains `worldLocation` breaks when the door also has a `location`
-condition. The door then does not change anymore. Use only one of the two groups in a custom evaluator.
-:::
