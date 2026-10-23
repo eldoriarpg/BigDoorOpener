@@ -29,8 +29,7 @@ You need the permission for the group, for example `bdo.condition.item`, or `bdo
 [Permissions](./reference/permissions.md).
 
 :::tip Use tab completion
-Condition names must be typed exactly as shown below, including capital letters. `itemBlock` works, `itemblock` does
-not. Tab completion fills them in for you.
+Condition names are not case sensitive, `itemblock` works as well as `itemBlock`. Tab completion fills them in for you.
 :::
 
 ## Player conditions and world conditions
@@ -189,11 +188,6 @@ for everyone while someone stands on the bridge".
 | `worldRegion` | `<region name>` | [region](#region) |
 | `worldSimpleRegion` | none, then left-click two blocks | [simpleRegion](#simpleregion) |
 
-:::warning worldSimpleRegion does not work
-In version 2.5.3 a door with `worldSimpleRegion` fails while it is checked and shows errors in the server log. Use
-`worldProximity` or `worldRegion` instead.
-:::
-
 ## Permission conditions
 
 ### permNode
@@ -237,8 +231,8 @@ Opens and closes the door at certain times of the Minecraft day.
 
 | Setting | Required | What it means |
 |---|---|---|
-| `open` | yes | When the door opens, in ticks from 0 to 24000. |
-| `close` | yes | When the door closes, in ticks from 0 to 24000. |
+| `open` | yes | When the door opens, in ticks from 0 to 24000 or as clock time like `18:00`. |
+| `close` | yes | When the door closes, in ticks from 0 to 24000 or as clock time like `18:00`. |
 | `force` | no | `true` keeps the door in the right state all the time. Default `false`. |
 
 A Minecraft day has 24000 ticks. Tick 0 is 6:00 in the morning, 6000 is noon, 12000 is 18:00 and 18000 is midnight.
@@ -247,15 +241,11 @@ A Minecraft day has 24000 ticks. Tick 0 is 6:00 in the morning, 6000 is noon, 12
 /bdo setCondition gate time 0 12000 true
 ```
 
-This opens the gate at 6:00 and closes it at 18:00.
+This opens the gate at 6:00 and closes it at 18:00. `/bdo setCondition gate time 6:00 18:00 true` does the same.
 
 Without `force`, the door only opens once at the open time and closes once at the close time. In between, the
 condition has no opinion, so players can still open or close the door by hand. With `force`, the condition says
 "open" for the whole open period and "closed" for the rest.
-
-:::warning Enter ticks, not clock times
-Tab completion offers clock times like `18:00`, but version 2.5.3 rejects them with `Invalid open time.` Use ticks.
-:::
 
 :::tip Use force when players come and go
 Like all player conditions, `time` only works while a player is near the door. When nobody is near, the door closes.
@@ -267,21 +257,18 @@ Without `force`, it may not open again until the next open time. Set `force` to 
 Opens the door depending on the weather.
 
 ```text
-/bdo setCondition <door> weather <clear|downfall>
+/bdo setCondition <door> weather <clear|downfall> [force]
 ```
 
 | Setting | Required | What it means |
 |---|---|---|
 | `clear` or `downfall` | yes | `clear` opens the door when it is not raining or snowing. `downfall` opens it when it is. |
+| `force` | no | `true` or `false`, default `false`. Works like `force` of [`time`](#time). |
 
 Like `time` without force, the condition only changes the door when the weather changes. In between it has no opinion.
 
 The temperature at the door counts. Where it can never rain, for example in a desert, the weather always counts as
 clear.
-
-:::note
-The command accepts a second setting, `force`, but version 2.5.3 does not use it.
-:::
 
 ## placeholder
 
