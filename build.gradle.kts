@@ -1,9 +1,12 @@
+import net.minecrell.pluginyml.bukkit.BukkitPluginDescription.Permission.Default.OP
+
 plugins {
     java
     `maven-publish`
     alias(libs.plugins.spotless)
     alias(libs.plugins.publishdata)
     alias(libs.plugins.shadow)
+    alias(libs.plugins.pluginyml.bukkit)
     alias(libs.plugins.runserver)
 }
 
@@ -76,16 +79,6 @@ publishing {
 }
 
 tasks {
-    processResources {
-        filesMatching("plugin.yml") {
-            expand(
-                "name" to "BigDoorsOpener",
-                "version" to project.version.toString(),
-                "description" to project.description!!
-            )
-        }
-    }
-
     compileJava {
         options.encoding = "UTF-8"
     }
@@ -119,5 +112,72 @@ tasks {
     runServer {
         minecraftVersion("1.21.11")
         jvmArgs("-Dcom.mojang.eula.agree=true")
+    }
+}
+
+val conditionGroups = listOf("item", "location", "worldLocation", "permission", "time", "weather", "placeholder", "mythicMob")
+
+bukkit {
+    name = "BigDoorsOpener"
+    main = "de.eldoria.bigdoorsopener.core.BigDoorsOpener"
+    version = project.version.toString()
+    description = project.description
+    apiVersion = "1.21.11"
+    authors = listOf("RainbowDashLabs")
+    website = "https://github.com/eldoriarpg/BigDoorOpener"
+    depend = listOf("BigDoors")
+    softDepend = listOf("WorldGuard", "PlaceholderAPI", "MythicMobs", "NashornJs")
+
+    commands {
+        register("bigdoorsopener") {
+            description = "Manage conditional doors"
+            aliases = listOf("bdo")
+        }
+    }
+
+    permissions {
+        register("bdo.*") {
+            description = "All Big Doors Opener permissions"
+            default = OP
+            children = listOf(
+                "bdo.command.use", "bdo.command.givekey", "bdo.command.reload", "bdo.customEvaluator",
+                "bdo.accessAll", "bdo.condition.all", "bdo.updates"
+            )
+        }
+        register("bdo.command.use") {
+            description = "Use the door commands"
+            default = OP
+        }
+        register("bdo.command.givekey") {
+            description = "Give keys of item conditions"
+            default = OP
+        }
+        register("bdo.command.reload") {
+            description = "Reload the plugin and create debug reports"
+            default = OP
+        }
+        register("bdo.customEvaluator") {
+            description = "Set custom evaluators"
+            default = OP
+        }
+        register("bdo.accessAll") {
+            description = "Manage doors of other players"
+            default = OP
+        }
+        register("bdo.condition.all") {
+            description = "Use all conditions"
+            default = OP
+            children = conditionGroups.map { "bdo.condition.$it" }
+        }
+        conditionGroups.forEach { group ->
+            register("bdo.condition.$group") {
+                description = "Use $group conditions"
+                default = OP
+            }
+        }
+        register("bdo.updates") {
+            description = "Hear about new versions on join and download them"
+            default = OP
+        }
     }
 }
