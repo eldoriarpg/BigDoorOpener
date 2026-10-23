@@ -172,6 +172,20 @@ class LegacyDoorMigrationTest {
     }
 
     @Test
+    void setsOldMessageFilesAside() throws IOException {
+        fixture("config.yml");
+        Files.createDirectories(dir.resolve("messages"));
+        Files.writeString(
+                dir.resolve("messages/messages_en_US.properties"),
+                "unregister.message=Door %DOOR_NAME% unregistered.\n");
+
+        LegacyDoorMigration.migrate(dir, LOGGER);
+
+        assertFalse(Files.exists(dir.resolve("messages")));
+        assertTrue(Files.exists(dir.resolve(LegacyDoorMigration.MESSAGES_BACKUP).resolve("messages_en_US.properties")));
+    }
+
+    @Test
     void itemsKeepTheBukkitFormat() throws IOException {
         fixture("items.yml");
 

@@ -34,10 +34,13 @@ import java.util.logging.Logger;
  *     <li>item stacks keep the Bukkit format, which jackson-bukkit still reads</li>
  * </ul>
  * The original file is kept as {@code config.yml.2.x.bak}. The settings in it are read by {@link
- * de.eldoria.bigdoorsopener.config.elements.Settings} as they are.
+ * de.eldoria.bigdoorsopener.config.elements.Settings} as they are. The message files of 2.x use {@code %KEY%}
+ * placeholders and are set aside as {@code messages.2.x.bak}, so current ones are created. This has to run before the
+ * localizer reads the message files.
  */
 public final class LegacyDoorMigration {
     public static final String BACKUP = "config.yml.2.x.bak";
+    public static final String MESSAGES_BACKUP = "messages.2.x.bak";
     private static final String ALIAS = "==";
     private static final Set<String> VECTORS =
             Set.of("Vector", "BlockVector", "org.bukkit.util.Vector", "org.bukkit.util.BlockVector");
@@ -72,7 +75,17 @@ public final class LegacyDoorMigration {
         YAML.writeValue(directory.resolve("doors.yml").toFile(), doors);
         logger.info("Moved " + doors.get("doors").size()
                 + " door(s) from config.yml to doors.yml. The old file is kept as " + BACKUP + ".");
+        moveMessages(directory, logger);
         return true;
+    }
+
+    private static void moveMessages(Path directory, Logger logger) throws IOException {
+        Path messages = directory.resolve("messages");
+        Path backup = directory.resolve(MESSAGES_BACKUP);
+        if (!Files.isDirectory(messages) || Files.exists(backup)) return;
+        Files.move(messages, backup);
+        logger.info("The message files of 2.x use another placeholder format and are kept as " + MESSAGES_BACKUP
+                + ". New message files are created.");
     }
 
     /**

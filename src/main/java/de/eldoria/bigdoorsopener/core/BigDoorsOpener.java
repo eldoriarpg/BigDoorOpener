@@ -29,6 +29,8 @@ import de.eldoria.bigdoorsopener.conditions.worldlocation.WorldRegion;
 import de.eldoria.bigdoorsopener.conditions.worldlocation.WorldSimpleRegion;
 import de.eldoria.bigdoorsopener.config.Config;
 import de.eldoria.bigdoorsopener.config.JacksonConfiguration;
+import de.eldoria.bigdoorsopener.config.LegacyDoorMigration;
+import de.eldoria.bigdoorsopener.config.elements.Settings;
 import de.eldoria.bigdoorsopener.core.conditions.ConditionRegistrar;
 import de.eldoria.bigdoorsopener.core.exceptions.PluginInitFailed;
 import de.eldoria.bigdoorsopener.core.listener.DoorOpenedListener;
@@ -51,6 +53,7 @@ import org.bstats.charts.SimplePie;
 import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -121,13 +124,21 @@ public class BigDoorsOpener extends EldoPlugin {
     }
 
     @Override
-    public void onPluginEnable() {
+    public void onPluginEnable() throws IOException {
         instance = this;
+        migrateLegacyConfiguration();
         registerConditions();
         localizer = Localizer.builder(this, "en_US")
                 .setIncludedLocales("en_US", "de_DE")
                 .build();
         MessageSender.builder(this).prefix("<gold>[BDO]").localizer(localizer).register();
+    }
+
+    private void migrateLegacyConfiguration() throws IOException {
+        if (LegacyDoorMigration.migrate(getDataFolder().toPath(), getLogger())) {
+            configuration.main().version(Settings.CURRENT_VERSION);
+            configuration.save();
+        }
     }
 
     @Override

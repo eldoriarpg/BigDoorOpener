@@ -15,8 +15,6 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -25,8 +23,7 @@ import java.util.function.Function;
 /**
  * Settings and doors of the plugin.
  * <p>
- * The settings are read from {@code config.yml}, the doors from {@code doors.yml}. A configuration written by 2.x is
- * migrated on the first load, see {@link LegacyDoorMigration}.
+ * The settings are read from {@code config.yml}, the doors from {@code doors.yml}.
  */
 public class Config {
     private static final int MIN_JS_CACHE_SIZE = 10;
@@ -37,19 +34,7 @@ public class Config {
     public Config(Plugin plugin, JacksonConfiguration configuration) {
         this.plugin = plugin;
         this.configuration = configuration;
-        migrate();
         reloadConfig();
-    }
-
-    private void migrate() {
-        try {
-            if (LegacyDoorMigration.migrate(plugin.getDataFolder().toPath(), plugin.getLogger())) {
-                configuration.main().version(Settings.CURRENT_VERSION);
-                configuration.save();
-            }
-        } catch (IOException e) {
-            throw new UncheckedIOException("Could not migrate the configuration of Big Doors Opener 2.x", e);
-        }
     }
 
     /**
