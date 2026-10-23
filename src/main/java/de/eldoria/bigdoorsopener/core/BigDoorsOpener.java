@@ -67,8 +67,8 @@ import java.util.regex.Pattern;
 /**
  * Plugin entry point.
  * <p>
- * The conditions, localizer and message sender are set up on enable. Everything which needs Big Doors and the
- * optional plugins (the configuration, the door checker, listeners and commands) is set up after the server started.
+ * Everything is set up on enable. Paper enables Big Doors and the optional plugins first, as declared in
+ * {@code paper-plugin.yml}, and commands can only be registered while the plugin enables.
  */
 public class BigDoorsOpener extends EldoPlugin {
     private static final Pattern BIG_DOORS_VERSION = Pattern.compile("([0-9]\\.(?:[0-9]\\.?)+)");
@@ -134,17 +134,7 @@ public class BigDoorsOpener extends EldoPlugin {
                 .setIncludedLocales("en_US", "de_DE")
                 .build();
         MessageSender.builder(this).prefix("<gold>[BDO]").localizer(localizer).register();
-    }
 
-    private void migrateLegacyConfiguration() throws IOException {
-        if (LegacyDoorMigration.migrate(getDataFolder().toPath(), getLogger())) {
-            configuration.main().version(Settings.CURRENT_VERSION);
-            configuration.save();
-        }
-    }
-
-    @Override
-    public void onPostStart() {
         loadExternalSources();
         lateInitThirdPartyAPIs();
 
@@ -160,6 +150,13 @@ public class BigDoorsOpener extends EldoPlugin {
 
         registerListeners();
         registerCommand(new BDOCommand(this, doors, config));
+    }
+
+    private void migrateLegacyConfiguration() throws IOException {
+        if (LegacyDoorMigration.migrate(getDataFolder().toPath(), getLogger())) {
+            configuration.main().version(Settings.CURRENT_VERSION);
+            configuration.save();
+        }
     }
 
     @Override
@@ -285,13 +282,13 @@ public class BigDoorsOpener extends EldoPlugin {
     /**
      * Returns the configuration for the doors.
      * <p>
-     * The config is loaded after the server ticked for the first time.
+     * The config is loaded when the plugin enables.
      *
      * @return The configuration
      */
     @NotNull
     public Config getDoorsConfig() {
-        return Objects.requireNonNull(config, "Do not call before server is fully initialized.");
+        return Objects.requireNonNull(config, "Do not call before Big Doors Opener is enabled.");
     }
 
     /**

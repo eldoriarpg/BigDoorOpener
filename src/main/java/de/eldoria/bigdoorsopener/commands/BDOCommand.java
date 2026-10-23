@@ -38,6 +38,7 @@ public class BDOCommand extends AdvancedCommand {
         super(plugin);
         Help help = new Help(plugin);
         meta(CommandMeta.builder("bigdoorsopener")
+                .addAlias("bdo")
                 .withDefaultCommand(help)
                 .buildSubCommands((cmds, builder) -> {
                     cmds.add(help);
