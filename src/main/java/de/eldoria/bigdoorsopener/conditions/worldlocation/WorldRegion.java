@@ -111,7 +111,7 @@ public class WorldRegion implements WorldLocation {
 
     @Override
     public String getCreationCommand(ConditionalDoor door) {
-        return SET_COMMAND + door.doorUID() + " region " + regionId;
+        return SET_COMMAND + door.doorUID() + " worldRegion " + regionId;
     }
 
     @Override

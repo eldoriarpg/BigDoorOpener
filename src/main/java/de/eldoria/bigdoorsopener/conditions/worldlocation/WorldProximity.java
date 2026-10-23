@@ -89,7 +89,7 @@ public class WorldProximity implements WorldLocation {
 
     @Override
     public String getCreationCommand(ConditionalDoor door) {
-        return SET_COMMAND + door.doorUID() + " proximity "
+        return SET_COMMAND + door.doorUID() + " worldProximity "
                + dimensions.getX() + "," + dimensions.getY() + "," + dimensions.getZ()
                + " " + proximityForm.name().toLowerCase();
     }

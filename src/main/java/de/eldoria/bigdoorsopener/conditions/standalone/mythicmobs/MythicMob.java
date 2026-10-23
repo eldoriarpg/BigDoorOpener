@@ -103,7 +103,7 @@ public class MythicMob implements DoorCondition {
 
     @Override
     public String getCreationCommand(ConditionalDoor door) {
-        return SET_COMMAND + door.doorUID() + " mythicMobs " + mobType;
+        return SET_COMMAND + door.doorUID() + " mythicMob " + mobType;
     }
 
     @Override

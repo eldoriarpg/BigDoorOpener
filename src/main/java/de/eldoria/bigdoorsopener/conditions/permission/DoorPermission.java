@@ -26,6 +26,7 @@ import org.bukkit.World;
 import org.bukkit.entity.Player;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -36,6 +37,7 @@ import java.util.logging.Level;
  */
 @JsonTypeName("doorPermissionCondition")
 public class DoorPermission implements Permission {
+    private static final List<String> LEVELS = List.of("owner", "editor", "user");
     private final int permissionLevel;
     @JsonIgnore
     private final Cache<UUID, Boolean> cache = C.getExpiringCache(30, TimeUnit.SECONDS);
@@ -45,15 +47,15 @@ public class DoorPermission implements Permission {
         this.permissionLevel = permissionLevel;
     }
 
+    /**
+     * Parses an access level name.
+     *
+     * @param permission owner, editor or user
+     * @return the level, or -1 for an unknown name
+     */
     public static int parsePermissionLevel(String permission) {
-        if ("owner".equalsIgnoreCase(permission)) {
-            return 0;
-        }
-        if ("editor".equalsIgnoreCase(permission)) {
-            return 1;
-        }
-        if ("user".equalsIgnoreCase(permission)) {
-            return 2;
+        for (int level = 0; level < LEVELS.size(); level++) {
+            if (LEVELS.get(level).equalsIgnoreCase(permission)) return level;
         }
         return -1;
     }
@@ -69,7 +71,7 @@ public class DoorPermission implements Permission {
                 })
                 .onTabComplete((sender, localizer, args) -> {
                     if (args.sizeIs(1)) {
-                        return Completion.complete(args.asString(0), "owner", "editor", "user");
+                        return Completion.complete(args.asString(0), LEVELS);
                     }
                     return Collections.emptyList();
                 })
@@ -102,7 +104,8 @@ public class DoorPermission implements Permission {
 
     @Override
     public String getCreationCommand(ConditionalDoor door) {
-        return SET_COMMAND + door.doorUID() + " doorPerm " + permissionLevel;
+        String level = permissionLevel >= 0 && permissionLevel < LEVELS.size() ? LEVELS.get(permissionLevel) : "";
+        return SET_COMMAND + door.doorUID() + " doorPerm " + level;
     }
 
     @Override
