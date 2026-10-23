@@ -1,9 +1,8 @@
 /*
  *     SPDX-License-Identifier: AGPL-3.0-only
  *
- *     Copyright (C) 2021 EldoriaRPG Team and Contributor
+ *     Copyright (C) EldoriaRPG Team and Contributor
  */
-
 package de.eldoria.bigdoorsopener.conditions.item.interacting;
 
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -12,7 +11,7 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.Optional;
 
-public class ClickInteractionKey implements InteractionKey{
+public class ClickInteractionKey implements InteractionKey {
     protected ItemStack stack;
 
     public ClickInteractionKey(ItemStack stack) {

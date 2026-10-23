@@ -1,52 +1,43 @@
 /*
  *     SPDX-License-Identifier: AGPL-3.0-only
  *
- *     Copyright (C) 2021 EldoriaRPG Team and Contributor
+ *     Copyright (C) EldoriaRPG Team and Contributor
  */
-
 package de.eldoria.bigdoorsopener.commands.bdosubcommands;
 
-import de.eldoria.bigdoorsopener.config.Config;
 import de.eldoria.bigdoorsopener.core.BigDoorsOpener;
-import de.eldoria.bigdoorsopener.core.scheduler.DoorChecker;
 import de.eldoria.bigdoorsopener.util.Permissions;
-import de.eldoria.eldoutilities.plugin.EldoPlugin;
-import de.eldoria.eldoutilities.simplecommands.EldoCommand;
-import org.bukkit.command.Command;
+import de.eldoria.eldoutilities.commands.command.AdvancedCommand;
+import de.eldoria.eldoutilities.commands.command.CommandMeta;
+import de.eldoria.eldoutilities.commands.command.util.Arguments;
+import de.eldoria.eldoutilities.commands.executor.ITabExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.List;
 
-public class Reload extends EldoCommand {
-    private final Config config;
-    private final DoorChecker doorChecker;
+/**
+ * Reloads the settings and doors from their files.
+ */
+public class Reload extends AdvancedCommand implements ITabExecutor {
     private final BigDoorsOpener plugin;
 
-    public Reload(Config config, DoorChecker doorChecker, BigDoorsOpener plugin) {
-        super(plugin);
-        this.config = config;
-        this.doorChecker = doorChecker;
+    public Reload(BigDoorsOpener plugin) {
+        super(
+                plugin,
+                CommandMeta.builder("reload").withPermission(Permissions.RELOAD).build());
         this.plugin = plugin;
     }
 
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        if (denyAccess(sender, Permissions.RELOAD)) {
-            return true;
-        }
-
+    public void onCommand(@NotNull CommandSender sender, @NotNull String alias, @NotNull Arguments args) {
         plugin.reload();
-        messageSender().sendLocalizedMessage(sender, "reload.completed");
-        return true;
-
+        messageSender().sendMessage(sender, "reload.completed");
     }
 
     @Override
-    public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
+    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull String alias, @NotNull Arguments args) {
         return Collections.emptyList();
     }
 }

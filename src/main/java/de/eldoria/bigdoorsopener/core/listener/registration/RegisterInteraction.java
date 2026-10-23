@@ -1,9 +1,8 @@
 /*
  *     SPDX-License-Identifier: AGPL-3.0-only
  *
- *     Copyright (C) 2021 EldoriaRPG Team and Contributor
+ *     Copyright (C) EldoriaRPG Team and Contributor
  */
-
 package de.eldoria.bigdoorsopener.core.listener.registration;
 
 import de.eldoria.bigdoorsopener.config.Config;
@@ -46,10 +45,11 @@ public class RegisterInteraction implements Listener {
     @EventHandler
     public void onPlayerInteraction(PlayerInteractEvent event) {
         if (registerObjects.containsKey(event.getPlayer().getUniqueId())) {
-            InteractionRegistrationObject registrationObject = registerObjects.get(event.getPlayer().getUniqueId());
+            InteractionRegistrationObject registrationObject =
+                    registerObjects.get(event.getPlayer().getUniqueId());
             if (registrationObject.invoke(event, messageSender)) {
                 registerObjects.remove(event.getPlayer().getUniqueId());
-                config.safeConfig();
+                config.saveDoors();
             }
         }
     }

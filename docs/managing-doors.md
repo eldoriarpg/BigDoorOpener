@@ -9,7 +9,8 @@ This page covers everything around a door besides its conditions. All commands a
 
 ## Which doors you can manage
 
-You can manage the doors you own in Big Doors, by name or by id. Players with `bdo.accessAll` can manage every door.
+You can manage the doors you own or may edit in Big Doors, by name or by id. Players who are only users of a door in
+Big Doors cannot manage it. Players with `bdo.accessAll` can manage every door.
 They use the id for doors that belong to someone else. The console can always manage every door by id.
 
 A door becomes a Big Doors Opener door when you give it its first condition. From then on, Big Doors Opener opens and
@@ -62,11 +63,12 @@ turns it back on.
 ## Copy settings to other doors
 
 ```text
-/bdo copyCondition <source door> <target door> [group]
+/bdo copyCondition <source door> <target door> [group] [index]
 ```
 
 Without a group, all conditions of the source door replace the conditions of the target door. This needs
-`bdo.condition.all`.
+`bdo.condition.all`. With a group, one condition of that group replaces the target's conditions of the group: the first
+one, or the one with the index shown in `/bdo info`.
 
 ```text
 /bdo cloneDoor <source door> <target door>
@@ -76,12 +78,6 @@ Copies everything: conditions, evaluator, stay open time and the open position s
 `bdo.condition.all`.
 
 Both commands register the target door if it is not registered yet.
-
-:::warning Known problems in version 2.5.3
-- Copying a single group with `copyCondition <source> <target> <group>` fails with `Invalid number`. Copy all
-  conditions, or set the condition on the target door by hand.
-- Copied `itemClick` and `itemBlock` conditions only react to clicks after the next server restart.
-:::
 
 ## Hand out keys
 
@@ -108,9 +104,6 @@ From the console, `amount` and `player` are required.
 
 Removes all Big Doors Opener settings of the door. The door itself stays in Big Doors and works as before.
 
-Doors that you delete in Big Doors are removed from Big Doors Opener on their own.
+Doors that you delete in Big Doors are removed from Big Doors Opener on their own. Doors in worlds that are not loaded
+keep their settings and are skipped until the world is loaded again.
 
-:::warning Unloaded worlds
-Big Doors Opener also removes a door when the world of the door is not loaded while it checks the door. If you unload
-worlds while the server runs, the doors in them lose their Big Doors Opener settings.
-:::

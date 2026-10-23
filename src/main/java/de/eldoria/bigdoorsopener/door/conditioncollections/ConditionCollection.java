@@ -1,21 +1,20 @@
 /*
  *     SPDX-License-Identifier: AGPL-3.0-only
  *
- *     Copyright (C) 2021 EldoriaRPG Team and Contributor
+ *     Copyright (C) EldoriaRPG Team and Contributor
  */
-
 package de.eldoria.bigdoorsopener.door.conditioncollections;
 
 import de.eldoria.bigdoorsopener.conditions.DoorCondition;
 import de.eldoria.bigdoorsopener.door.ConditionalDoor;
 import de.eldoria.bigdoorsopener.util.ConditionChainEvaluator;
 import org.bukkit.World;
-import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 
-public interface ConditionCollection extends ConfigurationSerializable, Cloneable {
+public interface ConditionCollection extends Cloneable {
     /**
      * Evaluates the conditions with an or operator.
      *
@@ -64,7 +63,7 @@ public interface ConditionCollection extends ConfigurationSerializable, Cloneabl
      *
      * @param player player which opened the door.
      */
-    void opened(Player player);
+    void opened(@Nullable Player player);
 
     /**
      * Checks if a key is present which needs a player lookup.

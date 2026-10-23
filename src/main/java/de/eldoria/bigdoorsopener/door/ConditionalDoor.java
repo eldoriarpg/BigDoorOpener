@@ -1,41 +1,49 @@
 /*
  *     SPDX-License-Identifier: AGPL-3.0-only
  *
- *     Copyright (C) 2021 EldoriaRPG Team and Contributor
+ *     Copyright (C) EldoriaRPG Team and Contributor
  */
-
 package de.eldoria.bigdoorsopener.door;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Objects;
+import de.eldoria.bigdoorsopener.conditions.DoorCondition;
 import de.eldoria.bigdoorsopener.core.BigDoorsOpener;
+import de.eldoria.bigdoorsopener.core.events.ConditionAddedEvent;
+import de.eldoria.bigdoorsopener.core.events.ConditionRemovedEvent;
 import de.eldoria.bigdoorsopener.core.events.DoorModifiedEvent;
 import de.eldoria.bigdoorsopener.door.conditioncollections.ConditionBag;
-import de.eldoria.bigdoorsopener.door.conditioncollections.ConditionChain;
-import de.eldoria.eldoutilities.serialization.SerializationUtil;
-import de.eldoria.eldoutilities.serialization.TypeResolvingMap;
-import de.eldoria.eldoutilities.utils.EnumUtil;
 import nl.pim16aap2.bigDoors.Door;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
-import org.bukkit.configuration.serialization.ConfigurationSerializable;
-import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.time.Instant;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 import static java.time.temporal.ChronoUnit.SECONDS;
 
 /**
  * A conditional door consists of some basic settings and a condition chain. A conditional door can be open or closed.
  * This dependes on several conditions. Hint: Thats why its called conditional door.
+ * <p>
+ * Stored in {@code doors.yml}. The conditions are stored as one list, their groups are derived from their types.
  */
-@SerializableAs("conditionalDoor")
-public class ConditionalDoor implements ConfigurationSerializable {
-    private transient boolean locked;
+@JsonAutoDetect(
+        fieldVisibility = JsonAutoDetect.Visibility.ANY,
+        getterVisibility = JsonAutoDetect.Visibility.NONE,
+        isGetterVisibility = JsonAutoDetect.Visibility.NONE,
+        setterVisibility = JsonAutoDetect.Visibility.NONE)
+public class ConditionalDoor {
+    @JsonIgnore
+    private boolean locked;
     /**
      * UID of the door from {@link Door}.
      */
@@ -53,6 +61,7 @@ public class ConditionalDoor implements ConfigurationSerializable {
 
     private boolean enabled = true;
 
+    @JsonIgnore
     private Instant openTill;
 
     /**
@@ -66,6 +75,7 @@ public class ConditionalDoor implements ConfigurationSerializable {
     private EvaluationType evaluationType = EvaluationType.AND;
 
     @NotNull
+    @JsonIgnore
     private ConditionBag conditionBag;
 
     /**
@@ -73,13 +83,13 @@ public class ConditionalDoor implements ConfigurationSerializable {
      */
     private int stayOpen = 0;
 
+    @JsonIgnore
     private boolean waitForOpen = false;
 
     /**
      * True if the door was registered in open state.
      */
     private boolean invertOpen = false;
-
 
     public ConditionalDoor(long doorUID, String world, Vector position, ConditionBag conditionBag) {
         this.doorUID = doorUID;
@@ -92,26 +102,13 @@ public class ConditionalDoor implements ConfigurationSerializable {
         this(doorUID, world, position, new ConditionBag());
     }
 
-    @SuppressWarnings({"casting", "RedundantCast"})
-    public ConditionalDoor(Map<String, Object> map) {
-        TypeResolvingMap resolvingMap = SerializationUtil.mapOf(map);
-        doorUID = (int) resolvingMap.getValue("doorUID");
-        world = resolvingMap.getValue("world");
-        BigDoorsOpener.logger().fine("Loading door \"" + doorUID + "\".");
-        position = resolvingMap.getValue("position");
-        enabled = resolvingMap.getValueOrDefault("enabled", true);
-        invertOpen = resolvingMap.getValue("invertOpen");
-        evaluator = resolvingMap.getValue("evaluator");
-        evaluationType = EnumUtil.parse(resolvingMap.getValue("evaluationType"), EvaluationType.class, EvaluationType.AND);
-        if (resolvingMap.containsKey("conditionChain")) {
-            BigDoorsOpener.logger().fine("Converting condition chain to condition bag");
-            ConditionChain conditionChain = resolvingMap.getValue("conditionChain");
-            conditionBag = new ConditionBag();
-            conditionChain.getConditions().stream().filter(java.util.Objects::nonNull).forEach(c -> conditionBag.setCondition(this, c));
-        } else {
-            conditionBag = resolvingMap.getValueOrDefault("conditionBag", new ConditionBag());
-        }
-        stayOpen = resolvingMap.getValue("stayOpen");
+    @JsonCreator
+    private ConditionalDoor(
+            @JsonProperty("doorUID") long doorUID,
+            @JsonProperty("world") String world,
+            @JsonProperty("position") Vector position,
+            @JsonProperty("conditions") List<DoorCondition> conditions) {
+        this(doorUID, world, position, new ConditionBag(conditions == null ? List.of() : conditions));
     }
 
     /**
@@ -163,11 +160,10 @@ public class ConditionalDoor implements ConfigurationSerializable {
     /**
      * This method is called when a door is toggled to change its state from closed to open.
      *
-     * @param player player which opened the door.
+     * @param player player which opened the door, or null when no player was involved
      */
     public void opened(@Nullable Player player) {
         waitForOpen = true;
-        if (player == null) return;
         conditionBag.opened(player);
     }
 
@@ -219,24 +215,24 @@ public class ConditionalDoor implements ConfigurationSerializable {
         Bukkit.getPluginManager().callEvent(new DoorModifiedEvent(this));
     }
 
-    @Override
-    public @NotNull Map<String, Object> serialize() {
-        BigDoorsOpener.logger().fine("Saving door \"" + doorUID + "\".");
-        return SerializationUtil.newBuilder()
-                .add("doorUID", doorUID)
-                .add("world", world)
-                .add("position", position)
-                .add("enabled", enabled)
-                .add("invertOpen", invertOpen)
-                .add("evaluator", evaluator)
-                .add("evaluationType", evaluationType)
-                .add("stayOpen", stayOpen)
-                .add("conditionBag", conditionBag)
-                .build();
+    @JsonProperty("conditions")
+    private List<DoorCondition> conditions() {
+        return new ArrayList<>(conditionBag.getConditions());
     }
 
+    /**
+     * Replaces the conditions of the door. Every replaced condition is announced as removed and every new condition as
+     * added, so listeners keeping track of conditions see the change.
+     *
+     * @param conditionBag the new conditions
+     */
     public void conditionBag(@NotNull ConditionBag conditionBag) {
+        ConditionBag old = this.conditionBag;
         this.conditionBag = conditionBag;
+        old.getConditions().forEach(c -> Bukkit.getPluginManager().callEvent(new ConditionRemovedEvent(this, old, c)));
+        conditionBag
+                .getConditions()
+                .forEach(c -> Bukkit.getPluginManager().callEvent(new ConditionAddedEvent(this, conditionBag, c)));
         Bukkit.getPluginManager().callEvent(new DoorModifiedEvent(this));
     }
 
@@ -307,6 +303,8 @@ public class ConditionalDoor implements ConfigurationSerializable {
     }
 
     public enum EvaluationType {
-        CUSTOM, AND, OR
+        CUSTOM,
+        AND,
+        OR
     }
 }

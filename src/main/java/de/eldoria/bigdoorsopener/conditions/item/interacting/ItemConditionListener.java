@@ -1,19 +1,19 @@
 /*
  *     SPDX-License-Identifier: AGPL-3.0-only
  *
- *     Copyright (C) 2021 EldoriaRPG Team and Contributor
+ *     Copyright (C) EldoriaRPG Team and Contributor
  */
-
 package de.eldoria.bigdoorsopener.conditions.item.interacting;
 
 import de.eldoria.bigdoorsopener.conditions.DoorCondition;
 import de.eldoria.bigdoorsopener.config.Config;
-import de.eldoria.bigdoorsopener.core.adapter.BigDoorsAdapter;
-import de.eldoria.bigdoorsopener.core.events.ConditionAddedEvent;
-import de.eldoria.bigdoorsopener.core.events.ConditionRemovedEvent;
+import de.eldoria.bigdoorsopener.core.events.ConditionBagModifiedEvent;
+import de.eldoria.bigdoorsopener.core.events.DoorModifiedEvent;
+import de.eldoria.bigdoorsopener.core.events.DoorRegisteredEvent;
+import de.eldoria.bigdoorsopener.core.events.DoorUnregisteredEvent;
 import de.eldoria.bigdoorsopener.door.ConditionalDoor;
-import nl.pim16aap2.bigDoors.BigDoors;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEvent;
 
@@ -24,64 +24,68 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * This listener controls when a player tries to open a door with a item.
+ * Forwards clicks to the item click and item block conditions they belong to.
+ * <p>
+ * The conditions are indexed by their key and rebuilt from the configuration whenever a door or its conditions change,
+ * so replaced condition bags and reloaded doors are picked up.
  */
-public class ItemConditionListener extends BigDoorsAdapter implements Listener {
+public class ItemConditionListener implements Listener {
+    private final Config config;
     private final Map<InteractionKey, List<ItemInteraction>> interactions = new HashMap<>();
 
-    private void register(ConditionalDoor door, ItemInteraction interaction) {
-        getOrComputeConditions(getKey(door, interaction)).add(interaction);
+    public ItemConditionListener(Config config) {
+        this.config = config;
+        rebuild();
     }
 
-    private void unregister(ConditionalDoor door, ItemInteraction interaction) {
-        getOrComputeConditions(getKey(door, interaction)).remove(interaction);
-    }
-
-    private List<ItemInteraction> getOrComputeConditions(InteractionKey key) {
-        return interactions.computeIfAbsent(key, k -> new ArrayList<>());
-    }
-
-    private InteractionKey getKey(ConditionalDoor door, ItemInteraction interaction) {
-        if (interaction instanceof ItemClick) {
-            return ClickInteractionKey.of((ItemClick) interaction);
-        }
-        if (interaction instanceof ItemBlock) {
-            return BlockInteractionKey.of(door, (ItemBlock) interaction);
-        }
-        throw new IllegalStateException("Unknown condition of type " + interaction.getClass());
-    }
-
-    public ItemConditionListener(BigDoors bigDoors, Config config) {
-        super(bigDoors);
+    /**
+     * Rebuilds the index from the doors in the configuration.
+     */
+    public void rebuild() {
+        interactions.clear();
         for (ConditionalDoor door : config.getDoors()) {
             for (DoorCondition condition : door.conditionBag().getConditions("item")) {
-                if (condition instanceof ItemInteraction) {
-                    register(door, (ItemInteraction) condition);
+                if (condition instanceof ItemInteraction interaction) {
+                    interactions
+                            .computeIfAbsent(getKey(door, interaction), k -> new ArrayList<>())
+                            .add(interaction);
                 }
             }
         }
     }
 
-    @EventHandler
-    public void onConditionAdd(ConditionAddedEvent event) {
-        if (event.condition() instanceof ItemInteraction) {
-            register(event.door(), (ItemInteraction) event.condition());
+    private InteractionKey getKey(ConditionalDoor door, ItemInteraction interaction) {
+        if (interaction instanceof ItemClick click) {
+            return ClickInteractionKey.of(click);
         }
+        if (interaction instanceof ItemBlock block) {
+            return BlockInteractionKey.of(door, block);
+        }
+        throw new IllegalStateException("Unknown condition of type " + interaction.getClass());
     }
 
-    @EventHandler
-    public void onConditionRemove(ConditionRemovedEvent event) {
-        if (event.condition() instanceof ItemInteraction) {
-            unregister(event.door(), (ItemInteraction) event.condition());
-        }
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onConditionBagModified(ConditionBagModifiedEvent event) {
+        rebuild();
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onDoorModified(DoorModifiedEvent event) {
+        rebuild();
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onDoorRegistered(DoorRegisteredEvent event) {
+        rebuild();
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onDoorUnregistered(DoorUnregisteredEvent event) {
+        rebuild();
     }
 
     private void notify(InteractionKey key, PlayerInteractEvent event) {
-        getConditions(key).ifPresent(c -> c.forEach(con -> con.clicked(event)));
-    }
-
-    private Optional<List<ItemInteraction>> getConditions(InteractionKey key) {
-        return Optional.ofNullable(interactions.get(key));
+        Optional.ofNullable(interactions.get(key)).ifPresent(c -> c.forEach(con -> con.clicked(event)));
     }
 
     @EventHandler

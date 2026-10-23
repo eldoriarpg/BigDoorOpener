@@ -1,7 +1,6 @@
 # Remove config
 /config/
 
-gradle.properties
 .gradle
 **/build/
 !src/**/build/
@@ -18,3 +17,7 @@ gradle-app.setting
 # Idea
 .idea/
 *.iml
+
+.kotlin/
+.concept/
+run/

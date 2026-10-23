@@ -1,9 +1,8 @@
 /*
  *     SPDX-License-Identifier: AGPL-3.0-only
  *
- *     Copyright (C) 2021 EldoriaRPG Team and Contributor
+ *     Copyright (C) EldoriaRPG Team and Contributor
  */
-
 package de.eldoria.bigdoorsopener.util;
 
 import de.eldoria.bigdoorsopener.conditions.DoorCondition;
@@ -32,7 +31,12 @@ public class ConditionChainEvaluator {
      * @param conditions   conditions to evaluate
      * @return the result of the chain evaluator
      */
-    public static boolean or(Player player, World world, ConditionalDoor door, boolean currentState, Collection<DoorCondition> conditions) {
+    public static boolean or(
+            Player player,
+            World world,
+            ConditionalDoor door,
+            boolean currentState,
+            Collection<DoorCondition> conditions) {
         ConditionChainEvaluator evaluator = new ConditionChainEvaluator();
         for (DoorCondition doorCondition : conditions) {
             evaluator.or(doorCondition, player, world, door, currentState);
@@ -51,7 +55,12 @@ public class ConditionChainEvaluator {
      * @param conditions   conditions to evaluate
      * @return the result of the chain evaluator
      */
-    public static boolean and(Player player, World world, ConditionalDoor door, boolean currentState, Collection<DoorCondition> conditions) {
+    public static boolean and(
+            Player player,
+            World world,
+            ConditionalDoor door,
+            boolean currentState,
+            Collection<DoorCondition> conditions) {
         ConditionChainEvaluator evaluator = new ConditionChainEvaluator();
         for (DoorCondition doorCondition : conditions) {
             evaluator.and(doorCondition, player, world, door, currentState);
@@ -70,14 +79,17 @@ public class ConditionChainEvaluator {
      * @param currentState  the current state of the door
      * @return chain evaluator with result evaluated.
      */
-    public ConditionChainEvaluator or(DoorCondition doorCondition, Player player, World world, ConditionalDoor door, boolean currentState) {
+    public ConditionChainEvaluator or(
+            DoorCondition doorCondition, Player player, World world, ConditionalDoor door, boolean currentState) {
         if (doorCondition == null) return this;
 
         if (current != null && current) return this;
 
-        Optional<ConditionContainer> containerByClass = ConditionRegistrar.getContainerByClass(doorCondition.getClass());
+        Optional<ConditionContainer> containerByClass =
+                ConditionRegistrar.getContainerByClass(doorCondition.getClass());
         if (!containerByClass.isPresent()) {
-            BigDoorsOpener.logger().log(Level.WARNING, "Condition " + doorCondition.getClass() + " is requested but not registered.");
+            BigDoorsOpener.logger()
+                    .log(Level.WARNING, "Condition " + doorCondition.getClass() + " is requested but not registered.");
             return this;
         }
         ConditionContainer container = containerByClass.get();
@@ -115,14 +127,17 @@ public class ConditionChainEvaluator {
      * @param currentState  the current state of the door
      * @return chain evaluator with result evaluated.
      */
-    public ConditionChainEvaluator and(DoorCondition doorCondition, Player player, World world, ConditionalDoor door, boolean currentState) {
+    public ConditionChainEvaluator and(
+            DoorCondition doorCondition, Player player, World world, ConditionalDoor door, boolean currentState) {
         if (doorCondition == null) return this;
 
         if (current != null && !current) return this;
 
-        Optional<ConditionContainer> containerByClass = ConditionRegistrar.getContainerByClass(doorCondition.getClass());
+        Optional<ConditionContainer> containerByClass =
+                ConditionRegistrar.getContainerByClass(doorCondition.getClass());
         if (!containerByClass.isPresent()) {
-            BigDoorsOpener.logger().log(Level.WARNING, "Condition " + doorCondition.getClass() + " is requested but not registered.");
+            BigDoorsOpener.logger()
+                    .log(Level.WARNING, "Condition " + doorCondition.getClass() + " is requested but not registered.");
             return this;
         }
         ConditionContainer container = containerByClass.get();

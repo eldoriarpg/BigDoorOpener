@@ -1,17 +1,19 @@
 /*
  *     SPDX-License-Identifier: AGPL-3.0-only
  *
- *     Copyright (C) 2021 EldoriaRPG Team and Contributor
+ *     Copyright (C) EldoriaRPG Team and Contributor
  */
-
 package de.eldoria.bigdoorsopener.conditions.item;
 
 import de.eldoria.bigdoorsopener.conditions.DoorCondition;
+import de.eldoria.bigdoorsopener.core.conditions.ConditionInput;
 import de.eldoria.bigdoorsopener.door.ConditionalDoor;
 import de.eldoria.bigdoorsopener.util.C;
+import de.eldoria.eldoutilities.commands.Completion;
+import de.eldoria.eldoutilities.commands.command.util.Arguments;
+import de.eldoria.eldoutilities.commands.exceptions.CommandException;
 import de.eldoria.eldoutilities.localization.ILocalizer;
-import de.eldoria.eldoutilities.serialization.SerializationUtil;
-import de.eldoria.eldoutilities.utils.ObjUtil;
+import de.eldoria.eldoutilities.messages.Replacement;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.HoverEvent;
@@ -23,14 +25,23 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
+/**
+ * Base of the conditions which require an item, the key. The amount of the key matters.
+ */
 public abstract class Item implements DoorCondition {
+    /**
+     * Syntax of the arguments shared by all item conditions.
+     */
+    public static final String SYNTAX = "<$syntax.amount$> [$tabcomplete.consumed$]";
+
+    private static final int MAX_AMOUNT = 64;
     private final ItemStack item;
     private final boolean consumed;
 
@@ -41,21 +52,53 @@ public abstract class Item implements DoorCondition {
      * @param consumed true if the items are consumed when the door is opened
      */
     public Item(ItemStack item, boolean consumed) {
-        this.item = ObjUtil.nonNull(item, new ItemStack(Material.AIR));
+        this.item = Objects.requireNonNullElseGet(item, () -> new ItemStack(Material.AIR));
         this.consumed = consumed;
     }
 
-    public static List<String> onTabComplete(CommandSender sender, ILocalizer localizer, String[] args) {
-        if (args.length == 1) {
+    public static List<String> onTabComplete(CommandSender sender, ILocalizer localizer, Arguments args) {
+        if (args.sizeIs(1)) {
             return Collections.singletonList("<" + localizer.getMessage("syntax.amount") + ">");
         }
-        if (args.length == 2) {
-            if (args[1].isEmpty()) {
+        if (args.sizeIs(2)) {
+            if (args.asString(1).isEmpty()) {
                 return Arrays.asList("true", "false");
             }
-            return Arrays.asList("[" + localizer.getMessage("tabcomplete.consumed") + "]", "true", "false");
+            return Completion.completeBoolean(args.asString(1));
         }
         return Collections.emptyList();
+    }
+
+    /**
+     * Takes the key of a new item condition from the main hand of the player, with the amount from the arguments.
+     *
+     * @param sender sender of the command
+     * @param args   arguments of the condition: amount and the optional consumed flag
+     * @return the key
+     * @throws CommandException when the sender is no player or the amount is invalid
+     */
+    protected static ItemStack keyFromHand(CommandSender sender, Arguments args) throws CommandException {
+        Player player = ConditionInput.player(sender);
+        ConditionInput.require(args, 1, DoorCondition.localizer(), SYNTAX);
+        int amount = args.asInt(0);
+        if (amount > MAX_AMOUNT || amount < 1) {
+            throw CommandException.message(
+                    "error.invalidRange", Replacement.create("MIN", 1), Replacement.create("MAX", MAX_AMOUNT));
+        }
+        ItemStack itemInMainHand = player.getInventory().getItemInMainHand().clone();
+        itemInMainHand.setAmount(amount);
+        return itemInMainHand;
+    }
+
+    /**
+     * Reads whether the key of a new item condition is consumed.
+     *
+     * @param args arguments of the condition
+     * @return the consumed flag, false when not given
+     * @throws CommandException when the flag is no boolean
+     */
+    protected static boolean consumed(Arguments args) throws CommandException {
+        return args.asBoolean(1, false);
     }
 
     /**
@@ -121,9 +164,9 @@ public abstract class Item implements DoorCondition {
      * @param player player to take items from
      */
     private void takeFromOffHand(Player player) {
-        ItemStack item = player.getInventory().getItemInMainHand();
+        ItemStack item = player.getInventory().getItemInOffHand();
         item.setAmount(item.getAmount() - item().getAmount());
-        player.getInventory().setItemInMainHand(item);
+        player.getInventory().setItemInOffHand(item);
         player.updateInventory();
     }
 
@@ -153,6 +196,7 @@ public abstract class Item implements DoorCondition {
      * Takes the item from the main or off hand.
      *
      * @param player player to take items from
+     * @return true if the item was taken
      */
     protected boolean tryTakeFromHands(Player player) {
         if (hasPlayerItemInMainHand(player)) {
@@ -166,35 +210,30 @@ public abstract class Item implements DoorCondition {
     }
 
     @Override
-    public @NotNull Map<String, Object> serialize() {
-        return SerializationUtil.newBuilder()
-                .add("item", item)
-                .add("consumed", consumed)
-                .build();
-    }
-
-    @Override
     public Component getDescription(ILocalizer localizer) {
         ItemMeta meta = item.getItemMeta();
         TextComponent.Builder builder = Component.text();
         if (meta != null) {
-            builder.append(Component.text(meta.getDisplayName(), NamedTextColor.AQUA));
-            if (meta.getLore() != null) {
-                for (String s : meta.getLore()) {
-                    builder.append(Component.newline())
-                            .append(Component.text(s, NamedTextColor.LIGHT_PURPLE));
+            builder.append(item.effectiveName().colorIfAbsent(NamedTextColor.AQUA));
+            List<Component> lore = meta.lore();
+            if (lore != null) {
+                for (Component line : lore) {
+                    builder.append(Component.newline()).append(line.colorIfAbsent(NamedTextColor.LIGHT_PURPLE));
                 }
             }
             for (Map.Entry<Enchantment, Integer> entry : meta.getEnchants().entrySet()) {
                 builder.append(Component.newline())
-                        .append(Component.text(entry.getKey().getKey().getKey() + " "
-                                               + entry.getValue().toString(), NamedTextColor.GRAY));
+                        .append(Component.text(
+                                entry.getKey().getKey().getKey() + " "
+                                        + entry.getValue().toString(),
+                                NamedTextColor.GRAY));
             }
         }
 
         return Component.text()
                 .append(Component.text(localizer.getMessage("conditionDesc.item") + " ", C.baseColor))
-                .append(Component.text("[" + item.getType().name().toLowerCase() + "] x" + item.getAmount(), C.highlightColor)
+                .append(Component.text(
+                                "[" + item.getType().name().toLowerCase() + "] x" + item.getAmount(), C.highlightColor)
                         .hoverEvent(HoverEvent.showText(builder.build())))
                 .append(Component.newline())
                 .append(Component.text(localizer.getMessage("conditionDesc.consumed") + " ", C.baseColor))

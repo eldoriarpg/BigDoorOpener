@@ -1,9 +1,8 @@
 /*
  *     SPDX-License-Identifier: AGPL-3.0-only
  *
- *     Copyright (C) 2021 EldoriaRPG Team and Contributor
+ *     Copyright (C) EldoriaRPG Team and Contributor
  */
-
 package de.eldoria.bigdoorsopener.commands.bdosubcommands;
 
 import de.eldoria.bigdoorsopener.config.Config;
@@ -13,114 +12,77 @@ import de.eldoria.bigdoorsopener.core.conditions.ConditionRegistrar;
 import de.eldoria.bigdoorsopener.door.ConditionalDoor;
 import de.eldoria.bigdoorsopener.door.conditioncollections.ConditionBag;
 import de.eldoria.bigdoorsopener.util.Permissions;
-import de.eldoria.eldoutilities.localization.Replacement;
-import de.eldoria.eldoutilities.utils.ArgumentUtils;
-import de.eldoria.eldoutilities.utils.ArrayUtil;
-import de.eldoria.eldoutilities.utils.Parser;
+import de.eldoria.bigdoorsopener.util.Words;
+import de.eldoria.eldoutilities.commands.Completion;
+import de.eldoria.eldoutilities.commands.command.CommandMeta;
+import de.eldoria.eldoutilities.commands.command.util.Arguments;
+import de.eldoria.eldoutilities.commands.command.util.CommandAssertions;
+import de.eldoria.eldoutilities.commands.exceptions.CommandException;
+import de.eldoria.eldoutilities.messages.Replacement;
 import nl.pim16aap2.bigDoors.BigDoors;
-import nl.pim16aap2.bigDoors.Door;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
-import java.util.OptionalInt;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
+/**
+ * Removes a condition of a door by group and index within the group.
+ */
 public class RemoveCondition extends BigDoorsAdapterCommand {
 
-    public RemoveCondition(BigDoors bigDoors, Config config) {
-        super(bigDoors, config);
+    public RemoveCondition(Plugin plugin, BigDoors bigDoors, Config config) {
+        super(
+                plugin,
+                CommandMeta.builder("removeCondition")
+                        .withPermission(Permissions.USE)
+                        .addArgument("syntax.doorId", true)
+                        .addArgument("syntax.condition", true)
+                        .addArgument("tabcomplete.conditionId", false)
+                        .build(),
+                bigDoors,
+                config);
     }
 
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        if (denyAccess(sender, Permissions.USE)) {
-            return true;
-        }
+    public void onCommand(@NotNull CommandSender sender, @NotNull String alias, @NotNull Arguments args)
+            throws CommandException {
+        ConditionalDoor door = getOrRegister(getPlayerDoor(args.asString(0), sender));
 
-        if (argumentsInvalid(sender, args, 2,
-                "<$syntax.doorId$> <$syntax.condition$>")) {
-            return false;
-        }
-
-        Player playerFromSender = getPlayerFromSender(sender);
-
-        Door playerDoor = getPlayerDoor(args[0], playerFromSender);
-
-        if (playerDoor == null) {
-            return true;
-        }
-
-        ConditionalDoor cDoor = getOrRegister(playerDoor, playerFromSender);
-
-        if (cDoor == null) {
-            return true;
-        }
-
-        Optional<ConditionGroup> optionalGroup = ConditionRegistrar.getConditionGroup(args[1]);
-
-        if (!optionalGroup.isPresent()) {
-            messageSender().sendLocalizedError(sender, "error.invalidConditionType");
-            return true;
-        }
-        ConditionGroup container = optionalGroup.get();
-
+        ConditionGroup container = ConditionRegistrar.getConditionGroup(args.asString(1))
+                .orElseThrow(() -> CommandException.message("error.invalidConditionType"));
         String group = container.name();
 
-        if (denyAccess(sender, Permissions.getConditionPermission(group), Permissions.ALL_CONDITION)) {
-            return true;
-        }
+        CommandAssertions.permission(
+                sender, false, Permissions.getConditionPermission(group), Permissions.ALL_CONDITION);
 
-        ConditionBag conditionBag = cDoor.conditionBag();
+        ConditionBag conditionBag = door.conditionBag();
+        CommandAssertions.isTrue(conditionBag.isConditionSet(container), "error.conditionNotSet");
+        CommandAssertions.isTrue(
+                conditionBag.removeCondition(door, container, args.asInt(2, 0)), "error.conditionNotSet");
 
-        if (!conditionBag.isConditionSet(container)) {
-            messageSender().sendLocalizedError(sender, "error.conditionNotSet");
-            return true;
-        } else {
-            String id = ArgumentUtils.getOrDefault(args, 2, "0");
-            Optional<Integer> optionalInt = Parser.parseInt(id);
-            if (!optionalInt.isPresent()) {
-                messageSender().sendLocalizedError(sender, "error.invalidNumber");
-                return true;
-            }
-            if (!conditionBag.removeCondition(cDoor, container, optionalInt.get())) {
-                messageSender().sendLocalizedError(sender, "error.conditionNotSet");
-                return true;
-            }
-        }
+        messageSender().sendMessage(sender, "removeCondition." + group);
 
-        messageSender().sendLocalizedMessage(sender, "removeCondition." + group);
-
-        // check if condition is in evaluator if a custom evaluator is present.
-        if (cDoor.evaluationType() == ConditionalDoor.EvaluationType.CUSTOM) {
-            Pattern compile = Pattern.compile(group, Pattern.CASE_INSENSITIVE);
-            if (compile.matcher(cDoor.evaluator()).find()) {
-                messageSender().sendLocalizedError(sender, "warning.valueStillUsed",
-                        Replacement.create("VALUE", group).addFormatting('6'));
-            }
+        if (door.evaluationType() == ConditionalDoor.EvaluationType.CUSTOM
+                && Words.pattern(List.of(group)).matcher(door.evaluator()).find()) {
+            messageSender().sendError(sender, "warning.valueStillUsed", Replacement.create("VALUE", group));
         }
 
         if (conditionBag.isEmpty()) {
-            messageSender().sendLocalizedMessage(sender, "warning.chainIsEmpty");
+            messageSender().sendMessage(sender, "warning.chainIsEmpty");
         }
-        return true;
     }
 
     @Override
-    public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
-        if (args.length == 1) {
-            return getDoorCompletion(sender, args[0]);
+    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull String alias, @NotNull Arguments args) {
+        if (args.sizeIs(1)) {
+            return getDoorCompletion(sender, args.asString(0));
         }
-        if (args.length == 2) {
-            return ArrayUtil.startingWithInArray(args[1], ConditionRegistrar.getGroups().toArray(new String[0])).collect(Collectors.toList());
+        if (args.sizeIs(2)) {
+            return Completion.complete(args.asString(1), ConditionRegistrar.getGroups());
         }
-        if (args.length == 3) {
+        if (args.sizeIs(3)) {
             return Collections.singletonList(localizer().getMessage("tabcomplete.conditionId"));
         }
         return Collections.emptyList();

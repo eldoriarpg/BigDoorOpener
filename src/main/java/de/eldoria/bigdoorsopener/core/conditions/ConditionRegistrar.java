@@ -1,15 +1,12 @@
 /*
  *     SPDX-License-Identifier: AGPL-3.0-only
  *
- *     Copyright (C) 2021 EldoriaRPG Team and Contributor
+ *     Copyright (C) EldoriaRPG Team and Contributor
  */
-
 package de.eldoria.bigdoorsopener.core.conditions;
 
 import de.eldoria.bigdoorsopener.conditions.DoorCondition;
 import de.eldoria.bigdoorsopener.core.conditions.exceptions.ConditionRegistrationException;
-import org.bukkit.configuration.serialization.ConfigurationSerialization;
-import org.bukkit.configuration.serialization.SerializableAs;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -18,31 +15,30 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+/**
+ * Registry of all known conditions. A condition has to be registered before doors using it are loaded.
+ */
 public final class ConditionRegistrar {
     private static final Map<String, ConditionGroup> GROUPS = new HashMap<>();
     private static final Map<Class<? extends DoorCondition>, ConditionContainer> CONTAINER = new HashMap<>();
+    private static final Map<String, ConditionContainer> TYPES = new HashMap<>();
 
-    private ConditionRegistrar() {
-    }
+    private ConditionRegistrar() {}
 
     /**
-     * This will register a condition container at the condition registrat.
-     * <p>The provided class in the container requires the {@link SerializableAs} annotation.
+     * This will register a condition container at the condition registrar.
      *
      * @param conditionContainer condition container to register
-     * @throws ConditionRegistrationException when the condition or its serialized name is already implemented
-     * @throws IllegalStateException          when the annotation {@link SerializableAs} is not present
+     * @throws ConditionRegistrationException when the condition or its type name is already registered
      */
-    public static void registerCondition(ConditionContainer conditionContainer) throws ConditionRegistrationException, IllegalStateException {
-        GROUPS.computeIfAbsent(conditionContainer.getGroup(), ConditionGroup::new).addCondition(conditionContainer);
-
-        if (CONTAINER.containsKey(conditionContainer.getClazz())) {
+    public static void registerCondition(ConditionContainer conditionContainer) throws ConditionRegistrationException {
+        if (CONTAINER.containsKey(conditionContainer.getClazz()) || TYPES.containsKey(conditionContainer.typeName())) {
             throw new ConditionRegistrationException(conditionContainer.getClazz());
         }
-
+        GROUPS.computeIfAbsent(conditionContainer.getGroup(), ConditionGroup::new)
+                .addCondition(conditionContainer);
         CONTAINER.put(conditionContainer.getClazz(), conditionContainer);
-
-        ConfigurationSerialization.registerClass(conditionContainer.getClazz());
+        TYPES.put(conditionContainer.typeName(), conditionContainer);
     }
 
     /**
@@ -54,6 +50,16 @@ public final class ConditionRegistrar {
      */
     public static Optional<ConditionContainer> getContainerByClass(Class<? extends DoorCondition> clazz) {
         return Optional.ofNullable(CONTAINER.get(clazz));
+    }
+
+    /**
+     * Get a condition container by the name which identifies it in the stored doors.
+     *
+     * @param typeName type name of the condition
+     * @return optional condition container
+     */
+    public static Optional<ConditionContainer> getContainerByTypeName(String typeName) {
+        return Optional.ofNullable(TYPES.get(typeName));
     }
 
     /**
@@ -92,20 +98,18 @@ public final class ConditionRegistrar {
     }
 
     /**
-     * Get a condition by name.
+     * Get a condition by name, ignoring case.
      *
      * @param name name of condition
      * @return option condition container
      */
     public static Optional<ConditionContainer> getConditionByName(String name) {
         for (ConditionGroup group : GROUPS.values()) {
-            for (String condition : group.getConditions()) {
-                if (condition.equalsIgnoreCase(name)) {
-                    return group.getConditionByName(name);
-                }
+            Optional<ConditionContainer> condition = group.getConditionByName(name);
+            if (condition.isPresent()) {
+                return condition;
             }
         }
         return Optional.empty();
     }
-
 }

@@ -5,7 +5,7 @@ sidebar_position: 1
 
 # Big Doors Opener
 
-Big Doors Opener is an add-on for [Big Doors](https://www.spigotmc.org/resources/58669/). Big Doors lets you build
+Big Doors Opener is an add-on for [Big Doors](https://modrinth.com/plugin/bigdoors). Big Doors lets you build
 doors, drawbridges and gates that move. Big Doors Opener makes them open and close by themselves.
 
 You tell a door *when* it should be open. That could be when a player walks up to it, holds a key, has a permission,
@@ -22,6 +22,7 @@ work together.
 - **Open doors by world time or weather.** Open the city gate at dawn and close it at dusk.
 - **Use PlaceholderAPI and MythicMobs.** Open a door based on placeholder values, or when a certain MythicMobs mob
   dies.
+- **Add a cooldown.** Make a player, or everybody, wait before a door opens again.
 - **Combine conditions.** All of them must be true, one is enough, or you write your own rule. See
   [The evaluator](./evaluator.md).
 - **Manage many doors.** Copy conditions or whole door settings from one door to another. Clickable chat messages let
@@ -31,9 +32,9 @@ work together.
 
 | What | Version |
 |---|---|
-| Server | Spigot or Paper. The plugin declares API version 1.13. |
-| Java | 17 or newer |
-| Big Doors | required. Built against Big Doors 0.1.8.46. |
+| Server | Paper 1.21.11 or newer. Spigot is not supported. |
+| Java | 25 or newer |
+| Big Doors | required, the classic 0.1.8 versions. |
 | NashornJs | needed for [custom evaluators](./evaluator.md) and the `placeholder` condition |
 | WorldGuard | optional, version 7, for the region conditions |
 | PlaceholderAPI | optional, for the `placeholder` condition |
@@ -46,7 +47,8 @@ Big Doors Opener works with the classic Big Doors plugin (the 0.1.8 versions). T
 
 ## Download
 
-Get the latest version from [lyna.eldoria.de](https://lyna.eldoria.de/products/3).
+Get the latest version from [Modrinth](https://modrinth.com/plugin/2mTWavvv) or
+[lyna.eldoria.de](https://lyna.eldoria.de/products/3).
 
 ## Where to go next
 
@@ -56,4 +58,4 @@ Get the latest version from [lyna.eldoria.de](https://lyna.eldoria.de/products/3
 - [The evaluator](./evaluator.md) explains how conditions are combined.
 - [Commands](./reference/commands.md), [Permissions](./reference/permissions.md) and
   [Configuration](./reference/configuration.md) are the reference pages.
-- [Migrating from version 1](./migration.md) helps if you still run a very old version.
+- [Migration](./migration.md) explains what happens when you update from an older version.

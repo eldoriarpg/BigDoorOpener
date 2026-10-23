@@ -1,14 +1,15 @@
 /*
  *     SPDX-License-Identifier: AGPL-3.0-only
  *
- *     Copyright (C) 2021 EldoriaRPG Team and Contributor
+ *     Copyright (C) EldoriaRPG Team and Contributor
  */
-
 package de.eldoria.bigdoorsopener.core;
 
 import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.protection.regions.RegionContainer;
 import de.eldoria.bigdoorsopener.commands.BDOCommand;
+import de.eldoria.bigdoorsopener.conditions.cooldown.GlobalCooldown;
+import de.eldoria.bigdoorsopener.conditions.cooldown.PlayerCooldown;
 import de.eldoria.bigdoorsopener.conditions.item.ItemHolding;
 import de.eldoria.bigdoorsopener.conditions.item.ItemOwning;
 import de.eldoria.bigdoorsopener.conditions.item.interacting.ItemBlock;
@@ -29,65 +30,62 @@ import de.eldoria.bigdoorsopener.conditions.worldlocation.WorldProximity;
 import de.eldoria.bigdoorsopener.conditions.worldlocation.WorldRegion;
 import de.eldoria.bigdoorsopener.conditions.worldlocation.WorldSimpleRegion;
 import de.eldoria.bigdoorsopener.config.Config;
-import de.eldoria.bigdoorsopener.config.TimedDoor;
+import de.eldoria.bigdoorsopener.config.JacksonConfiguration;
+import de.eldoria.bigdoorsopener.config.LegacyDoorMigration;
+import de.eldoria.bigdoorsopener.config.elements.Settings;
 import de.eldoria.bigdoorsopener.core.conditions.ConditionRegistrar;
 import de.eldoria.bigdoorsopener.core.exceptions.PluginInitFailed;
 import de.eldoria.bigdoorsopener.core.listener.DoorOpenedListener;
 import de.eldoria.bigdoorsopener.core.listener.ModificationListener;
 import de.eldoria.bigdoorsopener.core.listener.registration.RegisterInteraction;
 import de.eldoria.bigdoorsopener.core.scheduler.DoorChecker;
+import de.eldoria.bigdoorsopener.core.updates.Updates;
 import de.eldoria.bigdoorsopener.door.ConditionalDoor;
-import de.eldoria.bigdoorsopener.door.conditioncollections.ConditionBag;
-import de.eldoria.bigdoorsopener.door.conditioncollections.ConditionChain;
 import de.eldoria.bigdoorsopener.util.CachingJSEngine;
-import de.eldoria.eldoutilities.bstats.EldoMetrics;
-import de.eldoria.eldoutilities.bstats.charts.AdvancedPie;
-import de.eldoria.eldoutilities.bstats.charts.DrilldownPie;
-import de.eldoria.eldoutilities.bstats.charts.SimplePie;
-import de.eldoria.eldoutilities.container.Pair;
+import de.eldoria.eldoutilities.config.template.PluginBaseConfiguration;
 import de.eldoria.eldoutilities.localization.ILocalizer;
+import de.eldoria.eldoutilities.localization.Localizer;
 import de.eldoria.eldoutilities.messages.MessageSender;
 import de.eldoria.eldoutilities.plugin.EldoPlugin;
-import de.eldoria.eldoutilities.updater.Updater;
-import de.eldoria.eldoutilities.updater.lynaupdater.LynaUpdateData;
 import nl.pim16aap2.bigDoors.BigDoors;
-import nl.pim16aap2.bigDoors.Commander;
+import org.bstats.bukkit.Metrics;
+import org.bstats.charts.AdvancedPie;
+import org.bstats.charts.DrilldownPie;
+import org.bstats.charts.SimplePie;
 import org.bukkit.Bukkit;
-import org.bukkit.configuration.serialization.ConfigurationSerializable;
-import org.bukkit.configuration.serialization.SerializableAs;
-import org.bukkit.plugin.Plugin;
-import org.bukkit.scheduler.BukkitScheduler;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Arrays;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Plugin entry point.
+ * <p>
+ * The conditions, localizer and message sender are set up on enable. Everything which needs Big Doors and the
+ * optional plugins (the configuration, the door checker, listeners and commands) is set up after the server started.
+ */
 public class BigDoorsOpener extends EldoPlugin {
+    private static final Pattern BIG_DOORS_VERSION = Pattern.compile("([0-9]\\.(?:[0-9]\\.?)+)");
+    private static final Pattern BIG_DOORS_BUILD = Pattern.compile("\\((b[0-9]+)\\)");
 
     private static CachingJSEngine JS;
     private static boolean placeholderEnabled = false;
     private static boolean mythicMobsEnabled;
     private static RegionContainer regionContainer = null;
     private static BigDoorsOpener instance;
-    private final BukkitScheduler scheduler = Bukkit.getScheduler();
+    private final JacksonConfiguration configuration = new JacksonConfiguration(this);
+    private final Updates updates = new Updates(this, this::getDoorsConfig);
     private Config config;
-    private boolean initialized;
     private ILocalizer localizer;
-    // External instances.
     private BigDoors doors;
-    private Commander commander;
-    // scheduler
     private DoorChecker doorChecker;
-    // listener
-    private WeatherListener weatherListener;
-    private RegisterInteraction registerInteraction;
-    private boolean postStart = false;
+    private ItemConditionListener itemConditionListener;
 
     public static RegionContainer regionContainer() {
         return regionContainer;
@@ -102,8 +100,6 @@ public class BigDoorsOpener extends EldoPlugin {
         return placeholderEnabled;
     }
 
-    @SuppressWarnings("StaticVariableUsedBeforeInitialization")
-    @NotNull
     public static boolean isMythicMobsEnabled() {
         return mythicMobsEnabled;
     }
@@ -125,139 +121,109 @@ public class BigDoorsOpener extends EldoPlugin {
     }
 
     @Override
-    public void onPluginEnable(boolean reload) {
-        if (!initialized) {
-            BigDoorsOpener.instance = this;
-            buildSerializer();
-        } else {
-            localizer.setLocale(config.language());
-            doorChecker.reload();
-        }
-        initialized = true;
+    public Level getLogLevel() {
+        return configuration.secondary(PluginBaseConfiguration.KEY).logLevel();
     }
 
     @Override
-    public void onPostStart(boolean reload) {
-        if (postStart) return;
-        postStart = true;
-        // Load external resources. Must be loaded first.
-        loadExternalSources();
+    public void onPluginEnable() throws IOException {
+        instance = this;
+        migrateLegacyConfiguration();
+        registerConditions();
+        localizer = Localizer.builder(this, "en_US")
+                .setIncludedLocales("en_US", "de_DE")
+                .build();
+        MessageSender.builder(this).prefix("<gold>[BDO]").localizer(localizer).register();
+    }
 
+    private void migrateLegacyConfiguration() throws IOException {
+        if (LegacyDoorMigration.migrate(getDataFolder().toPath(), getLogger())) {
+            configuration.main().version(Settings.CURRENT_VERSION);
+            configuration.save();
+        }
+    }
+
+    @Override
+    public void onPostStart() {
+        loadExternalSources();
         lateInitThirdPartyAPIs();
 
-        // create config
-        config = new Config(instance);
-
+        config = new Config(this, configuration);
+        localizer.setLocale(config.language());
         JS = new CachingJSEngine(config.jsCacheSize());
 
-        // Check for updates
-        if (config.isCheckUpdates()) {
-            Updater.lyna(LynaUpdateData.builder(this, 3)
-                            .notifyPermission("bdo.command.reload")
-                            .updateUrl("https://discord.gg/JJdx3xe")
-                            .build())
-                    .start();
-        }
-
-        localizer = ILocalizer.create(instance, "de_DE", "en_US");
-        localizer.setLocale(config.language());
-
-        //enable metrics
+        updates.apply();
         enableMetrics();
 
+        doorChecker = new DoorChecker(config, doors);
+        scheduleRepeatingTask(doorChecker, 100, 1);
 
-        MessageSender.create(instance, "§6[BDO]");
-
-        // start door checker
-        doorChecker = DoorChecker.start(this, config, doors);
-        scheduler.scheduleSyncRepeatingTask(instance, doorChecker, 100, 1);
-
-        registerListener();
-
-        registerCommand("bigdoorsopener",
-                new BDOCommand(instance, doors, config, doorChecker));
+        registerListeners();
+        registerCommand(new BDOCommand(this, doors, config));
     }
 
-    private void registerListener() {
-        weatherListener = new WeatherListener();
-        registerInteraction = new RegisterInteraction(MessageSender.getPluginMessageSender(this), config);
-        registerListener(new ModificationListener(config), doorChecker, new DoorOpenedListener(config),
-                new ItemConditionListener(doors, config), registerInteraction, weatherListener);
-        if (mythicMobsEnabled) {
-            registerListener(new MythicMobsListener(doors, config));
+    @Override
+    public void onPluginDisable() {
+        updates.stop();
+        if (config != null) {
+            config.save();
         }
     }
 
-    @SuppressWarnings({"AssignmentToStaticFieldFromInstanceMethod", "VariableNotUsedInsideIf"})
-    private void loadExternalSources() throws PluginInitFailed {
+    private void registerListeners() {
+        itemConditionListener = new ItemConditionListener(config);
+        registerListener(
+                new ModificationListener(config),
+                doorChecker,
+                new DoorOpenedListener(config),
+                itemConditionListener,
+                new RegisterInteraction(getPluginMessageSender(), config),
+                new WeatherListener());
+        if (mythicMobsEnabled) {
+            registerListener(new MythicMobsListener(config));
+        }
+    }
 
+    private void loadExternalSources() throws PluginInitFailed {
         if (!getPluginManager().isPluginEnabled("BigDoors")) {
-            logger().warning("Big Doors is disabled.");
             getPluginManager().disablePlugin(this);
             throw new PluginInitFailed("Big Doors is not enabled");
         }
 
-        Plugin bigDoorsPlugin = getPluginManager().getPlugin("BigDoors");
-        doors = (BigDoors) bigDoorsPlugin;
-        commander = doors.getCommander();
+        doors = (BigDoors) getPluginManager().getPlugin("BigDoors");
 
-        if (commander != null) {
-            logger().info("Hooked into Big Doors successfully.");
-        } else {
-            logger().warning("Big Doors is not ready or not loaded properly");
-            throw new PluginInitFailed("Big Doors is not enabled");
+        if (doors.getCommander() == null) {
+            throw new PluginInitFailed("Big Doors is not ready or not loaded properly");
         }
+        logger().info("Hooked into Big Doors successfully.");
     }
 
     private void lateInitThirdPartyAPIs() {
-        // Since bukkit is not able to guarantee that plugins will be loaded before this,
-        // the third party apis will be initialized delayed
-
-        // check if world guard is loaded
         if (Bukkit.getPluginManager().isPluginEnabled("WorldGuard")) {
-            logger().info("World Guard found. Trying to get a hook.");
-
-            String worldGuard = Bukkit.getPluginManager().getPlugin("WorldGuard").getDescription().getVersion();
-            if (worldGuard.startsWith("7")) {
-                regionContainer = WorldGuard.getInstance().getPlatform().getRegionContainer();
-                if (regionContainer != null) {
-                    logger().info("Hooked into world guard successfully.");
-                } else {
-                    logger().warning("Failed to hook into world guard.");
-                }
+            regionContainer = WorldGuard.getInstance().getPlatform().getRegionContainer();
+            if (regionContainer != null) {
+                logger().info("Hooked into world guard successfully.");
             } else {
-                logger().info("Found legacy World Guard Version. Region conditions can't be used.");
+                logger().warning("Failed to hook into world guard.");
             }
         } else {
             logger().info("World guard not found. Region conditions can't be used.");
         }
 
-        // check if placeholder api is present.
-        if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
-            placeholderEnabled = true;
-            logger().info("Placeholder API found. Enabling placeholder usage.");
-        } else {
-            logger().info("Placeholder API not found. Placeholder usage is disabled.");
-        }
+        placeholderEnabled = Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI");
+        logger().info(
+                        placeholderEnabled
+                                ? "Placeholder API found. Enabling placeholder usage."
+                                : "Placeholder API not found. Placeholder usage is disabled.");
 
-        if (Bukkit.getPluginManager().isPluginEnabled("MythicMobs")) {
-            mythicMobsEnabled = true;
-            logger().info("MythicMobs found. Enabling mythic mobs listener.");
-        } else {
-            logger().info("MythicMobs not found. MythicMobs conditions are disabled.");
-        }
+        mythicMobsEnabled = Bukkit.getPluginManager().isPluginEnabled("MythicMobs");
+        logger().info(
+                        mythicMobsEnabled
+                                ? "MythicMobs found. Enabling mythic mobs listener."
+                                : "MythicMobs not found. MythicMobs conditions are disabled.");
     }
 
-    @Override
-    public List<Class<? extends ConfigurationSerializable>> getConfigSerialization() {
-        return Arrays.asList(TimedDoor.class, ConditionChain.class, ConditionBag.class, ConditionalDoor.class);
-    }
-
-    /**
-     * Register the serializer classes. When a provided alias should be used the class needs the {@link SerializableAs}
-     * annotation. Its hightly recommended to set a alias otherwise moving a class would break serialization.
-     */
-    private void buildSerializer() {
+    private void registerConditions() {
         ConditionRegistrar.registerCondition(ItemBlock.getConditionContainer());
         ConditionRegistrar.registerCondition(ItemClick.getConditionContainer());
         ConditionRegistrar.registerCondition(ItemHolding.getConditionContainer());
@@ -274,69 +240,46 @@ public class BigDoorsOpener extends EldoPlugin {
         ConditionRegistrar.registerCondition(Weather.getConditionContainer());
         ConditionRegistrar.registerCondition(Placeholder.getConditionContainer());
         ConditionRegistrar.registerCondition(MythicMob.getConditionContainer());
+        ConditionRegistrar.registerCondition(PlayerCooldown.getConditionContainer());
+        ConditionRegistrar.registerCondition(GlobalCooldown.getConditionContainer());
     }
 
-
-    /**
-     * Enable metrics
-     */
     private void enableMetrics() {
         if (!config.isEnableMetrics()) return;
 
-        EldoMetrics metrics = new EldoMetrics(this, 8015);
+        Metrics metrics = new Metrics(this, 8015);
 
         logger().info(localizer.getMessage("general.metrics"));
 
-        // old version. will be removed when enough ppl are on version 2.0
-        metrics.addCustomChart(new SimplePie("big_doors_version",
-                () -> doors.getDescription().getVersion()));
+        metrics.addCustomChart(
+                new SimplePie("big_doors_version", () -> doors.getDescription().getVersion()));
 
-        // new hopefully more detailed version information.
         metrics.addCustomChart(new DrilldownPie("big_doors_version_new", () -> {
-            String ver = doors.getDescription().getVersion();
-            Map<String, Map<String, Integer>> map = new HashMap<>();
-            Pair<String, String> doorsVersion = getDoorsVersion(ver);
-            Map<String, Integer> versionMap = new HashMap<>();
-            versionMap.put(doorsVersion.second, 1);
-            map.put(doorsVersion.first, versionMap);
-            return map;
+            String version = doors.getDescription().getVersion();
+            return Map.of(bigDoorsVersion(version), Map.of(bigDoorsBuild(version), 1));
         }));
 
-        // Get some insights in the condition types.
-        // This will probably help to decide which should be developed further.
         metrics.addCustomChart(new AdvancedPie("condition_types", () -> {
             Map<String, Integer> counts = new HashMap<>();
             Collection<ConditionalDoor> values = config.getDoors();
             for (String group : ConditionRegistrar.getGroups()) {
-                ConditionRegistrar.getConditionGroup(group).ifPresent(g ->
-                        counts.put(group, (int) values.parallelStream().filter(d -> d.conditionBag().isConditionSet(g)).count()));
+                ConditionRegistrar.getConditionGroup(group)
+                        .ifPresent(g -> counts.put(group, (int) values.stream()
+                                .filter(d -> d.conditionBag().isConditionSet(g))
+                                .count()));
             }
             return counts;
         }));
     }
 
-    private Pair<String, String> getDoorsVersion(String ver) {
-        Pattern version = Pattern.compile("([0-9]\\.(?:[0-9]\\.?)+)");
-        Pattern build = Pattern.compile("\\((b[0-9]+)\\)");
+    private static String bigDoorsVersion(String version) {
+        Matcher matcher = BIG_DOORS_VERSION.matcher(version);
+        return matcher.find() ? matcher.group(1) : "undefined";
+    }
 
-        Matcher versionMatcher = version.matcher(ver);
-        Matcher buildMatcher = build.matcher(ver);
-
-        String versionString;
-        String buildString;
-
-        if (versionMatcher.find()) {
-            versionString = versionMatcher.group(1);
-        } else {
-            versionString = "undefined";
-        }
-
-        if (buildMatcher.find()) {
-            buildString = buildMatcher.group(1);
-        } else {
-            buildString = "release";
-        }
-        return new Pair<>(versionString, buildString);
+    private static String bigDoorsBuild(String version) {
+        Matcher matcher = BIG_DOORS_BUILD.matcher(version);
+        return matcher.find() ? matcher.group(1) : "release";
     }
 
     /**
@@ -352,10 +295,13 @@ public class BigDoorsOpener extends EldoPlugin {
     }
 
     /**
-     * Reloads the configuration and door checker.
+     * Reloads the configuration, the update settings and the door checker.
      */
     public void reload() {
         config.reloadConfig();
+        localizer.setLocale(config.language());
+        updates.apply();
         doorChecker.reload();
+        itemConditionListener.rebuild();
     }
 }

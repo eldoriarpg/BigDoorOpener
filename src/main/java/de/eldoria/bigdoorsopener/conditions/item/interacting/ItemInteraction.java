@@ -1,11 +1,11 @@
 /*
  *     SPDX-License-Identifier: AGPL-3.0-only
  *
- *     Copyright (C) 2021 EldoriaRPG Team and Contributor
+ *     Copyright (C) EldoriaRPG Team and Contributor
  */
-
 package de.eldoria.bigdoorsopener.conditions.item.interacting;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.eldoria.bigdoorsopener.conditions.item.Item;
 import de.eldoria.bigdoorsopener.door.ConditionalDoor;
 import org.bukkit.World;
@@ -22,6 +22,7 @@ public abstract class ItemInteraction extends Item {
     /**
      * A set of user which has clicked since the last check.
      */
+    @JsonIgnore
     private final Set<UUID> playersClicked = new HashSet<>();
 
     /**

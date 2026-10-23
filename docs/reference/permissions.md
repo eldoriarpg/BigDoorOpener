@@ -13,10 +13,11 @@ may use every command.
 |---|---|
 | `bdo.command.use` | All door commands: `setCondition`, `addCondition`, `removeCondition`, `setEvaluator`, `info`, `list`, `stayOpen`, `invertOpen`, `setState`, `copyCondition`, `cloneDoor`, `unregister`. |
 | `bdo.command.givekey` | `/bdo giveKey`. |
-| `bdo.command.reload` | `/bdo reload` and `/bdo debug`. Also shows a message when an update is available. |
+| `bdo.command.reload` | `/bdo reload`. |
+| `bdo.command.debug` | `/bdo debug`. |
+| `bdo.updates` | Hear about new versions when joining, and choose whether they are downloaded on their own. |
 | `bdo.customEvaluator` | Setting a [custom evaluator](../evaluator.md#custom). |
 | `bdo.accessAll` | Managing doors that belong to other players. Also makes `/bdo list` show all doors. |
-| `de.eldoria.eldoutilitites.debug` | `/bdo debug`, as an alternative to `bdo.command.reload`. |
 
 ## Conditions
 
@@ -32,7 +33,11 @@ To set, add, remove or copy a condition, a player needs `bdo.command.use` and th
 | `bdo.condition.weather` | `weather` |
 | `bdo.condition.placeholder` | `placeholder` |
 | `bdo.condition.mythicMob` | `mythicMob` |
+| `bdo.condition.cooldown` | `cooldown` |
+| `bdo.condition.globalCooldown` | `globalCooldown` |
 | `bdo.condition.all` | all conditions. Also needed to copy all conditions at once and for `cloneDoor`. |
+
+`bdo.*` gives all permissions of Big Doors Opener.
 
 ## Example
 

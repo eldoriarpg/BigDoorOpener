@@ -1,73 +1,78 @@
 /*
  *     SPDX-License-Identifier: AGPL-3.0-only
  *
- *     Copyright (C) 2021 EldoriaRPG Team and Contributor
+ *     Copyright (C) EldoriaRPG Team and Contributor
  */
-
 package de.eldoria.bigdoorsopener.commands.bdosubcommands;
 
 import de.eldoria.bigdoorsopener.config.Config;
 import de.eldoria.bigdoorsopener.core.adapter.BigDoorsAdapterCommand;
 import de.eldoria.bigdoorsopener.door.ConditionalDoor;
 import de.eldoria.bigdoorsopener.util.Permissions;
+import de.eldoria.eldoutilities.commands.command.CommandMeta;
+import de.eldoria.eldoutilities.commands.command.util.Arguments;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.NamedTextColor;
 import nl.pim16aap2.bigDoors.BigDoors;
 import nl.pim16aap2.bigDoors.Door;
-import org.bukkit.command.Command;
+import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.Objects;
 
+/**
+ * Lists the registered doors. Players without {@link Permissions#ACCESS_ALL} only see their own doors.
+ */
 public class DoorList extends BigDoorsAdapterCommand {
     private final Config config;
 
-    public DoorList(BigDoors bigDoors, Config config) {
-        super(bigDoors, config);
+    public DoorList(Plugin plugin, BigDoors bigDoors, Config config) {
+        super(
+                plugin,
+                CommandMeta.builder("list").withPermission(Permissions.USE).build(),
+                bigDoors,
+                config);
         this.config = config;
     }
 
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        if (denyAccess(sender, Permissions.USE)) {
-            return true;
-        }
-
+    public void onCommand(@NotNull CommandSender sender, @NotNull String alias, @NotNull Arguments args) {
         Map<Long, ConditionalDoor> doors = config.getDoorMap();
-        StringBuilder builder = new StringBuilder(localizer().getMessage("list.title")).append("\n");
-
-        Player playerFromSender = getPlayerFromSender(sender);
-
-        if (sender.hasPermission(Permissions.ACCESS_ALL)) {
-            for (ConditionalDoor value : doors.values()) {
-                Door door = getDoor(String.valueOf(value.doorUID()));
-                builder.append(value.doorUID()).append(" | ")
-                        .append("§6").append(door.getName()).append("§r")
-                        .append(" (").append(door.getWorld().getName()).append(")\n");
-            }
+        Collection<Door> visible;
+        if (sender.hasPermission(Permissions.ACCESS_ALL) || !(sender instanceof Player player)) {
+            visible = doors.keySet().stream()
+                    .map(id -> getDoor(String.valueOf(id)))
+                    .filter(Objects::nonNull)
+                    .toList();
         } else {
-            List<Door> registeredDoors = getDoors(playerFromSender, null)
-                    .stream()
+            visible = getDoors(player, null).stream()
                     .filter(d -> doors.containsKey(d.getDoorUID()))
-                    .collect(Collectors.toList());
-            for (Door value : registeredDoors) {
-                builder.append(value.getDoorUID()).append(" | ")
-                        .append("§6").append(value.getName()).append("§r")
-                        .append(" (").append(value.getWorld().getName()).append(")\n");
-            }
+                    .toList();
         }
 
-        messageSender().sendMessage(sender, builder.toString());
-        return true;
-
+        TextComponent.Builder list = Component.text()
+                .append(Component.text(localizer().getMessage("list.title"), NamedTextColor.DARK_GREEN));
+        for (Door door : visible) {
+            World world = door.getWorld();
+            list.append(Component.newline())
+                    .append(Component.text(door.getDoorUID() + " | ", NamedTextColor.DARK_GREEN))
+                    .append(Component.text(door.getName(), NamedTextColor.GOLD))
+                    .append(Component.text(
+                            " (" + (world == null ? "?" : world.getName()) + ")", NamedTextColor.DARK_GREEN));
+        }
+        sender.sendMessage(list.build());
     }
 
     @Override
-    public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
+    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull String alias, @NotNull Arguments args) {
         return Collections.emptyList();
     }
 }

@@ -1,0 +1,44 @@
+[versions]
+jackson = "3.2.4"
+utilities = "3.5.4"
+paper = "1.21.11-R0.1-SNAPSHOT"
+junit = "6.1.3"
+palantir = "2.102.0"
+
+[libraries]
+paper = { module = "io.papermc.paper:paper-api", version.ref = "paper" }
+
+jackson-bom = { module = "tools.jackson:jackson-bom", version.ref = "jackson" }
+jackson-databind = { module = "tools.jackson.core:jackson-databind" }
+jackson-yaml = { module = "tools.jackson.dataformat:jackson-dataformat-yaml" }
+jackson-annotations = { module = "com.fasterxml.jackson.core:jackson-annotations" }
+
+eldoutil-plugin = { module = "de.eldoria.util:plugin", version.ref = "utilities" }
+eldoutil-jackson = { module = "de.eldoria.util:jackson-configuration", version.ref = "utilities" }
+eldoutil-updater = { module = "de.eldoria.util:updater", version.ref = "utilities" }
+bstats = "org.bstats:bstats-bukkit:3.2.1"
+
+jetbrains-annotations = "org.jetbrains:annotations:26.1.0"
+worldguard-bukkit = "com.sk89q.worldguard:worldguard-bukkit:7.0.20"
+placeholderapi = "me.clip:placeholderapi:2.12.3"
+bigdoors = "nl.pim16aap2:BigDoors:0.1.8.58"
+mythic-dist = "io.lumine:Mythic-Dist:5.13.0"
+
+junit-bom = { module = "org.junit:junit-bom", version.ref = "junit" }
+junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api" }
+junit-jupiter-params = { module = "org.junit.jupiter:junit-jupiter-params" }
+junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine" }
+junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
+
+[bundles]
+jackson = ["jackson-databind", "jackson-annotations", "jackson-yaml"]
+utilities = ["eldoutil-plugin", "eldoutil-jackson", "eldoutil-updater"]
+
+[plugins]
+spotless = { id = "com.diffplug.spotless", version = "8.10.4" }
+publishdata = { id = "de.chojo.publishdata", version = "2.1.0" }
+publishdata-manifest = { id = "de.chojo.publishdata.manifest", version = "2.1.0" }
+minotaur = { id = "com.modrinth.minotaur", version = "2.10.0" }
+shadow = { id = "com.gradleup.shadow", version = "9.6.1" }
+pluginyml-bukkit = { id = "de.eldoria.plugin-yml.bukkit", version = "0.9.0" }
+runserver = { id = "xyz.jpenilla.run-paper", version = "3.1.0" }

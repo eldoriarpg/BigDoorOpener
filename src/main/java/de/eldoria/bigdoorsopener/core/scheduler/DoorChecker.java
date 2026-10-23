@@ -1,9 +1,8 @@
 /*
  *     SPDX-License-Identifier: AGPL-3.0-only
  *
- *     Copyright (C) 2021 EldoriaRPG Team and Contributor
+ *     Copyright (C) EldoriaRPG Team and Contributor
  */
-
 package de.eldoria.bigdoorsopener.core.scheduler;
 
 import com.google.common.cache.Cache;
@@ -57,12 +56,6 @@ public class DoorChecker extends BigDoorsAdapter implements Runnable, Listener {
         doors.addAll(config.getDoors());
     }
 
-    public static DoorChecker start(BigDoorsOpener bigDoorsOpener, Config config, BigDoors doors) {
-        DoorChecker doorChecker = new DoorChecker(config, doors);
-        bigDoorsOpener.getServer().getScheduler().scheduleSyncRepeatingTask(bigDoorsOpener, doorChecker, 0, 1);
-        return doorChecker;
-    }
-
     @EventHandler
     public void onDoorRegister(DoorRegisteredEvent event) {
         if (!doors.contains(event.door())) {
@@ -91,7 +84,6 @@ public class DoorChecker extends BigDoorsAdapter implements Runnable, Listener {
         if (doors.isEmpty()) return;
 
         doorUpdateInterval += doors.size() / (double) config.refreshRate();
-
 
         open.clear();
         close.clear();
@@ -126,7 +118,7 @@ public class DoorChecker extends BigDoorsAdapter implements Runnable, Listener {
         ConditionalDoor door = doors.poll();
         assert door != null : "Door is null. How could this happen?";
 
-        if (!doorExists(door)) {
+        if (getDoor(door.doorUID()) == null) {
             config.removeDoor(door.doorUID());
             BigDoorsOpener.logger().info("Door with id " + door.doorUID() + " has been deleted. Removing.");
             return;
@@ -145,8 +137,11 @@ public class DoorChecker extends BigDoorsAdapter implements Runnable, Listener {
                 return;
             }
         } catch (ExecutionException e) {
-            BigDoorsOpener.logger().log(Level.WARNING,
-                    "An error occured while calculating the chunk cache state. Please report this.", e);
+            BigDoorsOpener.logger()
+                    .log(
+                            Level.WARNING,
+                            "An error occured while calculating the chunk cache state. Please report this.",
+                            e);
             return;
         }
 
@@ -163,8 +158,7 @@ public class DoorChecker extends BigDoorsAdapter implements Runnable, Listener {
         // collect all doors we evaluated.
         evaluated.add(door);
 
-
-        //Check if the door really needs a per player evaluation
+        // Check if the door really needs a per player evaluation
         if (door.requiresPlayerEvaluation()) {
             evaluatePlayer(door, world);
         } else {

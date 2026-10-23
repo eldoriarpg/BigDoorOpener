@@ -1,9 +1,8 @@
 /*
  *     SPDX-License-Identifier: AGPL-3.0-only
  *
- *     Copyright (C) 2021 EldoriaRPG Team and Contributor
+ *     Copyright (C) EldoriaRPG Team and Contributor
  */
-
 package de.eldoria.bigdoorsopener.core.adapter;
 
 import de.eldoria.bigdoorsopener.config.Config;
@@ -11,18 +10,20 @@ import de.eldoria.bigdoorsopener.core.BigDoorsOpener;
 import de.eldoria.bigdoorsopener.door.ConditionalDoor;
 import de.eldoria.bigdoorsopener.util.C;
 import de.eldoria.bigdoorsopener.util.Permissions;
+import de.eldoria.eldoutilities.commands.Completion;
+import de.eldoria.eldoutilities.commands.command.AdvancedCommand;
+import de.eldoria.eldoutilities.commands.command.CommandMeta;
+import de.eldoria.eldoutilities.commands.exceptions.CommandException;
+import de.eldoria.eldoutilities.commands.executor.ITabExecutor;
 import de.eldoria.eldoutilities.container.Pair;
-import de.eldoria.eldoutilities.simplecommands.EldoCommand;
-import de.eldoria.eldoutilities.utils.ArrayUtil;
 import nl.pim16aap2.bigDoors.BigDoors;
 import nl.pim16aap2.bigDoors.Commander;
 import nl.pim16aap2.bigDoors.Door;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.Server;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.Nullable;
 
@@ -32,21 +33,20 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
-import java.util.stream.Collectors;
 
-public abstract class BigDoorsAdapterCommand extends EldoCommand {
+/**
+ * Base of the commands which work on a door. Resolves doors by name or id with the access rules of Big Doors and
+ * {@link Permissions#ACCESS_ALL}. A door which can not be used ends the command with an error.
+ */
+public abstract class BigDoorsAdapterCommand extends AdvancedCommand implements ITabExecutor {
     private final Commander commander;
-    private final BigDoors bigDoors;
-    private final Server server = Bukkit.getServer();
     private final Config config;
 
-    public BigDoorsAdapterCommand(BigDoors bigDoors, Config config) {
-        super(BigDoorsOpener.instance());
-        this.bigDoors = bigDoors;
+    public BigDoorsAdapterCommand(Plugin plugin, CommandMeta meta, BigDoors bigDoors, Config config) {
+        super(plugin, meta);
         commander = bigDoors.getCommander();
         this.config = config;
     }
-
 
     /**
      * Get the door with a specific id.
@@ -102,76 +102,57 @@ public abstract class BigDoorsAdapterCommand extends EldoCommand {
     }
 
     /**
-     * Tries to find a door. Will search for a door of the player. If no door is found a search in all doors by id is
-     * performed. If the player has the {@link Permissions#ACCESS_ALL} permission, a door will be returned even when its
-     * not owned by the player.
+     * Finds a door the sender may manage. Searches the doors of the player first and all doors by id afterwards. A door
+     * of another player is only returned with {@link Permissions#ACCESS_ALL}. Players who are only users of a door in
+     * Big Doors may not manage it. The console may manage every door.
      *
      * @param doorUID uid or name of the door.
-     * @param player  player which performed the request.
-     * @return door if the door exists and the player is allowed to access it. Otherwise null.
+     * @param sender  sender which performed the request.
+     * @return the door
+     * @throws CommandException when the door does not exist, the name is ambiguous or the sender has no access
      */
-    protected Door getPlayerDoor(String doorUID, Player player) {
-        if (player == null) {
-            // requester is console. should always have access to all doors.
+    protected Door getPlayerDoor(String doorUID, CommandSender sender) throws CommandException {
+        if (!(sender instanceof Player player)) {
             Door door = getDoor(doorUID);
-            if (door == null) {
-                messageSender().sendError(Bukkit.getConsoleSender(), localizer().getMessage("error.doorNotFound"));
-                return null;
-            }
+            if (door == null) throw CommandException.message("error.doorNotFound");
             door.setPermission(0);
             return door;
         }
 
-        // sender id not console. retrieve door of player.
         List<Door> doors = getDoors(player, doorUID);
 
         if (doors.isEmpty()) {
-            // try to retrieve door by player
             Door door = getDoor(player, doorUID);
+            if (door != null) return editable(door);
 
-            if (door != null) {
-                return door;
-            }
-
-            // door is null. check if door exists anyway
             door = getDoor(doorUID);
-            if (door == null) {
-                messageSender().sendError(player, localizer().getMessage("error.doorNotFound"));
-                return null;
-            }
+            if (door == null) throw CommandException.message("error.doorNotFound");
 
-            // when the door exists and the player has access to all doors return it.
-            if (player.hasPermission(Permissions.ACCESS_ALL)) {
-                door.setPermission(0);
-                return door;
-            } else {
-                messageSender().sendError(player, localizer().getMessage("error.notYourDoor"));
-            }
-            return null;
+            if (!player.hasPermission(Permissions.ACCESS_ALL)) throw CommandException.message("error.notYourDoor");
+            door.setPermission(0);
+            return door;
         }
 
-        if (doors.size() != 1) {
-            messageSender().sendMessage(player, localizer().getMessage("error.ambiguousDoorName"));
-            return null;
-        }
+        if (doors.size() != 1) throw CommandException.message("error.ambiguousDoorName");
 
-        return doors.get(0);
+        return editable(doors.getFirst());
+    }
+
+    private Door editable(Door door) throws CommandException {
+        if (door.getPermission() > 1) throw CommandException.message("error.notYourDoor");
+        return door;
     }
 
     /**
-     * Returns the door from config or creates it if not in config.
+     * Returns the door from config or registers it if it is not registered yet.
      *
-     * @param door   door to get.
-     * @param player player which wants to get the door.
-     * @return door or null if the door does not exist in BD.
+     * @param door door to get.
+     * @return registered door
+     * @throws CommandException when the world of the door is not loaded
      */
-    protected ConditionalDoor getOrRegister(Door door, Player player) {
+    protected ConditionalDoor getOrRegister(Door door) throws CommandException {
         World world = door.getWorld();
-
-        if (world == null) {
-            messageSender().sendError(player, localizer().getMessage("error.worldNotLoaded"));
-            return null;
-        }
+        if (world == null) throw CommandException.message("error.worldNotLoaded");
 
         if (config.containsDoor(door.getDoorUID())) {
             return config.getDoor(door.getDoorUID());
@@ -179,84 +160,60 @@ public abstract class BigDoorsAdapterCommand extends EldoCommand {
 
         Location max = door.getMaximum();
         Location min = door.getMinimum();
-        Vector vector = new Vector(
-                (max.getX() + min.getX()) / 2,
-                (max.getY() + min.getY()) / 2,
-                (max.getZ() + min.getZ()) / 2);
+        Vector vector =
+                new Vector((max.getX() + min.getX()) / 2, (max.getY() + min.getY()) / 2, (max.getZ() + min.getZ()) / 2);
 
-        return config.computeDoorIfAbsent(door.getDoorUID(),
-                doorId -> new ConditionalDoor(doorId, world.getName(), vector));
+        return config.computeDoorIfAbsent(
+                door.getDoorUID(), doorId -> new ConditionalDoor(doorId, world.getName(), vector));
     }
 
     /**
-     * Tries to find the door for a player. Will call {@link #getPlayerDoor(String, Player)} to retrieve a door. Will
-     * check if the door is already registered.
+     * Finds a registered door the sender may use. See {@link #getPlayerDoor(String, CommandSender)}.
      *
      * @param doorUID uid or name of the door
-     * @param player  player which requests this door.
-     * @return door with conditional door or null if the door is not registered or the user has no access.
+     * @param sender  sender which requests this door.
+     * @return the registered door and the Big Doors door
+     * @throws CommandException when the door can not be used or is not registered
      */
-    public Pair<ConditionalDoor, Door> getConditionalPlayerDoor(String doorUID, Player player) {
-        Door door = getPlayerDoor(doorUID, player);
-        if (door == null) {
-            return null;
-        }
-
-        if (door.getPermission() > 1) {
-            messageSender().sendError(player, localizer().getMessage("error.notYourDoor"));
-            return null;
-        }
+    public Pair<ConditionalDoor, Door> getConditionalPlayerDoor(String doorUID, CommandSender sender)
+            throws CommandException {
+        Door door = getPlayerDoor(doorUID, sender);
 
         ConditionalDoor conditionalDoor = config.getDoor(door.getDoorUID());
-        if (conditionalDoor == null) {
-            messageSender().sendMessage(player, localizer().getMessage("error.doorNotRegistered"));
-            return null;
-        }
+        if (conditionalDoor == null) throw CommandException.message("error.doorNotRegistered");
         return new Pair<>(conditionalDoor, door);
     }
 
+    /**
+     * Completes a door name or id. Players complete the names of their own doors and the ids of others.
+     *
+     * @param sender sender of the command
+     * @param name   partial input
+     * @return matching door names and ids
+     */
     @SuppressWarnings("unchecked")
     public List<String> getDoorCompletion(CommandSender sender, String name) {
-        Player player = getPlayerFromSender(sender);
-        if (player == null) {
-            return Collections.singletonList("<" + localizer().getMessage("syntax.doorId") + ">");
-        }
-        List<Door> doors;
-        try {
-            doors = (List<Door>) C.PLUGIN_CACHE.get("doors",
-                    () -> {
-                        List<Door> d = new ArrayList<>();
-                        d.addAll(getDoors());
-                        return d;
-                    });
-        } catch (ExecutionException e) {
-            BigDoorsOpener.logger().log(Level.WARNING, "Could not build tab completion cache for door names.", e);
+        if (!(sender instanceof Player player)) {
             return Collections.singletonList("<" + localizer().getMessage("syntax.doorId") + ">");
         }
         List<String> doorNames;
         try {
-            doorNames = (List<String>) C.PLUGIN_CACHE.get(player.getName() + "doors",
-                    () -> {
-                        if (player.hasPermission(Permissions.ACCESS_ALL)) {
-                            return doors.stream()
-                                    .map(d -> d.getPlayerUUID().equals(player.getUniqueId())
-                                            ? d.getName() : String.valueOf(d.getDoorUID()))
-                                    .collect(Collectors.toList());
-                        }
-
-                        // Map door names for doors where the player is the creator and can use the door name
-                        return getDoors(player).stream()
-                                .map(d -> d.getPermission() == 0 ? d.getName() : String.valueOf(d.getDoorUID()))
-                                .collect(Collectors.toList());
-                    });
-        } catch (
-                ExecutionException e) {
+            doorNames = (List<String>) C.PLUGIN_CACHE.get(player.getName() + "doors", () -> {
+                if (player.hasPermission(Permissions.ACCESS_ALL)) {
+                    return getDoors().stream()
+                            .map(d -> d.getPlayerUUID().equals(player.getUniqueId())
+                                    ? d.getName()
+                                    : String.valueOf(d.getDoorUID()))
+                            .toList();
+                }
+                return getDoors(player).stream()
+                        .map(d -> d.getPermission() == 0 ? d.getName() : String.valueOf(d.getDoorUID()))
+                        .toList();
+            });
+        } catch (ExecutionException e) {
             BigDoorsOpener.logger().log(Level.WARNING, "Could not build tab completion cache for door names.", e);
             return Collections.singletonList("<" + localizer().getMessage("syntax.doorId") + ">");
         }
-
-        return ArrayUtil.startingWithInArray(name,
-                doorNames.toArray(new String[0]))
-                .collect(Collectors.toList());
+        return Completion.complete(name, new ArrayList<>(doorNames));
     }
 }

@@ -1,21 +1,18 @@
 /*
  *     SPDX-License-Identifier: AGPL-3.0-only
  *
- *     Copyright (C) 2021 EldoriaRPG Team and Contributor
+ *     Copyright (C) EldoriaRPG Team and Contributor
  */
-
 package de.eldoria.bigdoorsopener.core.adapter;
 
 import de.eldoria.bigdoorsopener.core.BigDoorsOpener;
 import de.eldoria.bigdoorsopener.door.ConditionalDoor;
 import de.eldoria.eldoutilities.localization.ILocalizer;
-import de.eldoria.eldoutilities.localization.Replacement;
 import nl.pim16aap2.bigDoors.BigDoors;
 import nl.pim16aap2.bigDoors.Commander;
 import nl.pim16aap2.bigDoors.Door;
 import org.bukkit.Bukkit;
 import org.bukkit.Server;
-import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 
@@ -52,11 +49,10 @@ public abstract class BigDoorsAdapter {
         if (isOpen(door) == open) return CompletableFuture.completedFuture(false);
         if (door.isLocked()) return CompletableFuture.completedFuture(false);
         door.lock();
-        return bigDoors.toggleDoorFuture(door.doorUID())
-                .thenApply(res -> {
-                    door.unlock();
-                    return res;
-                });
+        return bigDoors.toggleDoorFuture(door.doorUID()).thenApply(res -> {
+            door.unlock();
+            return res;
+        });
     }
 
     /**
@@ -68,24 +64,6 @@ public abstract class BigDoorsAdapter {
      */
     protected boolean isOpen(ConditionalDoor door) {
         return door.openInverted(bigDoors.isOpen(door.doorUID()));
-    }
-
-    /**
-     * Checks if the world of a door exists and is present in the plugin.
-     *
-     * @param door door to check
-     * @return true if the door exits
-     */
-    protected boolean doorExists(ConditionalDoor door) {
-        World world = server.getWorld(door.world());
-        if (world == null) {
-            BigDoorsOpener.logger().info(localizer.getMessage("error.worldIsNull",
-                    Replacement.create("DOOR_NAME", door.doorUID())));
-            return false;
-        }
-
-        // Make sure that this door still exists on the doors plugin.
-        return getDoor(door.doorUID()) != null;
     }
 
     /**

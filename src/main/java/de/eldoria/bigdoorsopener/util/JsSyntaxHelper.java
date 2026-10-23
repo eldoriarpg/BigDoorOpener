@@ -1,9 +1,8 @@
 /*
  *     SPDX-License-Identifier: AGPL-3.0-only
  *
- *     Copyright (C) 2021 EldoriaRPG Team and Contributor
+ *     Copyright (C) EldoriaRPG Team and Contributor
  */
-
 package de.eldoria.bigdoorsopener.util;
 
 import de.eldoria.bigdoorsopener.core.BigDoorsOpener;
@@ -13,10 +12,13 @@ import de.eldoria.eldoutilities.utils.TextUtil;
 import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.entity.Player;
 
-import javax.script.ScriptException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.script.ScriptException;
 
 public final class JsSyntaxHelper {
 
@@ -25,9 +27,7 @@ public final class JsSyntaxHelper {
     private static final Pattern UNALLOWED_OPERATORS = Pattern.compile("&|\\||=");
     private static final Pattern SYNTAX = Pattern.compile("(\\||&|!|=|\\(|\\)|\\s|\\{|}|;)*");
 
-
-    private JsSyntaxHelper() {
-    }
+    private JsSyntaxHelper() {}
 
     /**
      * Translates the alternative easier syntax to the true javascript syntax.
@@ -65,8 +65,7 @@ public final class JsSyntaxHelper {
             return new Pair<>(ValidatorResult.UNBALANCED_PARENTHESIS, "");
         }
 
-
-        String cleaned = evaluator.replaceAll("(?i)if|true|false|" + getPlaceholder() + "|currentState|null|else", "");
+        String cleaned = keywords().matcher(evaluator).replaceAll("");
         Matcher matcher = VARIABLE.matcher(cleaned);
         if (matcher.find()) {
             return new Pair<>(ValidatorResult.INVALID_VARIABLE, matcher.group());
@@ -96,14 +95,15 @@ public final class JsSyntaxHelper {
      * @param vanilla   set to true to disable third party replacements
      * @return a pair which indicates if the execution was successful or the fail reason
      */
-    public static Pair<ValidatorResult, String> checkExecution(String evaluator, CachingJSEngine engine, Player player, boolean vanilla) {
+    public static Pair<ValidatorResult, String> checkExecution(
+            String evaluator, CachingJSEngine engine, Player player, boolean vanilla) {
         evaluator = translateEvaluator(evaluator);
-
-        evaluator = evaluator.replaceAll("(?i)currentState|" + getPlaceholder(), "true");
 
         if (BigDoorsOpener.isPlaceholderEnabled() && player != null && !vanilla) {
             evaluator = PlaceholderAPI.setPlaceholders(player, evaluator);
         }
+
+        evaluator = variables().matcher(evaluator).replaceAll("true");
 
         try {
             boolean aTrue = engine.evalUnsafe(evaluator, null);
@@ -116,9 +116,16 @@ public final class JsSyntaxHelper {
         return new Pair<>(ValidatorResult.FINE, evaluator);
     }
 
-    private static String getPlaceholder() {
-        return String.join("|", ConditionRegistrar.getGroups());
+    private static Pattern variables() {
+        List<String> words = new ArrayList<>(ConditionRegistrar.getGroups());
+        words.add("currentState");
+        return Words.pattern(words);
+    }
 
+    private static Pattern keywords() {
+        List<String> words = new ArrayList<>(ConditionRegistrar.getGroups());
+        words.addAll(List.of("if", "true", "false", "currentState", "null", "else"));
+        return Words.pattern(words);
     }
 
     public enum ValidatorResult {
