@@ -39,6 +39,7 @@ public class CopyCondition extends BigDoorsAdapterCommand {
                 .addArgument("syntax.sourceDoor", true)
                 .addArgument("syntax.targetDoor", true)
                 .addArgument("syntax.condition", false)
+                .addArgument("tabcomplete.conditionId", false)
                 .build(), bigDoors, config);
     }
 
@@ -65,10 +66,9 @@ public class CopyCondition extends BigDoorsAdapterCommand {
 
         CommandAssertions.permission(sender, false, Permissions.getConditionPermission(conditionGroup.name()), Permissions.ALL_CONDITION);
 
-        int index = args.asInt(2, 0);
+        int index = args.asInt(3, 0);
         List<DoorCondition> condition = sourceBag.getConditions(conditionGroup);
-        CommandAssertions.isFalse(condition.isEmpty(), "error.conditionNotSet");
-        CommandAssertions.isFalse(condition.size() < index, "error.conditionNotSet");
+        CommandAssertions.isTrue(index >= 0 && index < condition.size(), "error.conditionNotSet");
 
         targetDoor.conditionBag().setCondition(targetDoor, condition.get(index).clone());
 

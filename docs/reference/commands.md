@@ -115,18 +115,15 @@ Removes the door and all its settings from Big Doors Opener. The door stays in B
 ### copyCondition
 
 ```text
-/bdo copyCondition <source> <target> [group]
+/bdo copyCondition <source> <target> [group] [index]
 ```
 
 | Argument | Required | What it means |
 |---|---|---|
 | `source` | yes | The door to copy from. |
 | `target` | yes | The door to copy to. |
-| `group` | no | Only copy this condition group. Without it, all conditions are copied, which needs `bdo.condition.all`. |
-
-:::warning
-In version 2.5.3, copying a single group fails with `Invalid number`. Copying all conditions works.
-:::
+| `group` | no | Only copy a condition of this group. Without it, all conditions are copied, which needs `bdo.condition.all`. |
+| `index` | no | Which condition of the group to copy, as numbered in `/bdo info`. Default `0`. |
 
 ### cloneDoor
 

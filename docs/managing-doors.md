@@ -62,11 +62,12 @@ turns it back on.
 ## Copy settings to other doors
 
 ```text
-/bdo copyCondition <source door> <target door> [group]
+/bdo copyCondition <source door> <target door> [group] [index]
 ```
 
 Without a group, all conditions of the source door replace the conditions of the target door. This needs
-`bdo.condition.all`.
+`bdo.condition.all`. With a group, one condition of that group replaces the target's conditions of the group: the first
+one, or the one with the index shown in `/bdo info`.
 
 ```text
 /bdo cloneDoor <source door> <target door>
@@ -78,8 +79,6 @@ Copies everything: conditions, evaluator, stay open time and the open position s
 Both commands register the target door if it is not registered yet.
 
 :::warning Known problems in version 2.5.3
-- Copying a single group with `copyCondition <source> <target> <group>` fails with `Invalid number`. Copy all
-  conditions, or set the condition on the target door by hand.
 - Copied `itemClick` and `itemBlock` conditions only react to clicks after the next server restart.
 :::
 

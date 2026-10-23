@@ -74,7 +74,7 @@ public class ConditionBag implements ConditionCollection {
     }
 
     public boolean removeCondition(ConditionalDoor door,ConditionGroup group, int index) {
-        if (getConditions(group).size() < index) {
+        if (index < 0 || index >= getConditions(group).size()) {
             return false;
         }
         DoorCondition condition = getConditions(group).remove(index);
