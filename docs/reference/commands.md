@@ -26,7 +26,7 @@ are not case sensitive.
 | `/bdo giveKey <door> [amount] [player] [index]` | `bdo.command.givekey` | Give copies of a door's key item. |
 | `/bdo unregister <door>` | `bdo.command.use` | Stop managing a door. It stays in Big Doors. |
 | `/bdo reload` | `bdo.command.reload` | Reload the config and the doors. |
-| `/bdo debug` | `bdo.command.reload` | Upload debug data for support. |
+| `/bdo debug` | `bdo.command.debug` | Upload debug data for support. |
 | `/bdo about` | none | Show the version and support links. |
 | `/bdo help` | none | Show the command list. |
 
@@ -167,8 +167,7 @@ Reads `config.yml` and `doors.yml` again and restarts the door checks.
 Uploads a debug report to lyna.eldoria.de, so the developers can help you. It includes your installed plugins, the
 latest log, server details and the files of Big Doors Opener. Passwords, IP addresses and similar values are hidden
 before upload. The first time, you see what is sent and have to run the command again to agree. You then get a link to
-the report and a link to delete it. The report is deleted after two weeks. Besides `bdo.command.reload`, the permission
-`eldoutilitites.debug` also allows this command.
+the report and a link to delete it. The report is deleted after two weeks. Needs `bdo.command.debug`.
 
 ### about and help
 

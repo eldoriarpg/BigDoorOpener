@@ -13,11 +13,11 @@ may use every command.
 |---|---|
 | `bdo.command.use` | All door commands: `setCondition`, `addCondition`, `removeCondition`, `setEvaluator`, `info`, `list`, `stayOpen`, `invertOpen`, `setState`, `copyCondition`, `cloneDoor`, `unregister`. |
 | `bdo.command.givekey` | `/bdo giveKey`. |
-| `bdo.command.reload` | `/bdo reload` and `/bdo debug`. |
+| `bdo.command.reload` | `/bdo reload`. |
+| `bdo.command.debug` | `/bdo debug`. |
 | `bdo.updates` | Hear about new versions when joining, and choose whether they are downloaded on their own. |
 | `bdo.customEvaluator` | Setting a [custom evaluator](../evaluator.md#custom). |
 | `bdo.accessAll` | Managing doors that belong to other players. Also makes `/bdo list` show all doors. |
-| `eldoutilitites.debug` | `/bdo debug`, as an alternative to `bdo.command.reload`. |
 
 ## Conditions
 

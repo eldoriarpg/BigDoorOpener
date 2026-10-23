@@ -30,6 +30,7 @@ The server log says how many doors were moved, for example
 ### What changed
 
 - Players with `bdo.updates` hear about new versions. `bdo.command.reload` no longer does.
+- `/bdo debug` needs its own permission, `bdo.command.debug`.
 - `time` and `weather` are world conditions now. A door with only these conditions opens and closes even when nobody
   is near it.
 - Custom evaluators count every condition of a group, see [The evaluator](./evaluator.md#variables).

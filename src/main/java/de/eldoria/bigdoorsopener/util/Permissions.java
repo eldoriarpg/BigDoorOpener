@@ -15,6 +15,7 @@ public final class Permissions {
     public static final String USE = "bdo.command.use";
     public static final String GIVE_KEY = "bdo.command.givekey";
     public static final String RELOAD = "bdo.command.reload";
+    public static final String DEBUG = "bdo.command.debug";
     public static final String CUSTOM_EVALUATOR = "bdo.customEvaluator";
     public static final String ACCESS_ALL = "bdo.accessAll";
     public static final String ITEM_CONDITION = "bdo.condition.item";

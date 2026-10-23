@@ -195,7 +195,7 @@ bukkit {
             description = "All Big Doors Opener permissions"
             default = OP
             children = listOf(
-                "bdo.command.use", "bdo.command.givekey", "bdo.command.reload", "bdo.customEvaluator",
+                "bdo.command.use", "bdo.command.givekey", "bdo.command.reload", "bdo.command.debug", "bdo.customEvaluator",
                 "bdo.accessAll", "bdo.condition.all", "bdo.updates"
             )
         }
@@ -208,7 +208,11 @@ bukkit {
             default = OP
         }
         register("bdo.command.reload") {
-            description = "Reload the plugin and create debug reports"
+            description = "Reload the plugin"
+            default = OP
+        }
+        register("bdo.command.debug") {
+            description = "Upload debug reports"
             default = OP
         }
         register("bdo.customEvaluator") {
