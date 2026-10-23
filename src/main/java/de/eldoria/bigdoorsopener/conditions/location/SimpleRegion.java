@@ -100,6 +100,7 @@ public class SimpleRegion implements Location {
     }
 
     private boolean contains(Player player) {
+        if (!player.getWorld().getName().equals(world)) return false;
         Vector pos = player.getLocation().toVector();
         if (pos.getX() > maximum.getX() || pos.getX() < minimum.getX()) return false;
         if (pos.getY() > maximum.getY() || pos.getY() < minimum.getY()) return false;
