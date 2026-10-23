@@ -99,9 +99,18 @@ public class Config {
         return doors();
     }
 
+    /**
+     * Registers a door unless a door with this id is registered.
+     *
+     * @param key   id of the door
+     * @param value door to register
+     * @return the door registered before, or null if the door was registered now
+     */
     public ConditionalDoor putDoorIfAbsent(Long key, ConditionalDoor value) {
         ConditionalDoor conditionalDoor = doors().putIfAbsent(key, value);
-        Bukkit.getPluginManager().callEvent(new DoorUnregisteredEvent(conditionalDoor));
+        if (conditionalDoor == null) {
+            Bukkit.getPluginManager().callEvent(new DoorRegisteredEvent(value));
+        }
         return conditionalDoor;
     }
 
