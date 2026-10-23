@@ -23,8 +23,7 @@ public final class ConditionRegistrar {
     private static final Map<Class<? extends DoorCondition>, ConditionContainer> CONTAINER = new HashMap<>();
     private static final Map<String, ConditionContainer> TYPES = new HashMap<>();
 
-    private ConditionRegistrar() {
-    }
+    private ConditionRegistrar() {}
 
     /**
      * This will register a condition container at the condition registrar.
@@ -36,7 +35,8 @@ public final class ConditionRegistrar {
         if (CONTAINER.containsKey(conditionContainer.getClazz()) || TYPES.containsKey(conditionContainer.typeName())) {
             throw new ConditionRegistrationException(conditionContainer.getClazz());
         }
-        GROUPS.computeIfAbsent(conditionContainer.getGroup(), ConditionGroup::new).addCondition(conditionContainer);
+        GROUPS.computeIfAbsent(conditionContainer.getGroup(), ConditionGroup::new)
+                .addCondition(conditionContainer);
         CONTAINER.put(conditionContainer.getClazz(), conditionContainer);
         TYPES.put(conditionContainer.typeName(), conditionContainer);
     }

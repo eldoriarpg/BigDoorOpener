@@ -46,7 +46,9 @@ public class ItemConditionListener implements Listener {
         for (ConditionalDoor door : config.getDoors()) {
             for (DoorCondition condition : door.conditionBag().getConditions("item")) {
                 if (condition instanceof ItemInteraction interaction) {
-                    interactions.computeIfAbsent(getKey(door, interaction), k -> new ArrayList<>()).add(interaction);
+                    interactions
+                            .computeIfAbsent(getKey(door, interaction), k -> new ArrayList<>())
+                            .add(interaction);
                 }
             }
         }

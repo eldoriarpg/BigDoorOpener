@@ -42,7 +42,8 @@ public class PermissionNode implements Permission {
                 })
                 .onTabComplete((sender, localizer, args) -> {
                     if (args.sizeIs(1)) {
-                        return Collections.singletonList("<" + localizer.getMessage("tabcomplete.permissionNode") + ">");
+                        return Collections.singletonList(
+                                "<" + localizer.getMessage("tabcomplete.permissionNode") + ">");
                     }
                     return Collections.emptyList();
                 })

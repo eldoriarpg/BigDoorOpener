@@ -127,10 +127,7 @@ public class BigDoorsOpener extends EldoPlugin {
         localizer = Localizer.builder(this, "en_US")
                 .setIncludedLocales("en_US", "de_DE")
                 .build();
-        MessageSender.builder(this)
-                .prefix("<gold>[BDO]")
-                .localizer(localizer)
-                .register();
+        MessageSender.builder(this).prefix("<gold>[BDO]").localizer(localizer).register();
     }
 
     @Override
@@ -162,8 +159,13 @@ public class BigDoorsOpener extends EldoPlugin {
 
     private void registerListeners() {
         itemConditionListener = new ItemConditionListener(config);
-        registerListener(new ModificationListener(config), doorChecker, new DoorOpenedListener(config),
-                itemConditionListener, new RegisterInteraction(getPluginMessageSender(), config), new WeatherListener());
+        registerListener(
+                new ModificationListener(config),
+                doorChecker,
+                new DoorOpenedListener(config),
+                itemConditionListener,
+                new RegisterInteraction(getPluginMessageSender(), config),
+                new WeatherListener());
         if (mythicMobsEnabled) {
             registerListener(new MythicMobsListener(doors, config));
         }
@@ -196,14 +198,16 @@ public class BigDoorsOpener extends EldoPlugin {
         }
 
         placeholderEnabled = Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI");
-        logger().info(placeholderEnabled
-                ? "Placeholder API found. Enabling placeholder usage."
-                : "Placeholder API not found. Placeholder usage is disabled.");
+        logger().info(
+                        placeholderEnabled
+                                ? "Placeholder API found. Enabling placeholder usage."
+                                : "Placeholder API not found. Placeholder usage is disabled.");
 
         mythicMobsEnabled = Bukkit.getPluginManager().isPluginEnabled("MythicMobs");
-        logger().info(mythicMobsEnabled
-                ? "MythicMobs found. Enabling mythic mobs listener."
-                : "MythicMobs not found. MythicMobs conditions are disabled.");
+        logger().info(
+                        mythicMobsEnabled
+                                ? "MythicMobs found. Enabling mythic mobs listener."
+                                : "MythicMobs not found. MythicMobs conditions are disabled.");
     }
 
     private void registerConditions() {
@@ -232,7 +236,8 @@ public class BigDoorsOpener extends EldoPlugin {
 
         logger().info(localizer.getMessage("general.metrics"));
 
-        metrics.addCustomChart(new SimplePie("big_doors_version", () -> doors.getDescription().getVersion()));
+        metrics.addCustomChart(
+                new SimplePie("big_doors_version", () -> doors.getDescription().getVersion()));
 
         metrics.addCustomChart(new DrilldownPie("big_doors_version_new", () -> {
             String version = doors.getDescription().getVersion();
@@ -243,8 +248,10 @@ public class BigDoorsOpener extends EldoPlugin {
             Map<String, Integer> counts = new HashMap<>();
             Collection<ConditionalDoor> values = config.getDoors();
             for (String group : ConditionRegistrar.getGroups()) {
-                ConditionRegistrar.getConditionGroup(group).ifPresent(g ->
-                        counts.put(group, (int) values.stream().filter(d -> d.conditionBag().isConditionSet(g)).count()));
+                ConditionRegistrar.getConditionGroup(group)
+                        .ifPresent(g -> counts.put(group, (int) values.stream()
+                                .filter(d -> d.conditionBag().isConditionSet(g))
+                                .count()));
             }
             return counts;
         }));

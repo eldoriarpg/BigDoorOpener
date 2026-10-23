@@ -13,7 +13,6 @@ import nl.pim16aap2.bigDoors.Commander;
 import nl.pim16aap2.bigDoors.Door;
 import org.bukkit.Bukkit;
 import org.bukkit.Server;
-import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 
@@ -50,11 +49,10 @@ public abstract class BigDoorsAdapter {
         if (isOpen(door) == open) return CompletableFuture.completedFuture(false);
         if (door.isLocked()) return CompletableFuture.completedFuture(false);
         door.lock();
-        return bigDoors.toggleDoorFuture(door.doorUID())
-                .thenApply(res -> {
-                    door.unlock();
-                    return res;
-                });
+        return bigDoors.toggleDoorFuture(door.doorUID()).thenApply(res -> {
+            door.unlock();
+            return res;
+        });
     }
 
     /**

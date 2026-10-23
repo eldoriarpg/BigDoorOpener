@@ -31,15 +31,20 @@ import java.util.List;
 public class CloneDoor extends BigDoorsAdapterCommand {
 
     public CloneDoor(Plugin plugin, BigDoors bigDoors, Config config) {
-        super(plugin, CommandMeta.builder("cloneDoor")
-                .withPermission(Permissions.USE)
-                .addArgument("syntax.sourceDoor", true)
-                .addArgument("syntax.targetDoor", true)
-                .build(), bigDoors, config);
+        super(
+                plugin,
+                CommandMeta.builder("cloneDoor")
+                        .withPermission(Permissions.USE)
+                        .addArgument("syntax.sourceDoor", true)
+                        .addArgument("syntax.targetDoor", true)
+                        .build(),
+                bigDoors,
+                config);
     }
 
     @Override
-    public void onCommand(@NotNull CommandSender sender, @NotNull String alias, @NotNull Arguments args) throws CommandException {
+    public void onCommand(@NotNull CommandSender sender, @NotNull String alias, @NotNull Arguments args)
+            throws CommandException {
         CommandAssertions.permission(sender, false, Permissions.ALL_CONDITION);
 
         Door playerSourceDoor = getPlayerDoor(args.asString(0), sender);
@@ -60,9 +65,12 @@ public class CloneDoor extends BigDoorsAdapterCommand {
 
         Bukkit.getPluginManager().callEvent(new DoorModifiedEvent(targetDoor));
 
-        messageSender().sendMessage(sender, "cloneDoor.message",
-                Replacement.unparsed("SOURCE", playerSourceDoor.getName()),
-                Replacement.unparsed("TARGET", playerTargetDoor.getName()));
+        messageSender()
+                .sendMessage(
+                        sender,
+                        "cloneDoor.message",
+                        Replacement.unparsed("SOURCE", playerSourceDoor.getName()),
+                        Replacement.unparsed("TARGET", playerTargetDoor.getName()));
     }
 
     @Override

@@ -40,16 +40,21 @@ public class SetEvaluator extends BigDoorsAdapterCommand {
             .toArray(String[]::new);
 
     public SetEvaluator(Plugin plugin, BigDoors bigDoors, Config config) {
-        super(plugin, CommandMeta.builder("setEvaluator")
-                .withPermission(Permissions.USE)
-                .addArgument("syntax.doorId", true)
-                .addArgument("syntax.evaluationType", true)
-                .addArgument("syntax.customEvaluator", false)
-                .build(), bigDoors, config);
+        super(
+                plugin,
+                CommandMeta.builder("setEvaluator")
+                        .withPermission(Permissions.USE)
+                        .addArgument("syntax.doorId", true)
+                        .addArgument("syntax.evaluationType", true)
+                        .addArgument("syntax.customEvaluator", false)
+                        .build(),
+                bigDoors,
+                config);
     }
 
     @Override
-    public void onCommand(@NotNull CommandSender sender, @NotNull String alias, @NotNull Arguments args) throws CommandException {
+    public void onCommand(@NotNull CommandSender sender, @NotNull String alias, @NotNull Arguments args)
+            throws CommandException {
         Pair<ConditionalDoor, Door> door = getConditionalPlayerDoor(args.asString(0), sender);
 
         ConditionalDoor.EvaluationType type = EnumUtil.parse(args.asString(1), ConditionalDoor.EvaluationType.class)
@@ -57,7 +62,10 @@ public class SetEvaluator extends BigDoorsAdapterCommand {
 
         if (type != ConditionalDoor.EvaluationType.CUSTOM) {
             door.first.setEvaluator(type);
-            messageSender().sendMessage(sender, type == ConditionalDoor.EvaluationType.AND ? "setEvaluator.and" : "setEvaluator.or");
+            messageSender()
+                    .sendMessage(
+                            sender,
+                            type == ConditionalDoor.EvaluationType.AND ? "setEvaluator.and" : "setEvaluator.or");
             return;
         }
 
@@ -66,18 +74,25 @@ public class SetEvaluator extends BigDoorsAdapterCommand {
         String[] raw = args.raw();
         CommandAssertions.isTrue(raw.length > 2, "error.noEvaluatorFound");
         String evaluator = String.join(" ", Arrays.copyOfRange(raw, 2, raw.length));
-        Pair<JsSyntaxHelper.ValidatorResult, String> result = JsSyntaxHelper.validateEvaluator(evaluator, BigDoorsOpener.JS());
+        Pair<JsSyntaxHelper.ValidatorResult, String> result =
+                JsSyntaxHelper.validateEvaluator(evaluator, BigDoorsOpener.JS());
 
         switch (result.first) {
             case UNBALANCED_PARENTHESIS -> throw CommandException.message("error.unbalancedParenthesis");
-            case INVALID_VARIABLE -> throw CommandException.message("error.invalidVariable", Replacement.unparsed("ERROR", result.second));
-            case INVALID_OPERATOR -> throw CommandException.message("error.invalidOperator", Replacement.unparsed("ERROR", result.second));
-            case INVALID_SYNTAX -> throw CommandException.message("error.invalidSyntax", Replacement.unparsed("ERROR", result.second));
-            case EXECUTION_FAILED -> throw CommandException.message("error.executionFailed", Replacement.unparsed("ERROR", result.second));
-            case NON_BOOLEAN_RESULT -> throw CommandException.message("error.nonBooleanResult", Replacement.unparsed("ERROR", result.second));
+            case INVALID_VARIABLE ->
+                throw CommandException.message("error.invalidVariable", Replacement.unparsed("ERROR", result.second));
+            case INVALID_OPERATOR ->
+                throw CommandException.message("error.invalidOperator", Replacement.unparsed("ERROR", result.second));
+            case INVALID_SYNTAX ->
+                throw CommandException.message("error.invalidSyntax", Replacement.unparsed("ERROR", result.second));
+            case EXECUTION_FAILED ->
+                throw CommandException.message("error.executionFailed", Replacement.unparsed("ERROR", result.second));
+            case NON_BOOLEAN_RESULT ->
+                throw CommandException.message("error.nonBooleanResult", Replacement.unparsed("ERROR", result.second));
             case FINE -> door.first.setEvaluator(JsSyntaxHelper.translateEvaluator(evaluator));
         }
-        messageSender().sendMessage(sender, "setEvaluator.custom", Replacement.unparsed("EVALUATOR", door.first.evaluator()));
+        messageSender()
+                .sendMessage(sender, "setEvaluator.custom", Replacement.unparsed("EVALUATOR", door.first.evaluator()));
     }
 
     @Override
@@ -89,7 +104,8 @@ public class SetEvaluator extends BigDoorsAdapterCommand {
             return Completion.complete(args.asString(1), EVALUATOR_TYPES);
         }
 
-        ConditionalDoor.EvaluationType parse = EnumUtil.parse(args.asString(1), ConditionalDoor.EvaluationType.class).orElse(null);
+        ConditionalDoor.EvaluationType parse = EnumUtil.parse(args.asString(1), ConditionalDoor.EvaluationType.class)
+                .orElse(null);
 
         if (parse == null) {
             return Collections.singletonList(localizer().getMessage("error.invalidEvaluationType"));
@@ -97,8 +113,9 @@ public class SetEvaluator extends BigDoorsAdapterCommand {
 
         if (parse == ConditionalDoor.EvaluationType.CUSTOM) {
             if (!sender.hasPermission(Permissions.CUSTOM_EVALUATOR)) {
-                return Collections.singletonList(messageSender().translatePlain("error.permission",
-                        Replacement.create("PERMISSION", Permissions.CUSTOM_EVALUATOR)));
+                return Collections.singletonList(messageSender()
+                        .translatePlain(
+                                "error.permission", Replacement.create("PERMISSION", Permissions.CUSTOM_EVALUATOR)));
             }
             List<String> list = new ArrayList<>(ConditionRegistrar.getGroups());
             list.add("currentState");

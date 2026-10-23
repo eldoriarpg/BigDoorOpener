@@ -16,8 +16,7 @@ import java.util.stream.Collectors;
  * {@code location} does not match inside {@code worldLocation}.
  */
 public final class Words {
-    private Words() {
-    }
+    private Words() {}
 
     /**
      * Builds a pattern matching any of the words as a whole word.

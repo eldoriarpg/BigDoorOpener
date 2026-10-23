@@ -34,17 +34,22 @@ import java.util.List;
 public class CopyCondition extends BigDoorsAdapterCommand {
 
     public CopyCondition(Plugin plugin, BigDoors bigDoors, Config config) {
-        super(plugin, CommandMeta.builder("copyCondition")
-                .withPermission(Permissions.USE)
-                .addArgument("syntax.sourceDoor", true)
-                .addArgument("syntax.targetDoor", true)
-                .addArgument("syntax.condition", false)
-                .addArgument("tabcomplete.conditionId", false)
-                .build(), bigDoors, config);
+        super(
+                plugin,
+                CommandMeta.builder("copyCondition")
+                        .withPermission(Permissions.USE)
+                        .addArgument("syntax.sourceDoor", true)
+                        .addArgument("syntax.targetDoor", true)
+                        .addArgument("syntax.condition", false)
+                        .addArgument("tabcomplete.conditionId", false)
+                        .build(),
+                bigDoors,
+                config);
     }
 
     @Override
-    public void onCommand(@NotNull CommandSender sender, @NotNull String alias, @NotNull Arguments args) throws CommandException {
+    public void onCommand(@NotNull CommandSender sender, @NotNull String alias, @NotNull Arguments args)
+            throws CommandException {
         Door playerSourceDoor = getPlayerDoor(args.asString(0), sender);
         ConditionalDoor sourceDoor = getOrRegister(playerSourceDoor);
         Door playerTargetDoor = getPlayerDoor(args.asString(1), sender);
@@ -55,16 +60,20 @@ public class CopyCondition extends BigDoorsAdapterCommand {
         if (args.sizeIs(2)) {
             CommandAssertions.permission(sender, false, Permissions.ALL_CONDITION);
             targetDoor.conditionBag(sourceBag.copy());
-            messageSender().sendMessage(sender, "copyCondition.copiedAll",
-                    Replacement.unparsed("SOURCE", playerSourceDoor.getName()),
-                    Replacement.unparsed("TARGET", playerTargetDoor.getName()));
+            messageSender()
+                    .sendMessage(
+                            sender,
+                            "copyCondition.copiedAll",
+                            Replacement.unparsed("SOURCE", playerSourceDoor.getName()),
+                            Replacement.unparsed("TARGET", playerTargetDoor.getName()));
             return;
         }
 
         ConditionGroup conditionGroup = ConditionRegistrar.getConditionGroup(args.asString(2))
                 .orElseThrow(() -> CommandException.message("error.invalidConditionType"));
 
-        CommandAssertions.permission(sender, false, Permissions.getConditionPermission(conditionGroup.name()), Permissions.ALL_CONDITION);
+        CommandAssertions.permission(
+                sender, false, Permissions.getConditionPermission(conditionGroup.name()), Permissions.ALL_CONDITION);
 
         int index = args.asInt(3, 0);
         List<DoorCondition> condition = sourceBag.getConditions(conditionGroup);
@@ -72,10 +81,13 @@ public class CopyCondition extends BigDoorsAdapterCommand {
 
         targetDoor.conditionBag().setCondition(targetDoor, condition.get(index).clone());
 
-        messageSender().sendMessage(sender, "copyCondition.copiedSingle",
-                Replacement.create("CONDITION", conditionGroup.name()),
-                Replacement.unparsed("SOURCE", playerSourceDoor.getName()),
-                Replacement.unparsed("TARGET", playerTargetDoor.getName()));
+        messageSender()
+                .sendMessage(
+                        sender,
+                        "copyCondition.copiedSingle",
+                        Replacement.create("CONDITION", conditionGroup.name()),
+                        Replacement.unparsed("SOURCE", playerSourceDoor.getName()),
+                        Replacement.unparsed("TARGET", playerTargetDoor.getName()));
     }
 
     @Override

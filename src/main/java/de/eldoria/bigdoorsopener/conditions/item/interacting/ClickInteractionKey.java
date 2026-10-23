@@ -11,7 +11,7 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.Optional;
 
-public class ClickInteractionKey implements InteractionKey{
+public class ClickInteractionKey implements InteractionKey {
     protected ItemStack stack;
 
     public ClickInteractionKey(ItemStack stack) {

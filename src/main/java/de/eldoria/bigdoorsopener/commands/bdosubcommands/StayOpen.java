@@ -29,15 +29,20 @@ import java.util.List;
 public class StayOpen extends BigDoorsAdapterCommand {
 
     public StayOpen(Plugin plugin, BigDoors bigDoors, Config config) {
-        super(plugin, CommandMeta.builder("stayOpen")
-                .withPermission(Permissions.USE)
-                .addArgument("syntax.doorId", true)
-                .addArgument("syntax.seconds", true)
-                .build(), bigDoors, config);
+        super(
+                plugin,
+                CommandMeta.builder("stayOpen")
+                        .withPermission(Permissions.USE)
+                        .addArgument("syntax.doorId", true)
+                        .addArgument("syntax.seconds", true)
+                        .build(),
+                bigDoors,
+                config);
     }
 
     @Override
-    public void onCommand(@NotNull CommandSender sender, @NotNull String alias, @NotNull Arguments args) throws CommandException {
+    public void onCommand(@NotNull CommandSender sender, @NotNull String alias, @NotNull Arguments args)
+            throws CommandException {
         Pair<ConditionalDoor, Door> door = getConditionalPlayerDoor(args.asString(0), sender);
         int seconds = args.asInt(1);
         door.first.setStayOpen(seconds);

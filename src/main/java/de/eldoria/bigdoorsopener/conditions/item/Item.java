@@ -40,6 +40,7 @@ public abstract class Item implements DoorCondition {
      * Syntax of the arguments shared by all item conditions.
      */
     public static final String SYNTAX = "<$syntax.amount$> [$tabcomplete.consumed$]";
+
     private static final int MAX_AMOUNT = 64;
     private final ItemStack item;
     private final boolean consumed;
@@ -81,7 +82,8 @@ public abstract class Item implements DoorCondition {
         ConditionInput.require(args, 1, DoorCondition.localizer(), SYNTAX);
         int amount = args.asInt(0);
         if (amount > MAX_AMOUNT || amount < 1) {
-            throw CommandException.message("error.invalidRange", Replacement.create("MIN", 1), Replacement.create("MAX", MAX_AMOUNT));
+            throw CommandException.message(
+                    "error.invalidRange", Replacement.create("MIN", 1), Replacement.create("MAX", MAX_AMOUNT));
         }
         ItemStack itemInMainHand = player.getInventory().getItemInMainHand().clone();
         itemInMainHand.setAmount(amount);
@@ -216,20 +218,22 @@ public abstract class Item implements DoorCondition {
             List<Component> lore = meta.lore();
             if (lore != null) {
                 for (Component line : lore) {
-                    builder.append(Component.newline())
-                            .append(line.colorIfAbsent(NamedTextColor.LIGHT_PURPLE));
+                    builder.append(Component.newline()).append(line.colorIfAbsent(NamedTextColor.LIGHT_PURPLE));
                 }
             }
             for (Map.Entry<Enchantment, Integer> entry : meta.getEnchants().entrySet()) {
                 builder.append(Component.newline())
-                        .append(Component.text(entry.getKey().getKey().getKey() + " "
-                                               + entry.getValue().toString(), NamedTextColor.GRAY));
+                        .append(Component.text(
+                                entry.getKey().getKey().getKey() + " "
+                                        + entry.getValue().toString(),
+                                NamedTextColor.GRAY));
             }
         }
 
         return Component.text()
                 .append(Component.text(localizer.getMessage("conditionDesc.item") + " ", C.baseColor))
-                .append(Component.text("[" + item.getType().name().toLowerCase() + "] x" + item.getAmount(), C.highlightColor)
+                .append(Component.text(
+                                "[" + item.getType().name().toLowerCase() + "] x" + item.getAmount(), C.highlightColor)
                         .hoverEvent(HoverEvent.showText(builder.build())))
                 .append(Component.newline())
                 .append(Component.text(localizer.getMessage("conditionDesc.consumed") + " ", C.baseColor))

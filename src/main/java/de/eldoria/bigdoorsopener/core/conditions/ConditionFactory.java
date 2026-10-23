@@ -35,5 +35,6 @@ public interface ConditionFactory {
      * @param conditionBag  receives the created condition
      * @throws CommandException when the input is invalid or the sender can not create this condition
      */
-    void create(CommandSender sender, MessageSender messageSender, Arguments args, Consumer<DoorCondition> conditionBag) throws CommandException;
+    void create(CommandSender sender, MessageSender messageSender, Arguments args, Consumer<DoorCondition> conditionBag)
+            throws CommandException;
 }

@@ -56,15 +56,26 @@ class LegacyDoorMigrationTest {
 
     @BeforeAll
     static void registerConditions() {
-        List.of(ItemBlock.getConditionContainer(), ItemClick.getConditionContainer(), ItemHolding.getConditionContainer(),
-                        ItemOwning.getConditionContainer(), Proximity.getConditionContainer(), Region.getConditionContainer(),
-                        SimpleRegion.getConditionContainer(), WorldProximity.getConditionContainer(),
-                        WorldRegion.getConditionContainer(), WorldSimpleRegion.getConditionContainer(),
-                        PermissionNode.getConditionContainer(), DoorPermission.getConditionContainer(),
-                        Time.getConditionContainer(), Weather.getConditionContainer(), Placeholder.getConditionContainer(),
+        List.of(
+                        ItemBlock.getConditionContainer(),
+                        ItemClick.getConditionContainer(),
+                        ItemHolding.getConditionContainer(),
+                        ItemOwning.getConditionContainer(),
+                        Proximity.getConditionContainer(),
+                        Region.getConditionContainer(),
+                        SimpleRegion.getConditionContainer(),
+                        WorldProximity.getConditionContainer(),
+                        WorldRegion.getConditionContainer(),
+                        WorldSimpleRegion.getConditionContainer(),
+                        PermissionNode.getConditionContainer(),
+                        DoorPermission.getConditionContainer(),
+                        Time.getConditionContainer(),
+                        Weather.getConditionContainer(),
+                        Placeholder.getConditionContainer(),
                         MythicMob.getConditionContainer())
                 .forEach(container -> {
-                    if (ConditionRegistrar.getContainerByClass(container.getClazz()).isEmpty()) {
+                    if (ConditionRegistrar.getContainerByClass(container.getClazz())
+                            .isEmpty()) {
                         ConditionRegistrar.registerCondition(container);
                     }
                 });
@@ -106,7 +117,8 @@ class LegacyDoorMigrationTest {
         fixture("config.yml");
         LegacyDoorMigration.migrate(dir, LOGGER);
 
-        Map<Long, ConditionalDoor> doors = new JacksonConfiguration(plugin()).doors().byId();
+        Map<Long, ConditionalDoor> doors =
+                new JacksonConfiguration(plugin()).doors().byId();
 
         ConditionalDoor door = doors.get(1L);
         assertEquals(12, door.conditionBag().getConditions().size(), "the condition of the unknown type is skipped");
@@ -165,9 +177,15 @@ class LegacyDoorMigrationTest {
 
         LegacyDoorMigration.migrate(dir, LOGGER);
 
-        JsonNode condition = YAML.readTree(dir.resolve("doors.yml").toFile()).get("doors").get(0).get("conditions").get(0);
+        JsonNode condition = YAML.readTree(dir.resolve("doors.yml").toFile())
+                .get("doors")
+                .get(0)
+                .get("conditions")
+                .get(0);
         assertEquals("itemBlockCondition", condition.get("type").asString());
-        assertEquals("org.bukkit.inventory.ItemStack", condition.get("item").get("==").asString());
+        assertEquals(
+                "org.bukkit.inventory.ItemStack",
+                condition.get("item").get("==").asString());
         assertEquals("ItemMeta", condition.get("item").get("meta").get("==").asString());
         assertEquals(65.0, condition.get("position").get("yCoord").asDouble());
     }
@@ -206,14 +224,17 @@ class LegacyDoorMigrationTest {
     }
 
     private Plugin plugin() {
-        return (Plugin) Proxy.newProxyInstance(getClass().getClassLoader(), new Class[]{Plugin.class}, (proxy, method, args) -> switch (method.getName()) {
-            case "getDataFolder" -> dir.toFile();
-            case "getLogger" -> LOGGER;
-            case "getName" -> "BigDoorsOpener";
-            case "hashCode" -> System.identityHashCode(proxy);
-            case "equals" -> proxy == args[0];
-            case "toString" -> "test plugin";
-            default -> throw new UnsupportedOperationException(method.getName());
-        });
+        return (Plugin) Proxy.newProxyInstance(
+                getClass().getClassLoader(),
+                new Class[] {Plugin.class},
+                (proxy, method, args) -> switch (method.getName()) {
+                    case "getDataFolder" -> dir.toFile();
+                    case "getLogger" -> LOGGER;
+                    case "getName" -> "BigDoorsOpener";
+                    case "hashCode" -> System.identityHashCode(proxy);
+                    case "equals" -> proxy == args[0];
+                    case "toString" -> "test plugin";
+                    default -> throw new UnsupportedOperationException(method.getName());
+                });
     }
 }

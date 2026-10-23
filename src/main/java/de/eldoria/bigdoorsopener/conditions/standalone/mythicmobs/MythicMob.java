@@ -36,6 +36,7 @@ import java.util.logging.Level;
 @JsonTypeName("mythicMobsCondition")
 public class MythicMob implements DoorCondition {
     private final String mobType;
+
     @JsonIgnore
     private boolean state;
 
@@ -62,9 +63,9 @@ public class MythicMob implements DoorCondition {
                     if (args.sizeIs(1)) {
                         List<String> mythicMobs;
                         try {
-                            mythicMobs = (List<String>) C.PLUGIN_CACHE.get("mythicMobs", () ->
-                                    MythicBukkit.inst().getMobManager().getMobTypes()
-                                            .stream()
+                            mythicMobs = (List<String>) C.PLUGIN_CACHE.get(
+                                    "mythicMobs",
+                                    () -> MythicBukkit.inst().getMobManager().getMobTypes().stream()
                                             .map(mythicMob -> mythicMob.getInternalName())
                                             .toList());
                         } catch (ExecutionException e) {
@@ -84,7 +85,9 @@ public class MythicMob implements DoorCondition {
         if (BigDoorsOpener.isMythicMobsEnabled()) {
             return state;
         }
-        BigDoorsOpener.logger().warning("A mythic mobs condition on door " + door.doorUID() + " was called but MythicMobs is not active.");
+        BigDoorsOpener.logger()
+                .warning("A mythic mobs condition on door " + door.doorUID()
+                        + " was called but MythicMobs is not active.");
         return null;
     }
 

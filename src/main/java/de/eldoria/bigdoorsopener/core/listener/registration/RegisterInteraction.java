@@ -45,7 +45,8 @@ public class RegisterInteraction implements Listener {
     @EventHandler
     public void onPlayerInteraction(PlayerInteractEvent event) {
         if (registerObjects.containsKey(event.getPlayer().getUniqueId())) {
-            InteractionRegistrationObject registrationObject = registerObjects.get(event.getPlayer().getUniqueId());
+            InteractionRegistrationObject registrationObject =
+                    registerObjects.get(event.getPlayer().getUniqueId());
             if (registrationObject.invoke(event, messageSender)) {
                 registerObjects.remove(event.getPlayer().getUniqueId());
                 config.saveDoors();

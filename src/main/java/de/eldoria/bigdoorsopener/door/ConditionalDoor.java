@@ -36,7 +36,8 @@ import static java.time.temporal.ChronoUnit.SECONDS;
  * <p>
  * Stored in {@code doors.yml}. The conditions are stored as one list, their groups are derived from their types.
  */
-@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY,
+@JsonAutoDetect(
+        fieldVisibility = JsonAutoDetect.Visibility.ANY,
         getterVisibility = JsonAutoDetect.Visibility.NONE,
         isGetterVisibility = JsonAutoDetect.Visibility.NONE,
         setterVisibility = JsonAutoDetect.Visibility.NONE)
@@ -90,7 +91,6 @@ public class ConditionalDoor {
      */
     private boolean invertOpen = false;
 
-
     public ConditionalDoor(long doorUID, String world, Vector position, ConditionBag conditionBag) {
         this.doorUID = doorUID;
         this.world = world;
@@ -103,9 +103,11 @@ public class ConditionalDoor {
     }
 
     @JsonCreator
-    private ConditionalDoor(@JsonProperty("doorUID") long doorUID, @JsonProperty("world") String world,
-                            @JsonProperty("position") Vector position,
-                            @JsonProperty("conditions") List<DoorCondition> conditions) {
+    private ConditionalDoor(
+            @JsonProperty("doorUID") long doorUID,
+            @JsonProperty("world") String world,
+            @JsonProperty("position") Vector position,
+            @JsonProperty("conditions") List<DoorCondition> conditions) {
         this(doorUID, world, position, new ConditionBag(conditions == null ? List.of() : conditions));
     }
 
@@ -229,7 +231,9 @@ public class ConditionalDoor {
         ConditionBag old = this.conditionBag;
         this.conditionBag = conditionBag;
         old.getConditions().forEach(c -> Bukkit.getPluginManager().callEvent(new ConditionRemovedEvent(this, old, c)));
-        conditionBag.getConditions().forEach(c -> Bukkit.getPluginManager().callEvent(new ConditionAddedEvent(this, conditionBag, c)));
+        conditionBag
+                .getConditions()
+                .forEach(c -> Bukkit.getPluginManager().callEvent(new ConditionAddedEvent(this, conditionBag, c)));
         Bukkit.getPluginManager().callEvent(new DoorModifiedEvent(this));
     }
 
@@ -300,6 +304,8 @@ public class ConditionalDoor {
     }
 
     public enum EvaluationType {
-        CUSTOM, AND, OR
+        CUSTOM,
+        AND,
+        OR
     }
 }

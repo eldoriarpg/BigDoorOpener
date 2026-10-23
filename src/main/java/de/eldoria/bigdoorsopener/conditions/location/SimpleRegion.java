@@ -10,8 +10,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.google.common.cache.Cache;
-import de.eldoria.bigdoorsopener.core.BigDoorsOpener;
 import de.eldoria.bigdoorsopener.conditions.DoorCondition;
+import de.eldoria.bigdoorsopener.core.BigDoorsOpener;
 import de.eldoria.bigdoorsopener.core.conditions.ConditionContainer;
 import de.eldoria.bigdoorsopener.core.conditions.ConditionInput;
 import de.eldoria.bigdoorsopener.core.conditions.Scope;
@@ -42,6 +42,7 @@ public class SimpleRegion implements Location {
     private final BlockVector minimum;
     private final BlockVector maximum;
     private final String world;
+
     @JsonIgnore
     private final Cache<org.bukkit.Location, Boolean> cache = C.getExpiringCache(10, TimeUnit.SECONDS);
 
@@ -52,7 +53,10 @@ public class SimpleRegion implements Location {
     }
 
     @JsonCreator
-    private SimpleRegion(@JsonProperty("minimum") Vector minimum, @JsonProperty("maximum") Vector maximum, @JsonProperty("world") String world) {
+    private SimpleRegion(
+            @JsonProperty("minimum") Vector minimum,
+            @JsonProperty("maximum") Vector maximum,
+            @JsonProperty("world") String world) {
         this(minimum.toBlockVector(), maximum.toBlockVector(), world);
     }
 
@@ -70,7 +74,10 @@ public class SimpleRegion implements Location {
                             if (event.getAction() != Action.LEFT_CLICK_BLOCK || event.getClickedBlock() == null) {
                                 return false;
                             }
-                            BlockVector vec = event.getClickedBlock().getLocation().toVector().toBlockVector();
+                            BlockVector vec = event.getClickedBlock()
+                                    .getLocation()
+                                    .toVector()
+                                    .toBlockVector();
                             event.setCancelled(true);
                             if (first == null) {
                                 world = event.getPlayer().getWorld().getName();

@@ -47,11 +47,13 @@ public class Weather implements DoorCondition {
     private static final double TEMPERATURE_PER_BLOCK = 0.0016;
     private final WeatherType weatherType;
     private final boolean forceState;
+
     @JsonIgnore
     private DoorState state;
 
     @JsonCreator
-    public Weather(@JsonProperty("weatherType") WeatherType weatherType, @JsonProperty("forceState") boolean forceState) {
+    public Weather(
+            @JsonProperty("weatherType") WeatherType weatherType, @JsonProperty("forceState") boolean forceState) {
         this.weatherType = weatherType == null ? WeatherType.DOWNFALL : weatherType;
         this.forceState = forceState;
     }
@@ -65,7 +67,9 @@ public class Weather implements DoorCondition {
                             .orElseThrow(() -> CommandException.message("error.invalidWeatherType"));
                     boolean forceWeather = args.asBoolean(1, false);
                     conditionBag.accept(new Weather(weatherType, forceWeather));
-                    messageSender.sendMessage(sender, "setCondition.weather",
+                    messageSender.sendMessage(
+                            sender,
+                            "setCondition.weather",
                             Replacement.create("OPEN", localizer.getMessage(weatherKey(weatherType))));
                 })
                 .onTabComplete((sender, localizer, args) -> {
@@ -88,7 +92,9 @@ public class Weather implements DoorCondition {
     @Override
     public Boolean isOpen(@Nullable Player player, World world, ConditionalDoor door, boolean currentState) {
         try {
-            return STATE_CACHE.get(door, () -> Optional.ofNullable(isRaining(door))).orElse(null);
+            return STATE_CACHE
+                    .get(door, () -> Optional.ofNullable(isRaining(door)))
+                    .orElse(null);
         } catch (ExecutionException e) {
             return null;
         }
@@ -132,7 +138,8 @@ public class Weather implements DoorCondition {
 
     @Override
     public String getCreationCommand(ConditionalDoor door) {
-        return SET_COMMAND + door.doorUID() + " weather " + weatherType.toString().toLowerCase() + " " + forceState;
+        return SET_COMMAND + door.doorUID() + " weather "
+                + weatherType.toString().toLowerCase() + " " + forceState;
     }
 
     @Override

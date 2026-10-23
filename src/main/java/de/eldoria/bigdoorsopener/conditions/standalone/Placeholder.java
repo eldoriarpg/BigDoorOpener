@@ -42,23 +42,36 @@ public class Placeholder implements DoorCondition {
     public static ConditionContainer getConditionContainer() {
         return ConditionContainer.ofClass(Placeholder.class, Scope.PLAYER)
                 .withFactory((sender, messageSender, args, conditionBag) -> {
-                    if (!BigDoorsOpener.isPlaceholderEnabled()) throw CommandException.message("error.placeholderNotFound");
+                    if (!BigDoorsOpener.isPlaceholderEnabled())
+                        throw CommandException.message("error.placeholderNotFound");
                     Player player = ConditionInput.player(sender);
                     ConditionInput.require(args, 1, DoorCondition.localizer(), "<$syntax.customEvaluator$>");
                     String evaluator = String.join(" ", args.raw());
-                    Pair<JsSyntaxHelper.ValidatorResult, String> result = JsSyntaxHelper.checkExecution(evaluator, BigDoorsOpener.JS(), player, false);
+                    Pair<JsSyntaxHelper.ValidatorResult, String> result =
+                            JsSyntaxHelper.checkExecution(evaluator, BigDoorsOpener.JS(), player, false);
                     switch (result.first) {
                         case UNBALANCED_PARENTHESIS -> throw CommandException.message("error.unbalancedParenthesis");
-                        case INVALID_VARIABLE -> throw CommandException.message("error.invalidVariable", Replacement.unparsed("ERROR", result.second));
-                        case INVALID_OPERATOR -> throw CommandException.message("error.invalidOperator", Replacement.unparsed("ERROR", result.second));
-                        case INVALID_SYNTAX -> throw CommandException.message("error.invalidSyntax", Replacement.unparsed("ERROR", result.second));
-                        case EXECUTION_FAILED -> throw CommandException.message("error.executionFailed", Replacement.unparsed("ERROR", result.second));
-                        case NON_BOOLEAN_RESULT -> throw CommandException.message("error.nonBooleanResult", Replacement.unparsed("ERROR", result.second));
+                        case INVALID_VARIABLE ->
+                            throw CommandException.message(
+                                    "error.invalidVariable", Replacement.unparsed("ERROR", result.second));
+                        case INVALID_OPERATOR ->
+                            throw CommandException.message(
+                                    "error.invalidOperator", Replacement.unparsed("ERROR", result.second));
+                        case INVALID_SYNTAX ->
+                            throw CommandException.message(
+                                    "error.invalidSyntax", Replacement.unparsed("ERROR", result.second));
+                        case EXECUTION_FAILED ->
+                            throw CommandException.message(
+                                    "error.executionFailed", Replacement.unparsed("ERROR", result.second));
+                        case NON_BOOLEAN_RESULT ->
+                            throw CommandException.message(
+                                    "error.nonBooleanResult", Replacement.unparsed("ERROR", result.second));
                         case FINE -> conditionBag.accept(new Placeholder(JsSyntaxHelper.translateEvaluator(evaluator)));
                     }
                     messageSender.sendMessage(sender, "setCondition.placeholder");
                 })
-                .onTabComplete((sender, localizer, args) -> Collections.singletonList("<" + localizer.getMessage("syntax.customEvaluator") + ">"))
+                .onTabComplete((sender, localizer, args) ->
+                        Collections.singletonList("<" + localizer.getMessage("syntax.customEvaluator") + ">"))
                 .withMeta("placeholder", ConditionContainer.Builder.Cost.PLAYER_HIGH.cost)
                 .build();
     }
@@ -68,7 +81,9 @@ public class Placeholder implements DoorCondition {
         if (BigDoorsOpener.isPlaceholderEnabled()) {
             return BigDoorsOpener.JS().eval(PlaceholderAPI.setPlaceholders(player, evaluator), null);
         }
-        BigDoorsOpener.logger().warning("A placeholder condition on door " + door.doorUID() + " was called but PlaceholderAPI is not active.");
+        BigDoorsOpener.logger()
+                .warning("A placeholder condition on door " + door.doorUID()
+                        + " was called but PlaceholderAPI is not active.");
         return null;
     }
 

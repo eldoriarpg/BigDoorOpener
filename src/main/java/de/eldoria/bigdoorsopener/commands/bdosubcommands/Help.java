@@ -35,9 +35,12 @@ public class Help extends AdvancedCommand implements ITabExecutor {
     @Override
     public void onCommand(@NotNull CommandSender sender, @NotNull String alias, @NotNull Arguments args) {
         TextComponent.Builder help = Component.text()
-                .append(MiniMessage.miniMessage().deserialize(localizer().getMessage("help.title"),
+                .append(MiniMessage.miniMessage()
+                        .deserialize(
+                                localizer().getMessage("help.title"),
                                 Placeholder.unparsed("plugin_name", plugin().getName()))
-                        .color(NamedTextColor.GOLD).decorate(TextDecoration.BOLD));
+                        .color(NamedTextColor.GOLD)
+                        .decorate(TextDecoration.BOLD));
         entry(help, "setCondition", "<$syntax.doorId$> <$syntax.condition$> <$syntax.conditionValues$>");
         entry(help, "addCondition", "<$syntax.doorId$> <$syntax.condition$> <$syntax.conditionValues$>");
         entry(help, "removeCondition", "<$syntax.doorId$> <$syntax.condition$>");
@@ -59,8 +62,7 @@ public class Help extends AdvancedCommand implements ITabExecutor {
     }
 
     private void entry(TextComponent.Builder help, String command, String syntax) {
-        help.append(Component.newline())
-                .append(Component.text(command, NamedTextColor.GOLD));
+        help.append(Component.newline()).append(Component.text(command, NamedTextColor.GOLD));
         if (!syntax.isEmpty()) {
             help.append(Component.text(" " + ConditionInput.localize(localizer(), syntax), NamedTextColor.AQUA));
         }

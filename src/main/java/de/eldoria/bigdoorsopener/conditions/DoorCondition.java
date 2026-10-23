@@ -20,9 +20,9 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
-import tools.jackson.databind.annotation.JsonTypeIdResolver;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import tools.jackson.databind.annotation.JsonTypeIdResolver;
 
 /**
  * A interface which represents a condition which opens a door under specific circumstances.
@@ -30,7 +30,8 @@ import org.jetbrains.annotations.Nullable;
  * Conditions are stored with Jackson. The {@code type} property holds the type name of the registered
  * {@link ConditionContainer}. Fields which only hold runtime state have to be ignored.
  */
-@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY,
+@JsonAutoDetect(
+        fieldVisibility = JsonAutoDetect.Visibility.ANY,
         getterVisibility = JsonAutoDetect.Visibility.NONE,
         isGetterVisibility = JsonAutoDetect.Visibility.NONE,
         setterVisibility = JsonAutoDetect.Visibility.NONE)
@@ -54,8 +55,11 @@ public interface DoorCondition extends Cloneable {
      * @return headline component
      */
     static Component headline(ILocalizer localizer, String key, Class<? extends DoorCondition> clazz) {
-        String name = ConditionRegistrar.getContainerByClass(clazz).map(ConditionContainer::getName).orElse("undefined");
-        return MiniMessage.miniMessage().deserialize(localizer.getMessage(key), Placeholder.unparsed("name", name))
+        String name = ConditionRegistrar.getContainerByClass(clazz)
+                .map(ConditionContainer::getName)
+                .orElse("undefined");
+        return MiniMessage.miniMessage()
+                .deserialize(localizer.getMessage(key), Placeholder.unparsed("name", name))
                 .colorIfAbsent(NamedTextColor.AQUA);
     }
 
@@ -68,7 +72,11 @@ public interface DoorCondition extends Cloneable {
      * @param currentState the current state of the door.
      * @return true if the key settings are matched.
      */
-    Boolean isOpen(@Nullable Player player, @NotNull World world, @NotNull ConditionalDoor door, @NotNull boolean currentState);
+    Boolean isOpen(
+            @Nullable Player player,
+            @NotNull World world,
+            @NotNull ConditionalDoor door,
+            @NotNull boolean currentState);
 
     /**
      * Get the description of the door condition.
@@ -98,8 +106,7 @@ public interface DoorCondition extends Cloneable {
      * This method is called after the check for the door of this condition is done and a new evaluation cycle starts.
      * Deletes any internal data in this condition
      */
-    default void evaluated() {
-    }
+    default void evaluated() {}
 
     DoorCondition clone();
 
@@ -109,6 +116,5 @@ public interface DoorCondition extends Cloneable {
      *
      * @param player player which opened the door.
      */
-    default void opened(Player player) {
-    }
+    default void opened(Player player) {}
 }

@@ -30,18 +30,24 @@ public class Unregister extends BigDoorsAdapterCommand {
     private final Config config;
 
     public Unregister(Plugin plugin, BigDoors bigDoors, Config config) {
-        super(plugin, CommandMeta.builder("unregister")
-                .withPermission(Permissions.USE)
-                .addArgument("syntax.doorId", true)
-                .build(), bigDoors, config);
+        super(
+                plugin,
+                CommandMeta.builder("unregister")
+                        .withPermission(Permissions.USE)
+                        .addArgument("syntax.doorId", true)
+                        .build(),
+                bigDoors,
+                config);
         this.config = config;
     }
 
     @Override
-    public void onCommand(@NotNull CommandSender sender, @NotNull String alias, @NotNull Arguments args) throws CommandException {
+    public void onCommand(@NotNull CommandSender sender, @NotNull String alias, @NotNull Arguments args)
+            throws CommandException {
         Pair<ConditionalDoor, Door> door = getConditionalPlayerDoor(args.asString(0), sender);
         config.removeDoor(door.second.getDoorUID());
-        messageSender().sendMessage(sender, "unregister.message", Replacement.unparsed("DOOR_NAME", door.second.getName()));
+        messageSender()
+                .sendMessage(sender, "unregister.message", Replacement.unparsed("DOOR_NAME", door.second.getName()));
     }
 
     @Override

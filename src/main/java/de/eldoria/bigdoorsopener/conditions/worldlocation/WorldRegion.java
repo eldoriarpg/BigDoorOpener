@@ -23,7 +23,6 @@ import de.eldoria.bigdoorsopener.util.C;
 import de.eldoria.eldoutilities.commands.exceptions.CommandException;
 import de.eldoria.eldoutilities.localization.ILocalizer;
 import net.kyori.adventure.text.Component;
-import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 
@@ -39,8 +38,10 @@ import java.util.Collections;
 public class WorldRegion implements WorldLocation {
     @JsonProperty("world")
     private final String worldName;
+
     @JsonProperty("region")
     private final String regionId;
+
     @JsonIgnore
     private ProtectedRegion region;
 

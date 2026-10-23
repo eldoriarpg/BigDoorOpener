@@ -59,7 +59,9 @@ public class Config {
         configuration.reload();
         configuration.save();
         if (jsCacheSize() < RECOMMENDED_JS_CACHE_SIZE) {
-            BigDoorsOpener.logger().warning("Js cache is small. This may cause performance issues. We recommend at least a size of " + RECOMMENDED_JS_CACHE_SIZE);
+            BigDoorsOpener.logger()
+                    .warning("Js cache is small. This may cause performance issues. We recommend at least a size of "
+                            + RECOMMENDED_JS_CACHE_SIZE);
         }
         BigDoorsOpener.logger().info("Config loaded!");
     }
@@ -121,7 +123,8 @@ public class Config {
         return remove != null;
     }
 
-    public ConditionalDoor computeDoorIfAbsent(Long key, @NotNull Function<? super Long, ? extends ConditionalDoor> mappingFunction) {
+    public ConditionalDoor computeDoorIfAbsent(
+            Long key, @NotNull Function<? super Long, ? extends ConditionalDoor> mappingFunction) {
         if (doors().containsKey(key)) {
             return doors().get(key);
         }

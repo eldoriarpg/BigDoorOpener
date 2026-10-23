@@ -29,15 +29,20 @@ import java.util.List;
 public class SetState extends BigDoorsAdapterCommand {
 
     public SetState(Plugin plugin, BigDoors bigDoors, Config config) {
-        super(plugin, CommandMeta.builder("setState")
-                .withPermission(Permissions.USE)
-                .addArgument("syntax.doorId", true)
-                .addArgument("syntax.state", true)
-                .build(), bigDoors, config);
+        super(
+                plugin,
+                CommandMeta.builder("setState")
+                        .withPermission(Permissions.USE)
+                        .addArgument("syntax.doorId", true)
+                        .addArgument("syntax.state", true)
+                        .build(),
+                bigDoors,
+                config);
     }
 
     @Override
-    public void onCommand(@NotNull CommandSender sender, @NotNull String alias, @NotNull Arguments args) throws CommandException {
+    public void onCommand(@NotNull CommandSender sender, @NotNull String alias, @NotNull Arguments args)
+            throws CommandException {
         Pair<ConditionalDoor, Door> door = getConditionalPlayerDoor(args.asString(0), sender);
         boolean state = args.asBoolean(1, "enabled", "disabled");
         door.first.enabled(state);

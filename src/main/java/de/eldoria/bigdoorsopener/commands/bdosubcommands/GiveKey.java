@@ -36,17 +36,22 @@ import java.util.List;
 public class GiveKey extends BigDoorsAdapterCommand {
 
     public GiveKey(Plugin plugin, BigDoors bigDoors, Config config) {
-        super(plugin, CommandMeta.builder("giveKey")
-                .withPermission(Permissions.GIVE_KEY)
-                .addArgument("syntax.doorId", true)
-                .addArgument("syntax.amount", false)
-                .addArgument("syntax.player", false)
-                .addArgument("tabcomplete.conditionId", false)
-                .build(), bigDoors, config);
+        super(
+                plugin,
+                CommandMeta.builder("giveKey")
+                        .withPermission(Permissions.GIVE_KEY)
+                        .addArgument("syntax.doorId", true)
+                        .addArgument("syntax.amount", false)
+                        .addArgument("syntax.player", false)
+                        .addArgument("tabcomplete.conditionId", false)
+                        .build(),
+                bigDoors,
+                config);
     }
 
     @Override
-    public void onCommand(@NotNull CommandSender sender, @NotNull String alias, @NotNull Arguments args) throws CommandException {
+    public void onCommand(@NotNull CommandSender sender, @NotNull String alias, @NotNull Arguments args)
+            throws CommandException {
         Player playerFromSender = getPlayerFromSender(sender);
         if (playerFromSender == null) {
             args.assertLength(3);
@@ -69,14 +74,20 @@ public class GiveKey extends BigDoorsAdapterCommand {
         target.getInventory().addItem(clone);
         String itemName = PlainTextComponentSerializer.plainText().serialize(item.effectiveName());
         if (target != sender) {
-            messageSender().sendMessage(sender, "giveKey.send",
-                    Replacement.create("AMOUNT", amount),
-                    Replacement.unparsed("ITEMNAME", itemName),
-                    Replacement.unparsed("TARGET", target.getName()));
+            messageSender()
+                    .sendMessage(
+                            sender,
+                            "giveKey.send",
+                            Replacement.create("AMOUNT", amount),
+                            Replacement.unparsed("ITEMNAME", itemName),
+                            Replacement.unparsed("TARGET", target.getName()));
         }
-        messageSender().sendMessage(target, "giveKey.received",
-                Replacement.create("AMOUNT", amount),
-                Replacement.unparsed("ITEMNAME", itemName));
+        messageSender()
+                .sendMessage(
+                        target,
+                        "giveKey.received",
+                        Replacement.create("AMOUNT", amount),
+                        Replacement.unparsed("ITEMNAME", itemName));
     }
 
     @Override

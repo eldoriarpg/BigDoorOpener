@@ -32,7 +32,10 @@ public class ConditionGroup {
     }
 
     public Scope getScope() {
-        return conditions.values().stream().findFirst().map(ConditionContainer::getScope).orElse(null);
+        return conditions.values().stream()
+                .findFirst()
+                .map(ConditionContainer::getScope)
+                .orElse(null);
     }
 
     public String name() {

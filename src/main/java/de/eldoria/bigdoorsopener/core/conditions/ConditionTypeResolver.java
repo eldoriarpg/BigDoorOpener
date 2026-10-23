@@ -34,7 +34,8 @@ public class ConditionTypeResolver extends TypeIdResolverBase {
     public String idFromValueAndType(DatabindContext ctxt, Object value, Class<?> suggestedType) {
         return ConditionRegistrar.getContainerByClass((Class<? extends DoorCondition>) suggestedType)
                 .map(ConditionContainer::typeName)
-                .orElseThrow(() -> new IllegalStateException("Condition " + suggestedType.getName() + " is not registered."));
+                .orElseThrow(() ->
+                        new IllegalStateException("Condition " + suggestedType.getName() + " is not registered."));
     }
 
     @Override

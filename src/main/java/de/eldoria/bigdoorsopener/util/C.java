@@ -24,11 +24,11 @@ public final class C {
      * A chaotic cache. Handle with care. ANARCHY!
      */
     public static final Cache<String, List<?>> PLUGIN_CACHE = C.getExpiringCache(30, TimeUnit.SECONDS);
+
     public static TextColor baseColor = NamedTextColor.DARK_GREEN;
     public static TextColor highlightColor = NamedTextColor.GOLD;
 
-    private C() {
-    }
+    private C() {}
 
     public static <A, B> LoadingCache<A, B> getRefreshingCache(Function<A, B> function) {
         return CacheBuilder.newBuilder()
@@ -58,9 +58,7 @@ public final class C {
     }
 
     public static <A, B> Cache<A, B> getExpiringCache(int duration, TimeUnit timeUnit) {
-        return CacheBuilder.newBuilder()
-                .expireAfterWrite(duration, timeUnit)
-                .build();
+        return CacheBuilder.newBuilder().expireAfterWrite(duration, timeUnit).build();
     }
 
     public static <R, A> R nonNullOrElse(A obj, Function<A, R> function, R defaultVal) {

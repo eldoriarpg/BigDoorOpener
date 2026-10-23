@@ -27,8 +27,7 @@ public final class Permissions {
     public static final String ALL_CONDITION = "bdo.condition.all";
     public static final String UPDATES = "bdo.updates";
 
-    private Permissions() {
-    }
+    private Permissions() {}
 
     public static String getConditionPermission(ConditionContainer container) {
         return getConditionPermission(container.getGroup());

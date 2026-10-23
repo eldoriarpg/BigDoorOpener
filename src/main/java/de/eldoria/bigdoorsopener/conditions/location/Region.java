@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
+import com.google.common.cache.Cache;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
@@ -23,10 +24,8 @@ import de.eldoria.bigdoorsopener.util.C;
 import de.eldoria.eldoutilities.commands.exceptions.CommandException;
 import de.eldoria.eldoutilities.localization.ILocalizer;
 import net.kyori.adventure.text.Component;
-import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
-import com.google.common.cache.Cache;
 
 import java.util.Collections;
 import java.util.concurrent.ExecutionException;
@@ -42,10 +41,13 @@ import java.util.logging.Level;
 public class Region implements Location {
     @JsonProperty("world")
     private final String worldName;
+
     @JsonProperty("region")
     private final String regionId;
+
     @JsonIgnore
     private ProtectedRegion region;
+
     @JsonIgnore
     private final Cache<org.bukkit.Location, Boolean> cache = C.getExpiringCache();
 
@@ -90,7 +92,8 @@ public class Region implements Location {
         ProtectedRegion region = region(world);
         if (region == null) return null;
         try {
-            return cache.get(player.getLocation(), () -> region.contains(BukkitAdapter.asBlockVector(player.getLocation())));
+            return cache.get(
+                    player.getLocation(), () -> region.contains(BukkitAdapter.asBlockVector(player.getLocation())));
         } catch (ExecutionException e) {
             BigDoorsOpener.logger().log(Level.WARNING, "Could not compute value", e);
         }

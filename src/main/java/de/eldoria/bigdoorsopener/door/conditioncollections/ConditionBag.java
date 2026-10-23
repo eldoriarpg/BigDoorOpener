@@ -6,13 +6,11 @@
 package de.eldoria.bigdoorsopener.door.conditioncollections;
 
 import de.eldoria.bigdoorsopener.conditions.DoorCondition;
-import de.eldoria.bigdoorsopener.core.BigDoorsOpener;
 import de.eldoria.bigdoorsopener.core.conditions.ConditionContainer;
 import de.eldoria.bigdoorsopener.core.conditions.ConditionGroup;
 import de.eldoria.bigdoorsopener.core.conditions.ConditionRegistrar;
 import de.eldoria.bigdoorsopener.core.conditions.Scope;
 import de.eldoria.bigdoorsopener.core.events.ConditionAddedEvent;
-import de.eldoria.bigdoorsopener.core.events.ConditionBagModifiedEvent;
 import de.eldoria.bigdoorsopener.core.events.ConditionRemovedEvent;
 import de.eldoria.bigdoorsopener.core.exceptions.ConditionCreationException;
 import de.eldoria.bigdoorsopener.door.ConditionalDoor;
@@ -44,8 +42,7 @@ public class ConditionBag implements ConditionCollection {
         worldScope.forEach(this::addConditionSilent);
     }
 
-    public ConditionBag() {
-    }
+    public ConditionBag() {}
 
     /**
      * Creates a bag with the given conditions. Missing conditions are skipped.
@@ -66,7 +63,7 @@ public class ConditionBag implements ConditionCollection {
         Bukkit.getPluginManager().callEvent(new ConditionAddedEvent(door, this, condition));
     }
 
-    public void addCondition(ConditionalDoor door,DoorCondition condition) {
+    public void addCondition(ConditionalDoor door, DoorCondition condition) {
         getConditions(condition).add(condition);
         Bukkit.getPluginManager().callEvent(new ConditionAddedEvent(door, this, condition));
     }
@@ -75,7 +72,7 @@ public class ConditionBag implements ConditionCollection {
         getConditions(condition).add(condition);
     }
 
-    public boolean removeCondition(ConditionalDoor door,ConditionGroup group, int index) {
+    public boolean removeCondition(ConditionalDoor door, ConditionGroup group, int index) {
         if (index < 0 || index >= getConditions(group).size()) {
             return false;
         }
@@ -87,7 +84,8 @@ public class ConditionBag implements ConditionCollection {
     public List<DoorCondition> getConditions(DoorCondition condition) {
         Optional<ConditionContainer> containerByClass = ConditionRegistrar.getContainerByClass(condition.getClass());
         if (!containerByClass.isPresent()) {
-            throw new ConditionCreationException("The requested condition " + condition.getClass().getName() + "is not registered");
+            throw new ConditionCreationException(
+                    "The requested condition " + condition.getClass().getName() + "is not registered");
         }
         ConditionContainer container = containerByClass.get();
         return getConditions(container.getGroup());

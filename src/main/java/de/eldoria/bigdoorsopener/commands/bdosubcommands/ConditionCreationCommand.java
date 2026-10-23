@@ -35,12 +35,16 @@ import java.util.Optional;
 public abstract class ConditionCreationCommand extends BigDoorsAdapterCommand {
 
     protected ConditionCreationCommand(Plugin plugin, String name, BigDoors bigDoors, Config config) {
-        super(plugin, CommandMeta.builder(name)
-                .withPermission(Permissions.USE)
-                .addArgument("syntax.doorId", true)
-                .addArgument("syntax.condition", true)
-                .addArgument("syntax.conditionValues", false)
-                .build(), bigDoors, config);
+        super(
+                plugin,
+                CommandMeta.builder(name)
+                        .withPermission(Permissions.USE)
+                        .addArgument("syntax.doorId", true)
+                        .addArgument("syntax.condition", true)
+                        .addArgument("syntax.conditionValues", false)
+                        .build(),
+                bigDoors,
+                config);
     }
 
     /**
@@ -52,19 +56,21 @@ public abstract class ConditionCreationCommand extends BigDoorsAdapterCommand {
     protected abstract void apply(ConditionalDoor door, DoorCondition condition);
 
     @Override
-    public void onCommand(@NotNull CommandSender sender, @NotNull String alias, @NotNull Arguments args) throws CommandException {
+    public void onCommand(@NotNull CommandSender sender, @NotNull String alias, @NotNull Arguments args)
+            throws CommandException {
         ConditionalDoor door = getOrRegister(getPlayerDoor(args.asString(0), sender));
 
         ConditionContainer condition = ConditionRegistrar.getConditionByName(args.asString(1))
                 .orElseThrow(() -> CommandException.message("error.invalidConditionType"));
         String group = condition.getGroup();
 
-        CommandAssertions.permission(sender, false, Permissions.getConditionPermission(condition), Permissions.ALL_CONDITION);
+        CommandAssertions.permission(
+                sender, false, Permissions.getConditionPermission(condition), Permissions.ALL_CONDITION);
 
         condition.create(sender, messageSender(), args.subArguments(2), c -> apply(door, c));
 
         if (door.evaluationType() == ConditionalDoor.EvaluationType.CUSTOM
-            && !Words.pattern(List.of(group)).matcher(door.evaluator()).find()) {
+                && !Words.pattern(List.of(group)).matcher(door.evaluator()).find()) {
             messageSender().sendError(sender, "warning.valueNotInEvaluator", Replacement.create("VALUE", group));
         }
     }
@@ -86,8 +92,10 @@ public abstract class ConditionCreationCommand extends BigDoorsAdapterCommand {
         ConditionContainer container = conditionByName.get();
         String permission = Permissions.getConditionPermission(container.getGroup());
         if (!sender.hasPermission(permission) && !sender.hasPermission(Permissions.ALL_CONDITION)) {
-            return Collections.singletonList(messageSender().translatePlain("error.permission",
-                    Replacement.create("PERMISSION", permission + ", " + Permissions.ALL_CONDITION)));
+            return Collections.singletonList(messageSender()
+                    .translatePlain(
+                            "error.permission",
+                            Replacement.create("PERMISSION", permission + ", " + Permissions.ALL_CONDITION)));
         }
         return container.onTabComplete(sender, localizer(), args.subArguments(2));
     }

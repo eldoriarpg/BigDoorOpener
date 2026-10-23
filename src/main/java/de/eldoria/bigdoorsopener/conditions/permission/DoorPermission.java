@@ -39,6 +39,7 @@ import java.util.logging.Level;
 public class DoorPermission implements Permission {
     private static final List<String> LEVELS = List.of("owner", "editor", "user");
     private final int permissionLevel;
+
     @JsonIgnore
     private final Cache<UUID, Boolean> cache = C.getExpiringCache(30, TimeUnit.SECONDS);
 

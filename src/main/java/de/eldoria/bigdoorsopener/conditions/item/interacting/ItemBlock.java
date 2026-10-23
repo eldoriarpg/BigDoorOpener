@@ -46,8 +46,10 @@ public class ItemBlock extends ItemInteraction {
     }
 
     @JsonCreator
-    private ItemBlock(@JsonProperty("position") Vector position, @JsonProperty("item") ItemStack stack,
-                      @JsonProperty("consumed") boolean consumed) {
+    private ItemBlock(
+            @JsonProperty("position") Vector position,
+            @JsonProperty("item") ItemStack stack,
+            @JsonProperty("consumed") boolean consumed) {
         super(stack, consumed);
         this.position = position == null ? null : position.toBlockVector();
     }
@@ -64,7 +66,8 @@ public class ItemBlock extends ItemInteraction {
                             return false;
                         }
                         if (event.getClickedBlock() == null) return false;
-                        itemBlock.position(event.getClickedBlock().getLocation().toVector().toBlockVector());
+                        itemBlock.position(
+                                event.getClickedBlock().getLocation().toVector().toBlockVector());
                         conditionBag.accept(itemBlock);
                         event.setCancelled(true);
                         mSender.sendMessage(player, "setCondition.itemBlockRegistered");

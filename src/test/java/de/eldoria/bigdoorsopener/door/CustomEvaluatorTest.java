@@ -29,13 +29,11 @@ class CustomEvaluatorTest {
     static void register() {
         if (ConditionRegistrar.getContainerByClass(Gate.class).isEmpty()) {
             ConditionRegistrar.registerCondition(ConditionContainer.ofClass(Gate.class, Scope.WORLD)
-                    .withFactory((sender, messageSender, args, bag) -> {
-                    })
+                    .withFactory((sender, messageSender, args, bag) -> {})
                     .withMeta("gate", "gate", 1)
                     .build());
             ConditionRegistrar.registerCondition(ConditionContainer.ofClass(WorldGate.class, Scope.WORLD)
-                    .withFactory((sender, messageSender, args, bag) -> {
-                    })
+                    .withFactory((sender, messageSender, args, bag) -> {})
                     .withMeta("worldGate", "worldGate", 1)
                     .build());
         }

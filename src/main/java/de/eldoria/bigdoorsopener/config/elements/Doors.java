@@ -23,8 +23,7 @@ public class Doors {
     @JsonIgnore
     private final Map<Long, ConditionalDoor> doors = new LinkedHashMap<>();
 
-    public Doors() {
-    }
+    public Doors() {}
 
     @JsonCreator
     private Doors(@JsonProperty("doors") List<ConditionalDoor> doors) {

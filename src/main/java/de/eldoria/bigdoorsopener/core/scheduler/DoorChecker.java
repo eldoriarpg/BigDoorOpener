@@ -85,7 +85,6 @@ public class DoorChecker extends BigDoorsAdapter implements Runnable, Listener {
 
         doorUpdateInterval += doors.size() / (double) config.refreshRate();
 
-
         open.clear();
         close.clear();
         evaluated.clear();
@@ -138,8 +137,11 @@ public class DoorChecker extends BigDoorsAdapter implements Runnable, Listener {
                 return;
             }
         } catch (ExecutionException e) {
-            BigDoorsOpener.logger().log(Level.WARNING,
-                    "An error occured while calculating the chunk cache state. Please report this.", e);
+            BigDoorsOpener.logger()
+                    .log(
+                            Level.WARNING,
+                            "An error occured while calculating the chunk cache state. Please report this.",
+                            e);
             return;
         }
 
@@ -156,8 +158,7 @@ public class DoorChecker extends BigDoorsAdapter implements Runnable, Listener {
         // collect all doors we evaluated.
         evaluated.add(door);
 
-
-        //Check if the door really needs a per player evaluation
+        // Check if the door really needs a per player evaluation
         if (door.requiresPlayerEvaluation()) {
             evaluatePlayer(door, world);
         } else {

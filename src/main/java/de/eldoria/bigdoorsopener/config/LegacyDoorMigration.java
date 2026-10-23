@@ -39,12 +39,13 @@ import java.util.logging.Logger;
 public final class LegacyDoorMigration {
     public static final String BACKUP = "config.yml.2.x.bak";
     private static final String ALIAS = "==";
-    private static final Set<String> VECTORS = Set.of("Vector", "BlockVector", "org.bukkit.util.Vector", "org.bukkit.util.BlockVector");
-    private static final List<String> CHAIN_SLOTS = List.of("item", "location", "permission", "time", "weather", "placeholder", "mythicMob");
+    private static final Set<String> VECTORS =
+            Set.of("Vector", "BlockVector", "org.bukkit.util.Vector", "org.bukkit.util.BlockVector");
+    private static final List<String> CHAIN_SLOTS =
+            List.of("item", "location", "permission", "time", "weather", "placeholder", "mythicMob");
     private static final YAMLMapper YAML = YAMLMapper.builder().build();
 
-    private LegacyDoorMigration() {
-    }
+    private LegacyDoorMigration() {}
 
     /**
      * Migrates the configuration in the directory if it was written by 2.x.
@@ -61,14 +62,16 @@ public final class LegacyDoorMigration {
         JsonNode root = YAML.readTree(config.toFile());
         if (root == null || !root.isObject()) return false;
         if (!root.has("version")) {
-            throw new IllegalStateException("The configuration was written by Big Doors Opener 1.x. Update to 2.5.3 first, start the server once, then update to this version.");
+            throw new IllegalStateException(
+                    "The configuration was written by Big Doors Opener 1.x. Update to 2.5.3 first, start the server once, then update to this version.");
         }
         if (root.get("version").asInt() != 1) return false;
 
         Files.copy(config, directory.resolve(BACKUP), StandardCopyOption.REPLACE_EXISTING);
         ObjectNode doors = migrateDoors(root.get("doors"));
         YAML.writeValue(directory.resolve("doors.yml").toFile(), doors);
-        logger.info("Moved " + doors.get("doors").size() + " door(s) from config.yml to doors.yml. The old file is kept as " + BACKUP + ".");
+        logger.info("Moved " + doors.get("doors").size()
+                + " door(s) from config.yml to doors.yml. The old file is kept as " + BACKUP + ".");
         return true;
     }
 
@@ -111,7 +114,8 @@ public final class LegacyDoorMigration {
         JsonNode alias = condition.get(ALIAS);
         if (alias != null) result.put("type", alias.asString());
         for (Map.Entry<String, JsonNode> property : condition.properties()) {
-            if (!property.getKey().equals(ALIAS)) result.set(property.getKey(), property.getValue().deepCopy());
+            if (!property.getKey().equals(ALIAS))
+                result.set(property.getKey(), property.getValue().deepCopy());
         }
         JsonNode form = result.get("proximityForm");
         if (form != null && form.isString()) {

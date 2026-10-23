@@ -18,8 +18,7 @@ import org.bukkit.entity.Player;
 public final class ConditionInput {
     private static final String CONDITION_SYNTAX = "<$syntax.doorId$> <$syntax.condition$> ";
 
-    private ConditionInput() {
-    }
+    private ConditionInput() {}
 
     /**
      * Requires a minimum amount of condition arguments.
@@ -30,9 +29,11 @@ public final class ConditionInput {
      * @param syntax    syntax of the condition arguments, with message keys enclosed in {@code $}
      * @throws CommandException with the full syntax of the command when arguments are missing
      */
-    public static void require(Arguments args, int length, ILocalizer localizer, String syntax) throws CommandException {
+    public static void require(Arguments args, int length, ILocalizer localizer, String syntax)
+            throws CommandException {
         if (args.size() >= length) return;
-        throw CommandException.message("error.invalidArguments",
+        throw CommandException.message(
+                "error.invalidArguments",
                 Replacement.unparsed("SYNTAX", localize(localizer, CONDITION_SYNTAX + syntax)));
     }
 

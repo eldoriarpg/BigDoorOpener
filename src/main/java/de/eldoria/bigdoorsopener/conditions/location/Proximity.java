@@ -39,7 +39,8 @@ public class Proximity implements Location {
     private final ProximityForm proximityForm;
 
     @JsonCreator
-    public Proximity(@JsonProperty("dimensions") Vector dimensions, @JsonProperty("proximityForm") ProximityForm proximityForm) {
+    public Proximity(
+            @JsonProperty("dimensions") Vector dimensions, @JsonProperty("proximityForm") ProximityForm proximityForm) {
         this.dimensions = dimensions;
         this.proximityForm = proximityForm;
     }
@@ -47,7 +48,8 @@ public class Proximity implements Location {
     public static ConditionContainer getConditionContainer() {
         return ConditionContainer.ofClass(Proximity.class, Scope.PLAYER)
                 .withFactory((sender, messageSender, args, conditionBag) -> {
-                    ConditionInput.require(args, 1, DoorCondition.localizer(), "<$tabcomplete.dimensions$> [$syntax.proximityForm$]");
+                    ConditionInput.require(
+                            args, 1, DoorCondition.localizer(), "<$tabcomplete.dimensions$> [$syntax.proximityForm$]");
                     Vector vector = parseDimensions(args.asString(0));
                     ProximityForm form = parseForm(args);
                     conditionBag.accept(new Proximity(vector, form));
@@ -87,10 +89,14 @@ public class Proximity implements Location {
         } else {
             throw CommandException.message("error.invalidVector");
         }
-        if (vector.getX() < 1 || vector.getX() > 100
-            || vector.getY() < 1 || vector.getY() > 100
-            || vector.getZ() < 1 || vector.getZ() > 100) {
-            throw CommandException.message("error.invalidRange", Replacement.create("MIN", 1), Replacement.create("MAX", 100));
+        if (vector.getX() < 1
+                || vector.getX() > 100
+                || vector.getY() < 1
+                || vector.getY() > 100
+                || vector.getZ() < 1
+                || vector.getZ() > 100) {
+            throw CommandException.message(
+                    "error.invalidRange", Replacement.create("MIN", 1), Replacement.create("MAX", 100));
         }
         return vector;
     }
@@ -104,7 +110,8 @@ public class Proximity implements Location {
      */
     public static ProximityForm parseForm(Arguments args) throws CommandException {
         if (!args.hasArg(1)) return ProximityForm.CUBOID;
-        return EnumUtil.parse(args.asString(1), ProximityForm.class).orElseThrow(() -> CommandException.message("error.invalidForm"));
+        return EnumUtil.parse(args.asString(1), ProximityForm.class)
+                .orElseThrow(() -> CommandException.message("error.invalidForm"));
     }
 
     @Override
@@ -114,9 +121,8 @@ public class Proximity implements Location {
 
     private boolean contains(ConditionalDoor door, Player player) {
         Vector vector = player.getLocation().toVector();
-        return proximityForm.check.apply(door.position(),
-                new Vector(vector.getBlockX(), vector.getBlockY(), vector.getBlockZ()),
-                dimensions);
+        return proximityForm.check.apply(
+                door.position(), new Vector(vector.getBlockX(), vector.getBlockY(), vector.getBlockZ()), dimensions);
     }
 
     @Override
@@ -133,8 +139,8 @@ public class Proximity implements Location {
     @Override
     public String getCreationCommand(ConditionalDoor door) {
         return SET_COMMAND + door.doorUID() + " proximity "
-               + dimensions.getX() + "," + dimensions.getY() + "," + dimensions.getZ()
-               + " " + proximityForm.name().toLowerCase();
+                + dimensions.getX() + "," + dimensions.getY() + "," + dimensions.getZ()
+                + " " + proximityForm.name().toLowerCase();
     }
 
     @Override
@@ -143,23 +149,23 @@ public class Proximity implements Location {
     }
 
     public enum ProximityForm {
-        CUBOID("conditionDesc.proximityForm.cuboid",
-                (point, target, dimensions) -> {
-                    if (Math.abs(point.getX() - target.getX()) > dimensions.getX()) return false;
-                    if (Math.abs(point.getY() - target.getY()) > dimensions.getY()) return false;
-                    return !(Math.abs(point.getZ() - target.getZ()) > dimensions.getZ());
-                }),
-        ELLIPSOID("conditionDesc.proximityForm.ellipsoid",
-                (point, target, dimensions) ->
-                        Math.pow((target.getX() - point.getX()) / dimensions.getX(), 2)
-                        + Math.pow((target.getY() - point.getY()) / dimensions.getY(), 2)
-                        + Math.pow((target.getZ() - point.getZ()) / dimensions.getZ(), 2) <= 1),
-        CYLINDER("conditionDesc.proximityForm.cylinder",
-                (point, target, dimensions) -> {
-                    if (Math.abs(point.getY() - target.getY()) > dimensions.getY()) return false;
-                    return Math.pow(target.getX() - point.getX(), 2) / Math.pow(dimensions.getX(), 2)
-                           + Math.pow(target.getZ() - point.getZ(), 2) / Math.pow(dimensions.getZ(), 2) <= 1;
-                });
+        CUBOID("conditionDesc.proximityForm.cuboid", (point, target, dimensions) -> {
+            if (Math.abs(point.getX() - target.getX()) > dimensions.getX()) return false;
+            if (Math.abs(point.getY() - target.getY()) > dimensions.getY()) return false;
+            return !(Math.abs(point.getZ() - target.getZ()) > dimensions.getZ());
+        }),
+        ELLIPSOID(
+                "conditionDesc.proximityForm.ellipsoid",
+                (point, target, dimensions) -> Math.pow((target.getX() - point.getX()) / dimensions.getX(), 2)
+                                + Math.pow((target.getY() - point.getY()) / dimensions.getY(), 2)
+                                + Math.pow((target.getZ() - point.getZ()) / dimensions.getZ(), 2)
+                        <= 1),
+        CYLINDER("conditionDesc.proximityForm.cylinder", (point, target, dimensions) -> {
+            if (Math.abs(point.getY() - target.getY()) > dimensions.getY()) return false;
+            return Math.pow(target.getX() - point.getX(), 2) / Math.pow(dimensions.getX(), 2)
+                            + Math.pow(target.getZ() - point.getZ(), 2) / Math.pow(dimensions.getZ(), 2)
+                    <= 1;
+        });
 
         public final String localKey;
         /**

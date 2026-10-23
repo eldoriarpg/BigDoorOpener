@@ -25,11 +25,17 @@ class WordsTest {
 
     @Test
     void leavesPlaceholderNamesAlone() {
-        assertEquals("%player_time%>5&&true", Words.pattern(List.of("time")).matcher("%player_time%>5&&time").replaceAll("true"));
+        assertEquals(
+                "%player_time%>5&&true",
+                Words.pattern(List.of("time")).matcher("%player_time%>5&&time").replaceAll("true"));
     }
 
     @Test
     void patternPrefersLongerWords() {
-        assertEquals("x&&x", Words.pattern(List.of("location", "worldLocation")).matcher("location&&worldLocation").replaceAll("x"));
+        assertEquals(
+                "x&&x",
+                Words.pattern(List.of("location", "worldLocation"))
+                        .matcher("location&&worldLocation")
+                        .replaceAll("x"));
     }
 }

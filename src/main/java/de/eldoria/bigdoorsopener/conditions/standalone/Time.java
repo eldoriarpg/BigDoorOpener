@@ -50,7 +50,9 @@ public class Time implements DoorCondition {
      * The tick from when the door should be closed.
      */
     private final int closeTick;
+
     private final boolean forceState;
+
     @JsonIgnore
     private DoorState state = null;
 
@@ -62,8 +64,10 @@ public class Time implements DoorCondition {
      * @param forceState if true the state will be forced.
      */
     @JsonCreator
-    public Time(@JsonProperty("openTick") int openTick, @JsonProperty("closeTick") int closeTick,
-                @JsonProperty("forceState") boolean forceState) {
+    public Time(
+            @JsonProperty("openTick") int openTick,
+            @JsonProperty("closeTick") int closeTick,
+            @JsonProperty("forceState") boolean forceState) {
         this.openTick = openTick;
         this.closeTick = closeTick;
         this.forceState = forceState;
@@ -72,12 +76,18 @@ public class Time implements DoorCondition {
     public static ConditionContainer getConditionContainer() {
         return ConditionContainer.ofClass(Time.class, Scope.PLAYER)
                 .withFactory((sender, messageSender, args, conditionBag) -> {
-                    ConditionInput.require(args, 2, DoorCondition.localizer(), "<$syntax.openTime$> <$syntax.closeTime$> [$tabcomplete.forceState$]");
+                    ConditionInput.require(
+                            args,
+                            2,
+                            DoorCondition.localizer(),
+                            "<$syntax.openTime$> <$syntax.closeTime$> [$tabcomplete.forceState$]");
                     int open = parseTime(args.asString(0), "error.invalidOpenTime");
                     int close = parseTime(args.asString(1), "error.invalidCloseTime");
                     boolean force = args.asBoolean(2, false);
                     conditionBag.accept(new Time(open, close, force));
-                    messageSender.sendMessage(sender, "setCondition.time",
+                    messageSender.sendMessage(
+                            sender,
+                            "setCondition.time",
                             Replacement.create("OPEN", Parser.parseTicksToTime(open)),
                             Replacement.create("CLOSE", Parser.parseTicksToTime(close)));
                 })
@@ -86,7 +96,8 @@ public class Time implements DoorCondition {
                         return Collections.singletonList("<" + localizer.getMessage("tabcomplete.setTimed.open") + ">");
                     }
                     if (args.sizeIs(2)) {
-                        return Collections.singletonList("<" + localizer.getMessage("tabcomplete.setTimed.close") + ">");
+                        return Collections.singletonList(
+                                "<" + localizer.getMessage("tabcomplete.setTimed.close") + ">");
                     }
                     if (args.sizeIs(3)) {
                         return Completion.completeBoolean(args.asString(2));
@@ -114,7 +125,8 @@ public class Time implements DoorCondition {
             time = Parser.parseTimeToTicks(input).orElseThrow(() -> CommandException.message(invalidKey));
         }
         if (time < 0 || time > TICKS_PER_DAY) {
-            throw CommandException.message("error.invalidRange", Replacement.create("MIN", 0), Replacement.create("MAX", TICKS_PER_DAY));
+            throw CommandException.message(
+                    "error.invalidRange", Replacement.create("MIN", 0), Replacement.create("MAX", TICKS_PER_DAY));
         }
         return time;
     }
@@ -122,7 +134,9 @@ public class Time implements DoorCondition {
     @Override
     public Boolean isOpen(@Nullable Player player, World world, ConditionalDoor door, boolean currentState) {
         try {
-            return STATE_CACHE.get(door.doorUID(), () -> Optional.ofNullable(shouldBeOpen(world.getFullTime()))).orElse(null);
+            return STATE_CACHE
+                    .get(door.doorUID(), () -> Optional.ofNullable(shouldBeOpen(world.getFullTime())))
+                    .orElse(null);
         } catch (ExecutionException e) {
             return null;
         }

@@ -23,7 +23,8 @@ import java.nio.file.Path;
  * A condition of a type which is not registered is read as missing instead of failing the whole doors file.
  */
 public class JacksonConfiguration extends JacksonConfig<Settings> {
-    public static final Key<Doors> DOORS = Key.builder(Path.of("doors.yml"), Doors::new).name("Doors").build();
+    public static final Key<Doors> DOORS =
+            Key.builder(Path.of("doors.yml"), Doors::new).name("Doors").build();
 
     public JacksonConfiguration(@NotNull Plugin plugin) {
         super(plugin, Key.builder(Path.of("config.yml"), Settings::new).build());

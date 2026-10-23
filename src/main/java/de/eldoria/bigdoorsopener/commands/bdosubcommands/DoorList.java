@@ -35,9 +35,11 @@ public class DoorList extends BigDoorsAdapterCommand {
     private final Config config;
 
     public DoorList(Plugin plugin, BigDoors bigDoors, Config config) {
-        super(plugin, CommandMeta.builder("list")
-                .withPermission(Permissions.USE)
-                .build(), bigDoors, config);
+        super(
+                plugin,
+                CommandMeta.builder("list").withPermission(Permissions.USE).build(),
+                bigDoors,
+                config);
         this.config = config;
     }
 
@@ -46,9 +48,14 @@ public class DoorList extends BigDoorsAdapterCommand {
         Map<Long, ConditionalDoor> doors = config.getDoorMap();
         Collection<Door> visible;
         if (sender.hasPermission(Permissions.ACCESS_ALL) || !(sender instanceof Player player)) {
-            visible = doors.keySet().stream().map(id -> getDoor(String.valueOf(id))).filter(Objects::nonNull).toList();
+            visible = doors.keySet().stream()
+                    .map(id -> getDoor(String.valueOf(id)))
+                    .filter(Objects::nonNull)
+                    .toList();
         } else {
-            visible = getDoors(player, null).stream().filter(d -> doors.containsKey(d.getDoorUID())).toList();
+            visible = getDoors(player, null).stream()
+                    .filter(d -> doors.containsKey(d.getDoorUID()))
+                    .toList();
         }
 
         TextComponent.Builder list = Component.text()
@@ -58,7 +65,8 @@ public class DoorList extends BigDoorsAdapterCommand {
             list.append(Component.newline())
                     .append(Component.text(door.getDoorUID() + " | ", NamedTextColor.DARK_GREEN))
                     .append(Component.text(door.getName(), NamedTextColor.GOLD))
-                    .append(Component.text(" (" + (world == null ? "?" : world.getName()) + ")", NamedTextColor.DARK_GREEN));
+                    .append(Component.text(
+                            " (" + (world == null ? "?" : world.getName()) + ")", NamedTextColor.DARK_GREEN));
         }
         sender.sendMessage(list.build());
     }

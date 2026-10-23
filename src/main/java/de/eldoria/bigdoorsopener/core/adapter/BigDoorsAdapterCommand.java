@@ -160,13 +160,11 @@ public abstract class BigDoorsAdapterCommand extends AdvancedCommand implements 
 
         Location max = door.getMaximum();
         Location min = door.getMinimum();
-        Vector vector = new Vector(
-                (max.getX() + min.getX()) / 2,
-                (max.getY() + min.getY()) / 2,
-                (max.getZ() + min.getZ()) / 2);
+        Vector vector =
+                new Vector((max.getX() + min.getX()) / 2, (max.getY() + min.getY()) / 2, (max.getZ() + min.getZ()) / 2);
 
-        return config.computeDoorIfAbsent(door.getDoorUID(),
-                doorId -> new ConditionalDoor(doorId, world.getName(), vector));
+        return config.computeDoorIfAbsent(
+                door.getDoorUID(), doorId -> new ConditionalDoor(doorId, world.getName(), vector));
     }
 
     /**
@@ -177,7 +175,8 @@ public abstract class BigDoorsAdapterCommand extends AdvancedCommand implements 
      * @return the registered door and the Big Doors door
      * @throws CommandException when the door can not be used or is not registered
      */
-    public Pair<ConditionalDoor, Door> getConditionalPlayerDoor(String doorUID, CommandSender sender) throws CommandException {
+    public Pair<ConditionalDoor, Door> getConditionalPlayerDoor(String doorUID, CommandSender sender)
+            throws CommandException {
         Door door = getPlayerDoor(doorUID, sender);
 
         ConditionalDoor conditionalDoor = config.getDoor(door.getDoorUID());
@@ -203,7 +202,8 @@ public abstract class BigDoorsAdapterCommand extends AdvancedCommand implements 
                 if (player.hasPermission(Permissions.ACCESS_ALL)) {
                     return getDoors().stream()
                             .map(d -> d.getPlayerUUID().equals(player.getUniqueId())
-                                    ? d.getName() : String.valueOf(d.getDoorUID()))
+                                    ? d.getName()
+                                    : String.valueOf(d.getDoorUID()))
                             .toList();
                 }
                 return getDoors(player).stream()

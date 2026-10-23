@@ -39,14 +39,19 @@ import java.util.Map;
 public class Info extends BigDoorsAdapterCommand {
 
     public Info(Plugin plugin, BigDoors bigDoors, Config config) {
-        super(plugin, CommandMeta.builder("info")
-                .withPermission(Permissions.USE)
-                .addArgument("syntax.doorId", true)
-                .build(), bigDoors, config);
+        super(
+                plugin,
+                CommandMeta.builder("info")
+                        .withPermission(Permissions.USE)
+                        .addArgument("syntax.doorId", true)
+                        .build(),
+                bigDoors,
+                config);
     }
 
     @Override
-    public void onCommand(@NotNull CommandSender sender, @NotNull String alias, @NotNull Arguments args) throws CommandException {
+    public void onCommand(@NotNull CommandSender sender, @NotNull String alias, @NotNull Arguments args)
+            throws CommandException {
         Pair<ConditionalDoor, Door> door = getConditionalPlayerDoor(args.asString(0), sender);
 
         ConditionalDoor cDoor = door.first;
@@ -56,7 +61,9 @@ public class Info extends BigDoorsAdapterCommand {
                 .append(Component.text(localizer().getMessage("info.info"), C.baseColor, TextDecoration.BOLD))
                 .append(Component.newline())
                 .append(Component.text(localizer().getMessage("info.state") + " ", C.baseColor))
-                .append(Component.text(localizer().getMessage(cDoor.isEnabled() ? "info.state.enabled" : "info.state.disabled"), C.highlightColor))
+                .append(Component.text(
+                        localizer().getMessage(cDoor.isEnabled() ? "info.state.enabled" : "info.state.disabled"),
+                        C.highlightColor))
                 .append(Component.newline())
                 .append(Component.text(localizer().getMessage("info.world") + " ", C.baseColor))
                 .append(Component.text(cDoor.world(), C.highlightColor))
@@ -64,31 +71,39 @@ public class Info extends BigDoorsAdapterCommand {
 
         component.append(Component.text(localizer().getMessage("info.evaluator") + " ", C.baseColor));
         if (cDoor.evaluationType() == ConditionalDoor.EvaluationType.CUSTOM) {
-            component.append(Component.text(cDoor.evaluator() + " ", C.highlightColor))
+            component
+                    .append(Component.text(cDoor.evaluator() + " ", C.highlightColor))
                     .append(editButton("/bdo setEvaluator " + cDoor.doorUID() + " custom " + cDoor.evaluator()));
         } else {
             component.append(Component.text(cDoor.evaluationType().name(), C.highlightColor));
         }
         component.append(Component.newline());
 
-        component.append(Component.text(localizer().getMessage("info.stayOpen") + " ", C.baseColor))
+        component
+                .append(Component.text(localizer().getMessage("info.stayOpen") + " ", C.baseColor))
                 .append(Component.text(cDoor.stayOpen() + " ", C.highlightColor))
                 .append(editButton("/bdo stayOpen " + cDoor.doorUID() + " " + cDoor.stayOpen()))
                 .append(Component.newline());
 
-        component.append(Component.text(localizer().getMessage("info.conditions"), C.highlightColor, TextDecoration.BOLD));
+        component.append(
+                Component.text(localizer().getMessage("info.conditions"), C.highlightColor, TextDecoration.BOLD));
 
         Map<String, Integer> groupCount = new HashMap<>();
 
         for (DoorCondition condition : cDoor.conditionBag().getConditions()) {
             String group = ConditionRegistrar.getContainerByClass(condition.getClass())
-                    .map(ConditionContainer::getGroup).orElse("undefined");
+                    .map(ConditionContainer::getGroup)
+                    .orElse("undefined");
             int id = groupCount.compute(group, (k, v) -> v == null ? 0 : v + 1);
-            component.append(Component.newline())
+            component
+                    .append(Component.newline())
                     .append(Component.text(id + " | ", NamedTextColor.AQUA))
                     .append(condition.getDescription(localizer()))
                     .append(Component.newline())
-                    .append(Component.text("[" + localizer().getMessage("info.remove") + "]", NamedTextColor.DARK_RED, TextDecoration.UNDERLINED)
+                    .append(Component.text(
+                                    "[" + localizer().getMessage("info.remove") + "]",
+                                    NamedTextColor.DARK_RED,
+                                    TextDecoration.UNDERLINED)
                             .clickEvent(ClickEvent.runCommand(condition.getRemoveCommand(cDoor) + " " + id)))
                     .append(Component.text(" "))
                     .append(editButton(condition.getCreationCommand(cDoor)));
@@ -98,7 +113,10 @@ public class Info extends BigDoorsAdapterCommand {
     }
 
     private Component editButton(String command) {
-        return Component.text("[" + localizer().getMessage("info.edit") + "]", NamedTextColor.GREEN, TextDecoration.UNDERLINED)
+        return Component.text(
+                        "[" + localizer().getMessage("info.edit") + "]",
+                        NamedTextColor.GREEN,
+                        TextDecoration.UNDERLINED)
                 .clickEvent(ClickEvent.suggestCommand(command));
     }
 

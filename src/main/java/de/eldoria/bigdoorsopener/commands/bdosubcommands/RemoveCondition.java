@@ -33,32 +33,39 @@ import java.util.List;
 public class RemoveCondition extends BigDoorsAdapterCommand {
 
     public RemoveCondition(Plugin plugin, BigDoors bigDoors, Config config) {
-        super(plugin, CommandMeta.builder("removeCondition")
-                .withPermission(Permissions.USE)
-                .addArgument("syntax.doorId", true)
-                .addArgument("syntax.condition", true)
-                .addArgument("tabcomplete.conditionId", false)
-                .build(), bigDoors, config);
+        super(
+                plugin,
+                CommandMeta.builder("removeCondition")
+                        .withPermission(Permissions.USE)
+                        .addArgument("syntax.doorId", true)
+                        .addArgument("syntax.condition", true)
+                        .addArgument("tabcomplete.conditionId", false)
+                        .build(),
+                bigDoors,
+                config);
     }
 
     @Override
-    public void onCommand(@NotNull CommandSender sender, @NotNull String alias, @NotNull Arguments args) throws CommandException {
+    public void onCommand(@NotNull CommandSender sender, @NotNull String alias, @NotNull Arguments args)
+            throws CommandException {
         ConditionalDoor door = getOrRegister(getPlayerDoor(args.asString(0), sender));
 
         ConditionGroup container = ConditionRegistrar.getConditionGroup(args.asString(1))
                 .orElseThrow(() -> CommandException.message("error.invalidConditionType"));
         String group = container.name();
 
-        CommandAssertions.permission(sender, false, Permissions.getConditionPermission(group), Permissions.ALL_CONDITION);
+        CommandAssertions.permission(
+                sender, false, Permissions.getConditionPermission(group), Permissions.ALL_CONDITION);
 
         ConditionBag conditionBag = door.conditionBag();
         CommandAssertions.isTrue(conditionBag.isConditionSet(container), "error.conditionNotSet");
-        CommandAssertions.isTrue(conditionBag.removeCondition(door, container, args.asInt(2, 0)), "error.conditionNotSet");
+        CommandAssertions.isTrue(
+                conditionBag.removeCondition(door, container, args.asInt(2, 0)), "error.conditionNotSet");
 
         messageSender().sendMessage(sender, "removeCondition." + group);
 
         if (door.evaluationType() == ConditionalDoor.EvaluationType.CUSTOM
-            && Words.pattern(List.of(group)).matcher(door.evaluator()).find()) {
+                && Words.pattern(List.of(group)).matcher(door.evaluator()).find()) {
             messageSender().sendError(sender, "warning.valueStillUsed", Replacement.create("VALUE", group));
         }
 

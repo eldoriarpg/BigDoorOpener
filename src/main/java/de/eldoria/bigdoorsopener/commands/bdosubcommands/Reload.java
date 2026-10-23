@@ -24,9 +24,9 @@ public class Reload extends AdvancedCommand implements ITabExecutor {
     private final BigDoorsOpener plugin;
 
     public Reload(BigDoorsOpener plugin) {
-        super(plugin, CommandMeta.builder("reload")
-                .withPermission(Permissions.RELOAD)
-                .build());
+        super(
+                plugin,
+                CommandMeta.builder("reload").withPermission(Permissions.RELOAD).build());
         this.plugin = plugin;
     }
 

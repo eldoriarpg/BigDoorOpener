@@ -34,7 +34,9 @@ public class WorldProximity implements WorldLocation {
     private final Proximity.ProximityForm proximityForm;
 
     @JsonCreator
-    public WorldProximity(@JsonProperty("dimensions") Vector dimensions, @JsonProperty("proximityForm") Proximity.ProximityForm proximityForm) {
+    public WorldProximity(
+            @JsonProperty("dimensions") Vector dimensions,
+            @JsonProperty("proximityForm") Proximity.ProximityForm proximityForm) {
         this.dimensions = dimensions;
         this.proximityForm = proximityForm;
     }
@@ -42,7 +44,8 @@ public class WorldProximity implements WorldLocation {
     public static ConditionContainer getConditionContainer() {
         return ConditionContainer.ofClass(WorldProximity.class, Scope.WORLD)
                 .withFactory((sender, messageSender, args, conditionBag) -> {
-                    ConditionInput.require(args, 1, DoorCondition.localizer(), "<$tabcomplete.dimensions$> [$syntax.proximityForm$]");
+                    ConditionInput.require(
+                            args, 1, DoorCondition.localizer(), "<$tabcomplete.dimensions$> [$syntax.proximityForm$]");
                     Vector vector = Proximity.parseDimensions(args.asString(0));
                     Proximity.ProximityForm form = Proximity.parseForm(args);
                     conditionBag.accept(new WorldProximity(vector, form));
@@ -71,9 +74,8 @@ public class WorldProximity implements WorldLocation {
 
     private boolean contains(ConditionalDoor door, Player player) {
         Vector vector = player.getLocation().toVector();
-        return proximityForm.check.apply(door.position(),
-                new Vector(vector.getBlockX(), vector.getBlockY(), vector.getBlockZ()),
-                dimensions);
+        return proximityForm.check.apply(
+                door.position(), new Vector(vector.getBlockX(), vector.getBlockY(), vector.getBlockZ()), dimensions);
     }
 
     @Override
@@ -90,8 +92,8 @@ public class WorldProximity implements WorldLocation {
     @Override
     public String getCreationCommand(ConditionalDoor door) {
         return SET_COMMAND + door.doorUID() + " worldProximity "
-               + dimensions.getX() + "," + dimensions.getY() + "," + dimensions.getZ()
-               + " " + proximityForm.name().toLowerCase();
+                + dimensions.getX() + "," + dimensions.getY() + "," + dimensions.getZ()
+                + " " + proximityForm.name().toLowerCase();
     }
 
     @Override

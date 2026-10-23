@@ -34,8 +34,15 @@ public final class ConditionContainer {
     private final ConditionFactory create;
     private final ConditionCompleter onTabComplete;
 
-    private ConditionContainer(Class<? extends DoorCondition> clazz, Scope scope, String name, String group, String typeName,
-                               int cost, ConditionFactory create, ConditionCompleter onTabComplete) {
+    private ConditionContainer(
+            Class<? extends DoorCondition> clazz,
+            Scope scope,
+            String name,
+            String group,
+            String typeName,
+            int cost,
+            ConditionFactory create,
+            ConditionCompleter onTabComplete) {
         this.clazz = clazz;
         this.scope = scope;
         this.name = name;
@@ -88,7 +95,9 @@ public final class ConditionContainer {
      * @param conditionBag  receives the created condition
      * @throws CommandException when the condition can not be created
      */
-    public void create(CommandSender sender, MessageSender messageSender, Arguments args, Consumer<DoorCondition> conditionBag) throws CommandException {
+    public void create(
+            CommandSender sender, MessageSender messageSender, Arguments args, Consumer<DoorCondition> conditionBag)
+            throws CommandException {
         create.create(sender, messageSender, args, conditionBag);
     }
 
@@ -183,8 +192,15 @@ public final class ConditionContainer {
             if (typeName == null) {
                 throw new IllegalStateException("Missing @JsonTypeName on condition " + clazz.getName());
             }
-            return new ConditionContainer(clazz, scope, Objects.requireNonNull(name), group, typeName.value(), cost,
-                    Objects.requireNonNull(create), onTabComplete);
+            return new ConditionContainer(
+                    clazz,
+                    scope,
+                    Objects.requireNonNull(name),
+                    group,
+                    typeName.value(),
+                    cost,
+                    Objects.requireNonNull(create),
+                    onTabComplete);
         }
 
         /**

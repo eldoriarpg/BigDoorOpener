@@ -44,7 +44,10 @@ public class WorldSimpleRegion implements WorldLocation {
     }
 
     @JsonCreator
-    private WorldSimpleRegion(@JsonProperty("minimum") Vector minimum, @JsonProperty("maximum") Vector maximum, @JsonProperty("world") String world) {
+    private WorldSimpleRegion(
+            @JsonProperty("minimum") Vector minimum,
+            @JsonProperty("maximum") Vector maximum,
+            @JsonProperty("world") String world) {
         this(minimum.toBlockVector(), maximum.toBlockVector(), world);
     }
 
@@ -62,7 +65,10 @@ public class WorldSimpleRegion implements WorldLocation {
                             if (event.getAction() != Action.LEFT_CLICK_BLOCK || event.getClickedBlock() == null) {
                                 return false;
                             }
-                            BlockVector vec = event.getClickedBlock().getLocation().toVector().toBlockVector();
+                            BlockVector vec = event.getClickedBlock()
+                                    .getLocation()
+                                    .toVector()
+                                    .toBlockVector();
                             event.setCancelled(true);
                             if (first == null) {
                                 world = event.getPlayer().getWorld().getName();
