@@ -39,6 +39,7 @@ public class Help extends AdvancedCommand implements ITabExecutor {
                                 Placeholder.unparsed("plugin_name", plugin().getName()))
                         .color(NamedTextColor.GOLD).decorate(TextDecoration.BOLD));
         entry(help, "setCondition", "<$syntax.doorId$> <$syntax.condition$> <$syntax.conditionValues$>");
+        entry(help, "addCondition", "<$syntax.doorId$> <$syntax.condition$> <$syntax.conditionValues$>");
         entry(help, "removeCondition", "<$syntax.doorId$> <$syntax.condition$>");
         entry(help, "copyCondition", "<$syntax.sourceDoor$> <$syntax.targetDoor$> [$syntax.condition$]");
         entry(help, "cloneDoor", "<$syntax.sourceDoor$> <$syntax.targetDoor$>");
@@ -48,8 +49,10 @@ public class Help extends AdvancedCommand implements ITabExecutor {
         entry(help, "invertOpen", "<$syntax.doorId$>");
         entry(help, "setEvaluator", "<$syntax.doorId$> <$syntax.evaluationType$> [$syntax.customEvaluator$]");
         entry(help, "stayOpen", "<$syntax.doorId$> <$syntax.seconds$>");
+        entry(help, "setState", "<$syntax.doorId$> <enabled|disabled>");
         entry(help, "list", "");
         entry(help, "reload", "");
+        entry(help, "debug", "");
         entry(help, "about", "");
         entry(help, "help", "");
         sender.sendMessage(help.build());

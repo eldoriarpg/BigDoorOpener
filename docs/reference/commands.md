@@ -173,5 +173,4 @@ this command.
 
 ### about and help
 
-`/bdo about` shows the plugin version, the author and the support links. `/bdo help` lists the most important
-commands.
+`/bdo about` shows the plugin version, the author and the support links. `/bdo help` lists all commands.
