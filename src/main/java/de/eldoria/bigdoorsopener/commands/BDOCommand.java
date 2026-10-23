@@ -42,7 +42,7 @@ public class BDOCommand extends AdvancedCommand {
                 .withDefaultCommand(help)
                 .buildSubCommands((cmds, builder) -> {
                     cmds.add(help);
-                    cmds.add(new DefaultAbout(plugin, DISCORD, "about"));
+                    cmds.add(new DefaultAbout(plugin, DISCORD, "commands.about"));
                     cmds.add(new CloneDoor(plugin, doors, config));
                     cmds.add(new CopyCondition(plugin, doors, config));
                     cmds.add(new GiveKey(plugin, doors, config));
