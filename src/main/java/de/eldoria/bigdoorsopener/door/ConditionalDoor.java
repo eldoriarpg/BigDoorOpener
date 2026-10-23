@@ -12,6 +12,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Objects;
 import de.eldoria.bigdoorsopener.conditions.DoorCondition;
 import de.eldoria.bigdoorsopener.core.BigDoorsOpener;
+import de.eldoria.bigdoorsopener.core.events.ConditionAddedEvent;
+import de.eldoria.bigdoorsopener.core.events.ConditionRemovedEvent;
 import de.eldoria.bigdoorsopener.core.events.DoorModifiedEvent;
 import de.eldoria.bigdoorsopener.door.conditioncollections.ConditionBag;
 import nl.pim16aap2.bigDoors.Door;
@@ -217,8 +219,17 @@ public class ConditionalDoor {
         return new ArrayList<>(conditionBag.getConditions());
     }
 
+    /**
+     * Replaces the conditions of the door. Every replaced condition is announced as removed and every new condition as
+     * added, so listeners keeping track of conditions see the change.
+     *
+     * @param conditionBag the new conditions
+     */
     public void conditionBag(@NotNull ConditionBag conditionBag) {
+        ConditionBag old = this.conditionBag;
         this.conditionBag = conditionBag;
+        old.getConditions().forEach(c -> Bukkit.getPluginManager().callEvent(new ConditionRemovedEvent(this, old, c)));
+        conditionBag.getConditions().forEach(c -> Bukkit.getPluginManager().callEvent(new ConditionAddedEvent(this, conditionBag, c)));
         Bukkit.getPluginManager().callEvent(new DoorModifiedEvent(this));
     }
 

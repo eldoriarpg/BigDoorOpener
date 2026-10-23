@@ -78,10 +78,6 @@ Copies everything: conditions, evaluator, stay open time and the open position s
 
 Both commands register the target door if it is not registered yet.
 
-:::warning Known problems in version 2.5.3
-- Copied `itemClick` and `itemBlock` conditions only react to clicks after the next server restart.
-:::
-
 ## Hand out keys
 
 ```text
