@@ -150,6 +150,7 @@ tasks {
         relocate("dev.chojo.ocular", shadebase + "ocular")
         relocate("de.eldoria.jacksonbukkit", shadebase + "jacksonbukkit")
         relocate("de.eldoria.eldoutilities", shadebase + "utilities")
+        duplicatesStrategy = DuplicatesStrategy.INCLUDE
         mergeServiceFiles()
         addMultiReleaseAttribute = false
         exclude("META-INF/versions/**")
