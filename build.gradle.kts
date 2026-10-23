@@ -5,9 +5,11 @@ plugins {
     `maven-publish`
     alias(libs.plugins.spotless)
     alias(libs.plugins.publishdata)
+    alias(libs.plugins.publishdata.manifest)
     alias(libs.plugins.shadow)
     alias(libs.plugins.pluginyml.bukkit)
     alias(libs.plugins.runserver)
+    alias(libs.plugins.minotaur)
 }
 
 description = "Open and close doors automatically on certain conditions"
@@ -81,6 +83,33 @@ publishData {
     }
 }
 
+pluginManifest {
+    platforms("paper")
+    requires("BigDoors", min = "0.1.8") { modrinth("bigdoors") }
+    optional("WorldGuard", min = "7.0") { modrinth("worldguard") }
+    optional("PlaceholderAPI") { modrinth("placeholderapi") }
+    optional("MythicMobs", min = "5.0") { modrinth("mythicmobs") }
+    optional("NashornJs") { spigot(91204) }
+}
+
+modrinth {
+    token = providers.environmentVariable("MODRINTH_TOKEN")
+    projectId = "2mTWavvv"
+    versionNumber = project.version.toString()
+    versionType = "release"
+    uploadFile.set(tasks.shadowJar)
+    gameVersions.addAll("1.21.11", "26.1", "26.1.1", "26.1.2", "26.2", "26.3")
+    loaders.addAll("paper", "purpur")
+    dependencies {
+        required.project("bigdoors")
+        optional.project("worldguard")
+        optional.project("placeholderapi")
+        optional.project("mythicmobs")
+    }
+    changelog = providers.environmentVariable("MODRINTH_CHANGELOG").orElse("")
+    syncBodyFrom = rootProject.file("readme.md").readText()
+}
+
 publishing {
     publications.withType<MavenPublication>().configureEach {
         pom {
@@ -131,7 +160,10 @@ tasks {
     }
 
     runServer {
-        minecraftVersion("1.21.11")
+        minecraftVersion("26.3")
+        downloadPlugins {
+            modrinth("bigdoors", "0.1.8.72")
+        }
         jvmArgs("-Dcom.mojang.eula.agree=true")
     }
 }
